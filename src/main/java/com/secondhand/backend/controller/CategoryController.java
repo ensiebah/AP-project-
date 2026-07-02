@@ -13,8 +13,12 @@ import java.util.List;
 public class CategoryController {
     private final CategoryService categoryService ;
     @PostMapping
-    public CategoryDto creatCategory(@RequestBody CategoryDto dto){
-        return categoryService.createCategory(dto) ;
+    public CategoryDto creatCategory(
+            @RequestBody CategoryDto dto
+    ){
+        return categoryService.createCategory(
+                dto.getName()
+        );
     }
     @GetMapping
     public List<CategoryDto> getAllCategories(){
