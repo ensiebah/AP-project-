@@ -1,4 +1,9 @@
 package com.secondhand.backend.service;
 
-public class CategoryService {
+import com.secondhand.backend.dto.CategoryDto;
+
+import java.util.List;
+
+public interface CategoryService {
+
 }

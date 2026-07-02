@@ -8,11 +8,18 @@ import com.secondhand.backend.dto.UserDto;
 import java.util.List;
 
 public interface UserService {
-    UserDto register(RegisterRequestDto request) ;
 
-    LoginResponseDto login(LoginRequestDto request) ;
-    UserDto getUserById(Long Id) ;
-    List<UserDto> getAllUser() ;
-    void blockUser(Long id ) ;
-    void unblockUser(Long id) ;
+    UserDto register(RegisterRequestDto request);
+
+    LoginResponseDto login(LoginRequestDto request);
+
+    UserDto getUserById(Long id);
+
+    UserDto getUserByUsername(String username);
+
+    List<UserDto> getAllUsers();
+
+    void blockUser(Long userId);
+
+    void unblockUser(Long userId);
 }

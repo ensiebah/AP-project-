@@ -1,4 +1,17 @@
 package com.secondhand.backend.service;
 
-public class ConversationService {
+import com.secondhand.backend.dto.ConversationDto;
+
+import java.util.List;
+
+public interface ConversationService {
+
+    ConversationDto createConversation(
+            Long buyerId,
+            Long advertisementId
+    );
+
+    List<ConversationDto> getUserConversations(
+            Long userId
+    );
 }
