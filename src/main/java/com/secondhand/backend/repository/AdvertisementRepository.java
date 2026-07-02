@@ -21,5 +21,6 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, Lo
 
     List<Advertisement> findByTitleContainingIgnoreCase(String title);
 
+    Long id(Long id);
 }
 
