@@ -14,8 +14,8 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "my_super_secret_key_for_secondhand_application_project_2026";
-    private final long EXPIRATION_TIME = 86400000;
+    private static final String SECRET_KEY = "my_super_secret_key_for_secondhand_application_project_2026";
+    private static final long EXPIRATION_TIME = 86400000;
 
     // نام متد را به getSignKey تغییر دادیم تا خطای کامپایلر برطرف شود
     private SecretKey getSignKey() {
