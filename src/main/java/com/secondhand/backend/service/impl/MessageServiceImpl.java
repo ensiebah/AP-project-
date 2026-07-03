@@ -10,7 +10,7 @@ import com.secondhand.backend.repository.ConversationRepository;
 import com.secondhand.backend.repository.MessageRepository;
 import com.secondhand.backend.repository.UserRepository;
 import com.secondhand.backend.service.MessageService;
-
+import com.secondhand.backend.exception.BlockedUserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +42,15 @@ public class MessageServiceImpl implements MessageService {
                         .orElseThrow(() ->
                                 new ConversationNotFoundException(
                                         "Conversation not found"));
+
+        // 👇 تیکه کد جدید و دقیق برای بررسی بلاک بودن اعضای چت هنگام ارسال پیام
+        User buyer = conversation.getBuyer();
+        User seller = conversation.getSeller();
+
+        if (buyer.isBlocked() || seller.isBlocked()) {
+            throw new BlockedUserException(
+                    "Cannot send message. One or both users in this conversation are blocked.");
+        }
 
         Message message = new Message();
 

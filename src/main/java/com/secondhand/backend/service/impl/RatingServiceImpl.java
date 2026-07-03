@@ -48,6 +48,9 @@ public class RatingServiceImpl implements RatingService {
                         .orElseThrow(() ->
                                 new AdvertisementNotFoundException(
                                         "Advertisement not found"));
+        if (score < 1 || score > 5) {
+            throw new IllegalArgumentException("Score must be between 1 and 5.");
+        }
 
         if (ratingRepository
                 .findByBuyerAndAdvertisement(
