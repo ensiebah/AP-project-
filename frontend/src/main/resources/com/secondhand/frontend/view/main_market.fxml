@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.secondhand.frontend.controller.MainMarketController"
+            style="-fx-pref-width: 650; -fx-pref-height: 500;">
+    <top>
+        <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: #f4f4f4; -fx-border-color: #ddd; -fx-border-width: 0 0 1 0;">
+            <padding>
+                <Insets top="10" right="15" bottom="10" left="15"/>
+            </padding>
+            <Label text="SecondHand Market" style="-fx-font-weight: bold; -fx-font-size: 16px;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Creat New Ad" onAction="#goToCreatAd" style="-fx-background-color:#4CAF50; -fx-text-fill: white;" />
+            <Button text="Logout" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+
+    <center>
+        <VBox>
+            <padding>
+                <Insets top="15" right="15" bottom="15" left="15"/>
+            </padding>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <TextField fx:id="searchField" promptText="Search by title or description..." HBox.hgrow="ALWAYS"/>
+                <Button text="Search" onAction="#handleSearch" style="-fx-min-width: 80;"/>
+            </HBox>
+
+            <ListView fx:id="adListView" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </center>
+</BorderPane>

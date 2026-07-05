@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.secondhand.frontend.controller.LoginController"
+      spacing="15"
+      alignment="CENTER">
+
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <Label text="SecondHand Market"/>
+
+    <TextField
+            fx:id="usernameField"
+            promptText="Username"/>
+
+    <PasswordField
+            fx:id="passwordField"
+            promptText="Password"/>
+
+    <Button
+            text="Login"
+            onAction="#login"/>
+
+    <Button
+            text="Register"
+            onAction="#goToRegister"/>
+
+    <Label
+            fx:id="messageLabel"/>
+
+</VBox>
