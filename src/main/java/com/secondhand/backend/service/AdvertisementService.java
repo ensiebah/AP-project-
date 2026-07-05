@@ -14,6 +14,8 @@ public interface AdvertisementService {
     List<AdvertisementDto> searchByTitle(String keyword)  ;
     AdvertisementDto approveAdvertisement(Long id) ;
     AdvertisementDto rejectAdvertisement(Long id) ;
-
+    // 👈 وظیفه: تعریف قرارداد برای متد فیلتر پیشرفته آگهی‌ها
+    // ورودی: پاکت فیلترها (FilterAdvertisementDto) | خروجی: لیستی از DTOهای آگهی
+    List<AdvertisementDto> searchAndFilter(com.secondhand.backend.dto.FilterAdvertisementDto filterDto);
 
 }

@@ -2,6 +2,7 @@ package com.secondhand.backend.dto;
 
 import com.secondhand.backend.entity.AdvertisementStatus;
 import lombok.*;
+import java.util.List;
 
 @Data
 @Builder
@@ -32,4 +33,6 @@ public class AdvertisementDto {
     private Long cityId;
 
     private String cityName;
+
+    private List<String> images;
 }

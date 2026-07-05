@@ -6,18 +6,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.http.SessionCreationPolicy; // 👈 رفع خطای اول
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; // 👈 رفع خطای سوم
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor // برای تزریق خودکار فیلتر
+@RequiredArgsConstructor // 👈 این انوتیشن به لومبوک می‌گوید سازنده را برای فیلدهای final بسازد
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter; // 👈 تزریق فیلتر جدید
+    // 👈 رفع خطای دوم: تعریف فیلد فیلتر به صورت final برای تزریق خودکار توسط لومبوک
+    private final JwtAuthenticationFilter jwtAuthFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -28,19 +29,39 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                // ۱. مشخص کردن مسیرهای آزاد و مسیرهای نیازمند قفل امنیتی
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register", "/api/users/login").permitAll() // ثبت نام و لاگین برای همه باز است
-                        .requestMatchers("/api/users/**").hasRole("ADMIN") // بلاک و آنبلاک فقط برای ادمین است
-                        .anyRequest().authenticated() // بقیه بخش‌ها (پیام‌ها، چت‌ها، امتیازها و آگهی‌ها) حتماً نیاز به توکن دارند
+                        // مسیرهای عمومی که نیاز به توکن ندارند (لاگین، رجیستر و مستندات سواگر)
+                        .requestMatchers("/api/users/login", "/api/users/register").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        // متدهای GET آگهی‌ها (تا همه بتوانند کالاها را ببینند و سرچ کنند)
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/advertisements/**").permitAll()
+
+                        // هر درخواست دیگری (مثل ساخت آگهی، چت کردن، بلاک کردن و...) نیاز به احراز هویت دارد
+                        .anyRequest().authenticated()
                 )
-                // ۲. مدیریت نشست‌ها به صورت Stateless (چون از توکن استفاده می‌کنیم نه Session)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // ۳. اضافه کردن فیلتر JWT دقیقاً قبل از فیلتر اصلی احراز هویت اسپرینگ
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public io.swagger.v3.oas.models.OpenAPI customOpenAPI() {
+        return new io.swagger.v3.oas.models.OpenAPI()
+                .info(new io.swagger.v3.oas.models.info.Info()
+                        .title("SecondHand Marketplace API")
+                        .version("1.0")
+                        .description("مستندات متدهای بک‌اند پروژه اپلیکیشن دست‌دوم"))
+                .addSecurityItem(new io.swagger.v3.oas.models.security.SecurityRequirement().addList("BearerAuth"))
+                .components(new io.swagger.v3.oas.models.Components()
+                        .addSecuritySchemes("BearerAuth",
+                                new io.swagger.v3.oas.models.security.SecurityScheme()
+                                        .name("BearerAuth")
+                                        .type(io.swagger.v3.oas.models.security.SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")));
     }
 }

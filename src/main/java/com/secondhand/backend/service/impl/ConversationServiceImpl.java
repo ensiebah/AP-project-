@@ -86,25 +86,12 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public List<ConversationDto> getUserConversations(
-            Long userId
-    ) {
-
+    public List<ConversationDto> getUserConversations(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new UserNotFoundException(
-                                "User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        List<Conversation> conversations =
-                new ArrayList<>();
-
-        conversations.addAll(
-                conversationRepository.findByBuyer(user)
-        );
-
-        conversations.addAll(
-                conversationRepository.findBySeller(user)
-        );
+        // 👈 اصلاح بهینه: استفاده از متد تک‌درخواستی جدید که بالاتر در ریپازیتوری ساختیم
+        List<Conversation> conversations = conversationRepository.findConversationsByUser(user);
 
         return conversations.stream()
                 .map(this::mapToDto)

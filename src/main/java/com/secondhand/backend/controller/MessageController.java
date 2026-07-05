@@ -3,6 +3,7 @@ package com.secondhand.backend.controller;
 import com.secondhand.backend.dto.MessageDto;
 import com.secondhand.backend.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,23 +15,30 @@ public class MessageController {
 
     private final MessageService messageService;
 
+    // 👈 اصلاح: مدیریت خطاها با try-catch جهت جلوگیری از کرش کردن سواگر
     @PostMapping
-    public MessageDto sendMessage(
+    public ResponseEntity<?> sendMessage(
             @RequestParam Long senderId,
             @RequestParam Long conversationId,
-            @RequestParam String content
+            @RequestParam String content // کلاینت متن پیام را ارسال می‌کند
     ) {
-        return messageService.sendMessage(
-                senderId,
-                conversationId,
-                content
-        );
+        try {
+            MessageDto message = messageService.sendMessage(senderId, conversationId, content);
+            return ResponseEntity.ok(message);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/conversation/{conversationId}")
-    public List<MessageDto> getConversationMessages(
+    public ResponseEntity<List<MessageDto>> getConversationMessages(
             @PathVariable Long conversationId
     ) {
-        return messageService.getConversationMessages(conversationId);
+        try {
+            List<MessageDto> messages = messageService.getConversationMessages(conversationId);
+            return ResponseEntity.ok(messages);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

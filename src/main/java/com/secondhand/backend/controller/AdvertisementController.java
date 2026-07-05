@@ -4,6 +4,7 @@ import com.secondhand.backend.dto.AdvertisementCreateDto;
 import com.secondhand.backend.dto.AdvertisementDto;
 import com.secondhand.backend.service.AdvertisementService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,10 +28,11 @@ public class AdvertisementController {
     public List<AdvertisementDto> getAllAdvertisements(){
         return advertisementService.getAllActiveAdvertisement() ;
     }
-    @GetMapping("/search")
+    /*@GetMapping("/search")
     public List<AdvertisementDto> searchAdvertisements(@RequestParam String keywords){
         return advertisementService.searchByTitle(keywords) ;
     }
+     */
     @PutMapping("/{id}")
     public AdvertisementDto updateAdvertisement(@PathVariable Long id ,
     @RequestBody AdvertisementDto dto){
@@ -48,5 +50,17 @@ public class AdvertisementController {
     public AdvertisementDto rejectAdvertisement(@PathVariable Long id){
         return advertisementService.rejectAdvertisement(id) ;
     }
-
+    // 👈 وظیفه: ایجاد Endpoint برای سیستم جستجو و فیلتر پیشرفته آگهی‌ها
+    @GetMapping("/search")
+    public ResponseEntity<List<AdvertisementDto>> filterAds(
+            @ModelAttribute com.secondhand.backend.dto.FilterAdvertisementDto filterDto // 👈 اضافه شدن @ModelAttribute
+    ) {
+        try {
+            // صدا زدن لایه سرویس برای اعمال فیلترهای پویا روی دیتابیس
+            List<AdvertisementDto> result = advertisementService.searchAndFilter(filterDto);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }
