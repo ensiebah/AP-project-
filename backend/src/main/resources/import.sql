@@ -18,3 +18,8 @@ VALUES ('admin', '$2a$10$X5.BvFzLhB7mO4WfVUXzeu1sV4iXN4r9tG3A5sE3hJ1kLmNoPqRSt',
 -- کاربر دوم: کاربر عادی (خریدار یا فروشنده فرضی)
 INSERT INTO users (user_name, pass_word, full_name, role, is_blocked)
 VALUES ('user1', '$2a$10$X5.BvFzLhB7mO4WfVUXzeu1sV4iXN4r9tG3A5sE3hJ1kLmNoPqRSt', 'Reihaneh', 'USER', false);
+
+
+INSERT INTO categories (id, name) VALUES (1, 'Electronics');
+INSERT INTO cities (id, name) VALUES (1, 'Tehran');
+

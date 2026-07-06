@@ -4,63 +4,72 @@ import com.secondhand.backend.dto.AdvertisementCreateDto;
 import com.secondhand.backend.dto.AdvertisementDto;
 import com.secondhand.backend.service.AdvertisementService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/advertisements")
+@RequestMapping("/api/advertisements") // افزودن /api برای هماهنگی با فرانت‌آند
 @RequiredArgsConstructor
 public class AdvertisementController {
-    private final AdvertisementService advertisementService ;
-    @PostMapping
-    public AdvertisementDto creatAdvertisement(
-            @RequestBody AdvertisementCreateDto dto ,
-            @RequestParam Long sellerId){
-        return advertisementService.createAdvertisement(dto , sellerId) ;
-    }
-    @GetMapping("/{id}")
-    public AdvertisementDto getAdvertisementById(@PathVariable Long id){
-        return advertisementService.getAdvertisementById(id) ;
-    }
-    @GetMapping
-    public List<AdvertisementDto> getAllAdvertisements(){
-        return advertisementService.getAllActiveAdvertisement() ;
-    }
-    /*@GetMapping("/search")
-    public List<AdvertisementDto> searchAdvertisements(@RequestParam String keywords){
-        return advertisementService.searchByTitle(keywords) ;
-    }
+
+    private final AdvertisementService advertisementService;
+
+    /**
+     * 🟢 وظیفه: ثبت آگهی جدید در سیستم
+     * 🎯 پوشش خواسته داک: سناریوی ثبت آگهی توسط کاربر لاگین‌شده.
+     * 🔍 چطور کار می‌کند؟ به جای @RequestParam، از شیء Principal استفاده شده است.
+     * اسپرینگ‌بوت به صورت خودکار نام کاربری را از روی توکن JWT معتبرِ هدر استخراج کرده و به این متد تزریق می‌کند.
      */
-    @PutMapping("/{id}")
-    public AdvertisementDto updateAdvertisement(@PathVariable Long id ,
-    @RequestBody AdvertisementDto dto){
-        return advertisementService.updateAdvertisement(id , dto) ;
+    @PostMapping("/create")
+    public AdvertisementDto createAdvertisement(@RequestBody AdvertisementCreateDto dto, Principal principal) {
+        // نام کاربری استخراج شده از توکن را به سرویس می‌فرستیم
+        String username = principal.getName();
+        return advertisementService.createAdvertisementByUsername(dto, username);
     }
+
+    @GetMapping("/{id}")
+    public AdvertisementDto getAdvertisementById(@PathVariable Long id) {
+        return advertisementService.getAdvertisementById(id);
+    }
+
+    /**
+     * 🔵 وظیفه: بازگرداندن تمام آگهی‌های تایید شده و فعال در صفحه اصلی مارکت
+     */
+    @GetMapping("/active")
+    public List<AdvertisementDto> getAllActiveAdvertisements() {
+        return advertisementService.getAllActiveAdvertisement();
+    }
+
+    /**
+     * 🟡 وظیفه: جست‌وجوی آگهی‌ها بر اساس متن ارسالی از فرانت‌آند
+     * 🔍 چطور کار می‌کند؟ فرانت‌آند متن را به صورت {"query": "text"} با متد POST می‌فرستد.
+     * ما اینجا آن را به صورت یک Map دریافت کرده و فیلد query را برمی‌داریم تا با فرانت مچ باشد.
+     */
+    @PostMapping("/search")
+    public List<AdvertisementDto> searchAdvertisements(@RequestBody Map<String, String> searchRequest) {
+        String keywords = searchRequest.getOrDefault("query", "");
+        return advertisementService.searchByTitle(keywords);
+    }
+
+    @PutMapping("/{id}")
+    public AdvertisementDto updateAdvertisement(@PathVariable Long id, @RequestBody AdvertisementDto dto) {
+        return advertisementService.updateAdvertisement(id, dto);
+    }
+
     @DeleteMapping("/{id}")
-    public void deleteAdvertisement(@PathVariable Long id){
+    public void deleteAdvertisement(@PathVariable Long id) {
         advertisementService.deleteAdvertisement(id);
     }
+
     @PutMapping("/{id}/approve")
-    public AdvertisementDto approveAdvertisements(@PathVariable Long id){
-        return advertisementService.approveAdvertisement(id) ;
+    public AdvertisementDto approveAdvertisements(@PathVariable Long id) {
+        return advertisementService.approveAdvertisement(id);
     }
+
     @PutMapping("/{id}/reject")
-    public AdvertisementDto rejectAdvertisement(@PathVariable Long id){
-        return advertisementService.rejectAdvertisement(id) ;
-    }
-    // 👈 وظیفه: ایجاد Endpoint برای سیستم جستجو و فیلتر پیشرفته آگهی‌ها
-    @GetMapping("/search")
-    public ResponseEntity<List<AdvertisementDto>> filterAds(
-            @ModelAttribute com.secondhand.backend.dto.FilterAdvertisementDto filterDto // 👈 اضافه شدن @ModelAttribute
-    ) {
-        try {
-            // صدا زدن لایه سرویس برای اعمال فیلترهای پویا روی دیتابیس
-            List<AdvertisementDto> result = advertisementService.searchAndFilter(filterDto);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+    public AdvertisementDto rejectAdvertisement(@PathVariable Long id) {
+        return advertisementService.rejectAdvertisement(id);
     }
 }
