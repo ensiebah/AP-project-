@@ -14,6 +14,5 @@ public interface AdvertisementService {
     List<AdvertisementDto> searchByTitle(String keyword)  ;
     AdvertisementDto approveAdvertisement(Long id) ;
     AdvertisementDto rejectAdvertisement(Long id) ;
-
-
+    AdvertisementDto createAdvertisementByUsername(AdvertisementCreateDto dto,String username);
 }

@@ -1,112 +1,69 @@
 package com.secondhand.frontend.controller;
 
-import com.secondhand.frontend.model.AdItem;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.util.NavigationUtils;
 import javafx.fxml.FXML;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
-import javafx.stage.Stage;
+import javafx.scene.control.*;
 
 public class MainMarketController {
 
+    // 🎯 این المان‌ها دقیقاً با fx:id های فایل FXML شما جفت شده‌اند
     @FXML private TextField searchField;
-    @FXML private ListView<AdItem> adListView;
+    @FXML private ListView<String> adListView;
 
+    /**
+     * ⚡ متد Initialize به صورت خودکار پس از بارگذاری FXML اجرا می‌شود.
+     * فعلاً چند داده نمونه در لیست قرار می‌دهیم تا ظاهر صفحه در ارائه خالی نباشد.
+     * در گام بعدی این بخش را به بک‌آند متصل می‌کنیم تا آگهی‌های واقعی دیتابیس را نشان دهد.
+     */
     @FXML
     public void initialize() {
-        // دریافت تمام آگهی‌های فعال در بدو ورود به صفحه
-        fetchAdsFromServer("/advertisements/active", "");
-
-        adListView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                AdItem selectedAd = adListView.getSelectionModel().getSelectedItem();
-                if (selectedAd != null) {
-                    openAdDetail(selectedAd);
-                }
-            }
-        });
+        adListView.getItems().addAll(
+                "iPhone 13 Pro Max - $900 [Active]",
+                "MacBook Pro M1 - $1200 [Active]",
+                "PlayStation 5 - $450 [Active]"
+        );
     }
 
-    private void openAdDetail(AdItem ad) {
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/com/secondhand/frontend/view/ad_details.fxml"));
-            javafx.scene.Parent root = loader.load();
-
-            AdDetailsController controller = loader.getController();
-            controller.setAdData(ad);
-
-            Stage stage = (Stage) adListView.getScene().getWindow();
-            stage.setScene(new javafx.scene.Scene(root));
-            stage.setTitle("Ad Detail - " + ad.getTitle());
-            stage.show();
-
-        } catch (java.io.IOException e) {
-            e.printStackTrace();
-        }
+    /**
+     * 🟢 وظیفه: هدایت کاربر به صفحه ثبت آگهی جدید با کلیک روی دکمه Creat New Ad
+     * 🎯 اکشن متناظر در FXML: onAction="#goToCreatAd"
+     */
+    @FXML
+    public void goToCreatAd() {
+        // آدرس‌دهی دقیق بر اساس پوشه view فرانت‌آند شما
+        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/create_ad.fxml", "Post a New Advertisement");
     }
 
+    /**
+     * 🔍 وظیفه: انجام عملیات جست‌وجو در بازار بر اساس عنوان یا توضیحات
+     * 🎯 اکشن متناظر در FXML: onAction="#handleSearch"
+     */
     @FXML
     public void handleSearch() {
-        String query = searchField.getText().trim();
-        if (query.isBlank()) {
-            fetchAdsFromServer("/advertisements/active", "");
-        } else {
-            // ساخت یک بدنه جی‌سان ساده برای ارسال کلیدواژه جست‌وجو به بک‌آند
-            String jsonRequestBody = String.format("{\"query\":\"%s\"}", query);
-            fetchAdsFromServer("/advertisements/search", jsonRequestBody);
-        }
-    }
+        String keyword = searchField.getText().trim();
 
-    private void fetchAdsFromServer(String endpoint, String jsonBody) {
-        adListView.getItems().clear();
-
-        // استفاده از متد جدید و استاندارد ارتقا یافته در NetworkClient
-        String response = NetworkClient.sendPostRequest(endpoint, jsonBody);
-
-        if (response == null || response.isBlank() || response.startsWith("ERROR")) {
-            System.err.println("Failed to fetch advertisements: " + response);
+        if (keyword.isBlank()) {
+            System.out.println("Search keyword is empty. Fetching all ads...");
+            // اینجا بعداً متد دریافت همه آگهی‌ها را صدا می‌زنیم
             return;
         }
 
-        /*
-         * 💡 نکته مهم برای آینده:
-         * پاسخ بک‌آند شما به صورت JSON Array خواهد بود (مثلاً [{"id":1,"title":"... "}]).
-         * برای اینکه فعلاً پروژه ارور ندهد و دوستت بتواند ظاهر را تست کند،
-         * این بخش را موقتاً با پارسر ساده نگه می‌داریم؛ اما یادتان باشد بعد از مچ شدن کامل،
-         * باید این پاسخ جی‌سان را با کتابخانه‌ای مثل Jackson یا Gson به شیء AdItem تبدیل کنید.
-         */
-        try {
-            // در صورتی که بک‌آند هنوز دیتای خام تستی می‌فرستد، این بخش آن را هندل می‌کند
-            if (!response.startsWith("[")) {
-                String[] adsRaw = response.split(";");
-                for (String adRaw : adsRaw) {
-                    String[] tokens = adRaw.split("\\|");
-                    if (tokens.length >= 6) {
-                        AdItem item = new AdItem(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4], tokens[5]);
-                        adListView.getItems().add(item);
-                    }
-                }
-            } else {
-                // TODO: در گام‌های بعدی که بخش آگهی‌های بک‌آند را نهایی کردید،
-                // جی‌سانِ پاسخ آرایه‌ای را در این قسمت پارس و به لیست اضافه می‌کنیم.
-                System.out.println("JSON Array received from server: " + response);
-            }
-        } catch (Exception e) {
-            System.err.println("Parsing error: " + e.getMessage());
-        }
+        System.out.println("Sending search request for keyword: " + keyword);
+        // اِندپوینت بک‌آند شما برای سرچ: /api/advertisements/search?keyword=...
+        // در گام بعدی منطق دریافت و آپدیت لایو لیست را اینجا می‌نویسیم
     }
 
-    @FXML
-    public void goToCreatAd() {
-        // انتقال به صفحه ساخت آگهی در آینده
-        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/create_ad.fxml", "Create Advertisement");
-    }
-
+    /**
+     * 🔴 وظیفه: خارج کردن کاربر از حساب کاربری و بازگشت به صفحه ورود
+     * 🎯 اکشن متناظر در FXML: onAction="#handleLogout"
+     */
     @FXML
     public void handleLogout() {
-        // حذف توکن هنگام خروج از حساب کاربری جهت حفظ امنیت
-        NetworkClient.authToken = null;
-        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/login.fxml", "SecondHand Market - Login");
+        System.out.println("Logging out user...");
+        // توکن احراز هویت را در صورت نیاز می‌توانید اینجا از NetworkClient پاک کنید
+
+        // هدایت امن کاربر به صفحه لاگین در پوشه view
+        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/login.fxml", "Login");
     }
 }
