@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.secondhand.frontend.controller.CreateAdController"
+      spacing="15"
+      alignment="CENTER_LEFT"
+      style="-fx-pref-width: 450; -fx-pref-height: 500;">
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+    <Label text="Post a New Advertisement" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <TextField fx:id="titleField" promptText="Ad Title (e.g., iPhone 13)"/>
+
+    <ComboBox fx:id="categoryComboBox" promptText="Select Category" style="-fx-min-width: 200;"/>
+
+    <TextField fx:id="priceField" promptText="Price (in USD)"/>
+
+    <TextField fx:id="cityField" promptText="City"/>
+
+    <TextArea fx:id="descriptionArea" promptText="Describe your item in detail..." wrapText="true" style="-fx-pref-height: 120;"/>
+
+    <Button text="Publish Ad"

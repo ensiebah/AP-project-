@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.secondhand.frontend.controller.AdDetailsController"
+      spacing="15"
+      style="-fx-pref-width: 450; -fx-pref-height: 550;">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <StackPane style="-fx-background-color: #eee; -fx-min-height: 200; -fx-border-color: #ddd;">
+        <ImageView fx:id="adImageView" fitWidth="400" fitHeight="180" preserveRatio="true"/>
+    </StackPane>
+
+    <Label fx:id="titleLabel" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+    <Separator/>
+
+    <GridPane vgap="10" hgap="20">
+            <columnConstraints>
+                <ColumnConstraints minWidth="100" />
+                <ColumnConstraints minWidth="200"/>
+            </columnConstraints>
+
+    <Label text="Price: " GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <Label fx:id="priceLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+    <Label text="City: " GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <Label fx:id="cityLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Category:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+        <Label fx:id="categoryLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <Separator/>
+    <Label text="Description: " style="-fx-font-weight: bold;" />
+    <TextArea fx:id="descriptionArea" editable="false" wrapText="true" style="-fx-pref-height: 100;"/>
+
+    <HBox spacing="10" alignment="BASELINE_RIGHT">
+        <Button text="Back to Market" onAction="#handleBack"/>
+    </HBox>
+
+</VBox>
