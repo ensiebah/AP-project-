@@ -18,11 +18,11 @@ public class RegisterController {
 
     @FXML
     public void register(){
-        String fullName = fullNameField.getText().trim() ;
-        String username = usernameField.getText().trim() ;
-        String password = passwordField.getText() ;
-        String phone = phoneField.getText().trim() ;
-        String email = emailField.getText().trim() ;
+        String fullName = fullNameField.getText().trim();
+        String username = usernameField.getText().trim();
+        String password = passwordField.getText();
+        String phone = phoneField.getText().trim();
+        String email = emailField.getText().trim();
 
         if (fullName.isBlank() || username.isBlank() || password.isBlank() || phone.isBlank() || email.isBlank()){
             messageLabel.setStyle("-fx-text-fill: red;");
@@ -30,24 +30,27 @@ public class RegisterController {
             return;
         }
 
-        String request = "REGISTER|" + username + "|" + password + "|" + fullName + "|" + phone + "|" + email;
-        String response = NetworkClient.sendRequest(request) ;
+        // ۱. ساخت بدنه به صورت JSON استاندارد منطبق بر فیلدهای بک‌آند
+        String jsonRequest = String.format(
+                "{\"fullName\":\"%s\",\"username\":\"%s\",\"password\":\"%s\",\"phone\":\"%s\",\"email\":\"%s\"}",
+                fullName, username, password, phone, email
+        );
 
-        if (response.startsWith("REGISTER_SUCCESS")){
+        // ۲. ارسال مستقیم به اِندپوینت واقعی ثبت‌نام بک‌آند
+        String response = NetworkClient.sendPostRequest("/users/register", jsonRequest);
+
+        if (!response.startsWith("ERROR")){
             messageLabel.setStyle("-fx-text-fill: green;");
             messageLabel.setText("Registration successful! Redirecting...");
 
-            NavigationUtils.navigateTo(usernameField ,"/com/secondhand/frontend/view/login.fxml" , "SecondHand Market - Login" );
-
+            // از آنجایی که در متد قبلی بک‌آند، خروجی لاگین‌ریسپانس را دادیم، می‌توان توکن را مستقیم هم برداشت
+            // اما برای سادگی جریان فرانت، کاربر را به صفحه لاگین می‌بریم تا یوزرنیمش را بزند
+            NavigationUtils.navigateTo(usernameField, "/com/secondhand/frontend/view/login.fxml", "SecondHand Market - Login");
         }
         else {
             messageLabel.setStyle("-fx-text-fill: red;");
-            if (response.contains("|")){
-                messageLabel.setText(response.split("\\|")[1]);
-
-            }else {
-                messageLabel.setText("Registration failed.");
-            }
+            String errorMessage = response.contains("|") ? response.split("\\|")[1] : "Registration failed.";
+            messageLabel.setText(errorMessage);
         }
     }
     @FXML

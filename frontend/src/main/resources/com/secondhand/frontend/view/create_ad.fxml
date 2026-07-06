@@ -3,25 +3,36 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.secondhand.frontend.controller.CreateAdController"
       spacing="15"
       alignment="CENTER_LEFT"
-      style="-fx-pref-width: 450; -fx-pref-height: 500;">
+      style="-fx-pref-width: 450; -fx-pref-height: 520;">
     <padding>
         <Insets top="30" right="30" bottom="30" left="30"/>
     </padding>
+
     <Label text="Post a New Advertisement" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
 
     <TextField fx:id="titleField" promptText="Ad Title (e.g., iPhone 13)"/>
 
-    <ComboBox fx:id="categoryComboBox" promptText="Select Category" style="-fx-min-width: 200;"/>
+    <!-- تغییر دادیم به TextField تا فعلاً با کدهای بک‌اِند جفت شود و ارور ندهد -->
+    <TextField fx:id="categoryIdField" promptText="Category ID (e.g., 1)"/>
 
     <TextField fx:id="priceField" promptText="Price (in USD)"/>
 
-    <TextField fx:id="cityField" promptText="City"/>
+    <TextField fx:id="cityIdField" promptText="City ID (e.g., 1)"/>
 
     <TextArea fx:id="descriptionArea" promptText="Describe your item in detail..." wrapText="true" style="-fx-pref-height: 120;"/>
 
-    <Button text="Publish Ad"
+    <!-- لایبل نمایش خطاها به کاربر -->
+    <Label fx:id="errorLabel" style="-fx-text-fill: red;"/>
+
+    <!-- دکمه‌ها همراه با اکشن‌های متناظر در کنترلر جاوا -->
+    <HBox spacing="10">
+        <Button text="Publish Ad" onAction="#handleSaveAdvertisement"/>
+        <Button text="Cancel" onAction="#goBackToMarket"/>
+    </HBox>
+</VBox>
