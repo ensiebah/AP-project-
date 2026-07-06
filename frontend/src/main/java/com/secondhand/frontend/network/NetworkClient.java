@@ -8,76 +8,50 @@ import java.time.Duration;
 
 public class NetworkClient {
 
-    // Toggle this to true if you want to test UI offline without the Spring Boot server
-    private static final boolean USE_MOCK_SERVER = false;
-
-    // Spring Boot default local server address
-    private static final String SERVER_URL = "http://localhost:8080/api/handle";
+    private static final String BASE_URL = "http://localhost:8080/api";
+    // توکن امنیتی که پس از لاگین/ثبت‌نام اینجا ذخیره می‌شود تا در درخواست‌های بعدی ارسال شود
+    public static String authToken = null;
 
     /**
-     * Sends a pipe-delimited text request to the backend service.
-     * * @param request The formatted command string (e.g., "LOGIN|user|1234")
-     * @return The plain text response from the server, or an error action string.
+     * متد عمومی برای ارسال درخواست‌های POST به صورت JSON
+     * @param endpoint مسیر اندپوینت (مثلاً "/users/login")
+     * @param jsonBody بدنه درخواست به فرمت جی‌سان
+     * @return پاسخ سرور به صورت رشته متن (جی‌سان)
      */
-    public static String sendRequest(String request) {
-        if (USE_MOCK_SERVER) {
-            return getMockResponse(request);
-        }
-
+    public static String sendPostRequest(String endpoint, String jsonBody) {
         try {
-            // 1. Create the modern HTTP Client with a 5-second connection timeout
             HttpClient client = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofSeconds(5))
                     .build();
 
-            // 2. Build the POST request containing our piping protocol string
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(SERVER_URL))
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + endpoint))
                     .timeout(Duration.ofSeconds(10))
-                    .header("Content-Type", "text/plain") // Sending raw text packet
-                    .POST(HttpRequest.BodyPublishers.ofString(request))
-                    .build();
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody));
 
-            // 3. Send synchronously and capture the plain text body response
+            // اگر توکن موجود بود، آن را در هدر درخواست قرار بده تا بک‌آند ما را احراز هویت کند
+            if (authToken != null) {
+                requestBuilder.header("Authorization", "Bearer " + authToken);
+            }
+
+            HttpRequest httpRequest = requestBuilder.build();
             HttpResponse<String> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
-            // Check if the server responded with an HTTP OK (200) status
-            if (response.statusCode() == 200) {
+            // اگر عملیات موفق بود (200 یا 201)، بادی پاسخ را برگردان
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
                 return response.body();
             } else {
-                return "ERROR|Server returned unexpected status code: " + response.statusCode();
+                // مدیریت خطاهای بک‌آند طبق قالب داک (پیام خطا)
+                return "ERROR|" + response.body();
             }
 
         } catch (java.net.ConnectException e) {
-            System.err.println("Connection refused. Make sure Spring Boot is running on port 8080.");
-            return "ERROR|Could not connect to the backend server. Is it running?";
+            System.err.println("Connection refused. Is Spring Boot running?");
+            return "ERROR|Could not connect to the backend server.";
         } catch (Exception e) {
             e.printStackTrace();
             return "ERROR|An unexpected network error occurred: " + e.getMessage();
-        }
-    }
-
-    /**
-     * Fallback mock mechanism for standalone frontend debugging.
-     */
-    private static String getMockResponse(String request) {
-        if (request == null || request.isBlank()) {
-            return "ERROR|Empty request.";
-        }
-
-        String command = request.split("\\|")[0];
-        switch (command) {
-            case "LOGIN":
-                return "LOGIN_SUCCESS|USER";
-            case "REGISTER":
-                return "REGISTER_SUCCESS|Registration successful.";
-            case "GET_ADS":
-                return "1|iPhone 13 Pro|Battery 90%|800|Tehran|Electronics|APPROVED;" +
-                        "2|Giant Bicycle|21 speed bike|350|Shiraz|Sports|PENDING";
-            case "CREATE_AD":
-                return "CREATE_AD_SUCCESS|Mock ad created.";
-            default:
-                return "ERROR|Unknown mock command.";
         }
     }
 }
