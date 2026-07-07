@@ -12,37 +12,42 @@
         <Insets top="15.0" right="15.0" bottom="15.0" left="15.0"/>
     </padding>
 
-    <Label text="پنل مدیریت سامانه" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+    <HBox alignment="CENTER_LEFT" spacing="10.0">
+        <Label text="System Administration Dashboard" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="btnBack" text="← Back to Market" onAction="#handleBackToMarket"
+                style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 6px 12px;"/>
+    </HBox>
 
     <TabPane fx:id="adminTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         <tabs>
 
-            <Tab text="تایید آگهی‌ها">
+            <Tab text="Approve Advertisements">
                 <VBox spacing="10.0">
                     <padding>
                         <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
                     </padding>
                     <TableView fx:id="pendingTable" VBox.vgrow="ALWAYS">
                         <columns>
-                            <TableColumn fx:id="idColumn" text="آی‌دی" prefWidth="60.0" />
-                            <TableColumn fx:id="titleColumn" text="عنوان آگهی" prefWidth="250.0" />
-                            <TableColumn fx:id="priceColumn" text="قیمت" prefWidth="120.0" />
-                            <TableColumn fx:id="sellerColumn" text="فروشنده" prefWidth="150.0" />
+                            <TableColumn fx:id="idColumn" text="ID" prefWidth="60.0" />
+                            <TableColumn fx:id="titleColumn" text="Ad Title" prefWidth="250.0" />
+                            <TableColumn fx:id="priceColumn" text="Price ($)" prefWidth="120.0" />
+                            <TableColumn fx:id="sellerColumn" text="Seller Username" prefWidth="150.0" />
                         </columns>
                     </TableView>
                     <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                        <Button text="رد کردن" onAction="#handleReject" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
-                        <Button text="تایید و انتشار" onAction="#handleApprove" style="-fx-background-color: #2ecc71; -fx-text-fill: white;"/>
+                        <Button text="Reject" onAction="#handleReject" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 7px 15px;"/>
+                        <Button text="Approve &amp; Publish" onAction="#handleApprove" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 7px 15px;"/>
                     </HBox>
                 </VBox>
             </Tab>
 
-            <Tab text="مدیریت کاربران">
+            <Tab text="User Management">
                 <VBox spacing="10.0" alignment="CENTER">
                     <padding>
                         <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
                     </padding>
-                    <Label text="لیست کاربران و قابلیت مسدودسازی در این برگه قرار می‌گیرد." style="-fx-font-style: italic;"/>
+                    <Label text="User management options and system block lists will be populated here." style="-fx-font-style: italic; -fx-text-fill: #7f8c8d;"/>
                 </VBox>
             </Tab>
 

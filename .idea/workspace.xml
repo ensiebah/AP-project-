@@ -4,18 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ff106288-4ee5-4916-84b0-2d67a2b76cb0" name="Changes" comment="CREATE AD DONE">
-      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/AdminController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/AdminPanelController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/AdminPanel.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/SecondHandBackendApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/SecondHandBackendApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/AdvertisementService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/AdvertisementService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/impl/AdvertisementServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/impl/AdvertisementServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/MainMarketController.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/MainMarketController.java" afterDir="false" />
-    </list>
+    <list default="true" id="ff106288-4ee5-4916-84b0-2d67a2b76cb0" name="Changes" comment="ADMIN PANEL CREATED" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -222,6 +211,7 @@
       <workItem from="1783292898961" duration="619000" />
       <workItem from="1783293757012" duration="552000" />
       <workItem from="1783375900979" duration="2129000" />
+      <workItem from="1783422887246" duration="515000" />
     </task>
     <task id="LOCAL-00001" summary="CREATE AD DONE">
       <option name="closed" value="true" />
@@ -231,7 +221,15 @@
       <option name="project" value="LOCAL" />
       <updated>1783375932759</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="ADMIN PANEL CREATED">
+      <option name="closed" value="true" />
+      <created>1783422913404</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1783422913404</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -239,6 +237,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="CREATE AD DONE" />
-    <option name="LAST_COMMIT_MESSAGE" value="CREATE AD DONE" />
+    <MESSAGE value="ADMIN PANEL CREATED" />
+    <option name="LAST_COMMIT_MESSAGE" value="ADMIN PANEL CREATED" />
   </component>
 </project>

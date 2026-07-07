@@ -1,72 +1,97 @@
 package com.secondhand.frontend.controller;
 
+import com.secondhand.frontend.model.AdvertisementDto;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.util.NavigationUtils;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class MainMarketController {
 
-    // 🎯 المان‌های بازار عمومی
     @FXML private TextField searchField;
-    @FXML private ListView<String> adListView;
-
-    // 🔘 دکمه ورود به پنل ادمین
+    @FXML private ListView<AdvertisementDto> adListView;
     @FXML private Button btnAdminPanel;
 
-    /**
-     * ⚡ نقطه شروع متد مدیریت لایف‌سایکل صفحه (Initialize)
-     * وظیفه: این متد فقط یک‌بار پس از بالا آمدن ظاهر صفحه اجرا می‌شود و تمام تنظیمات اولیه را یکجا انجام می‌دهد.
-     */
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final String BASE_URL = "http://localhost:8080/api/advertisements";
+
     @FXML
     public void initialize() {
-        // ۱. پر کردن لیست آگهی‌های پیش‌فرض برای خالی نبودن صفحه در ارائه
-        adListView.getItems().addAll(
-                "iPhone 13 Pro Max - $900 [Active]",
-                "MacBook Pro M1 - $1200 [Active]",
-                "PlayStation 5 - $450 [Active]"
-        );
+        adListView.setCellFactory(param -> new ListCell<>() {
+            @Override
+            protected void updateItem(AdvertisementDto item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(String.format("%s - $%.2f [By: %s]", item.getTitle(), item.getPrice(), item.getSellerName()));
+                }
+            }
+        });
 
-        // ۲. مخفی کردن دکمه پنل ادمین به صورت پیش‌فرض (اصول دسترسی داک پروژه)
-        if (btnAdminPanel != null) {
-            btnAdminPanel.setVisible(false);
-        }
+        Platform.runLater(this::loadActiveAdvertisements);
     }
 
-    /**
-     * 🟢 وظیفه: هدایت کاربر به صفحه ثبت آگهی جدید
-     */
+    private void loadActiveAdvertisements() {
+        adListView.getItems().clear();
+
+        // 🟢 ارسال هدر Authorization حاوی توکن بایرِر برای گرفتن آگهی‌های فعال بدون مسدودی توسط سرور
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/active"))
+                .header("Authorization", "Bearer " + NetworkClient.authToken)
+                .GET()
+                .build();
+
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenAccept(responseBody -> {
+                    try {
+                        JSONArray jsonArray = new JSONArray(responseBody);
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject obj = jsonArray.getJSONObject(i);
+                            AdvertisementDto dto = new AdvertisementDto();
+                            dto.setId(obj.getLong("id"));
+                            dto.setTitle(obj.getString("title"));
+                            dto.setPrice(obj.getDouble("price"));
+                            dto.setSellerName(obj.optString("sellerName", "Unknown"));
+
+                            Platform.runLater(() -> adListView.getItems().add(dto));
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Failed to parse active advertisements. Response body was: " + responseBody);
+                        e.printStackTrace();
+                    }
+                });
+    }
+
     @FXML
     public void goToCreatAd() {
         NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/create_ad.fxml", "Post a New Advertisement");
     }
 
-    /**
-     * 🔍 وظیفه: انجام عملیات جست‌وجو در بازار
-     */
     @FXML
     public void handleSearch() {
         String keyword = searchField.getText().trim();
         if (keyword.isBlank()) {
-            System.out.println("Search keyword is empty. Fetching all ads...");
+            loadActiveAdvertisements();
             return;
         }
-        System.out.println("Sending search request for keyword: " + keyword);
+        System.out.println("Searching for: " + keyword);
     }
 
-    /**
-     * 🔴 وظیفه: خارج کردن کاربر از حساب کاربری
-     */
     @FXML
     public void handleLogout() {
-        System.out.println("Logging out user...");
+        NetworkClient.authToken = null;
         NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/login.fxml", "Login");
     }
 
-    /**
-     * 👮‍♂️ وظیفه: کنترل داینامیک دکمه ناوبری ادمین بر اساس پاسخ نقش از بک‌اَند
-     * @param userRole نقش کاربر ("ADMIN" یا "USER")
-     */
     public void configureNavigationBasedOnRole(String userRole) {
         if (btnAdminPanel != null) {
             if ("ADMIN".equals(userRole)) {
@@ -74,16 +99,13 @@ public class MainMarketController {
                 btnAdminPanel.setDisable(false);
             } else {
                 btnAdminPanel.setVisible(false);
+                btnAdminPanel.setDisable(true);
             }
         }
     }
 
-    /**
-     * 🔀 وظیفه: اکشن کلیک دکمه ادمین جهت باز کردن صفحه دو برگه‌ای ادمین
-     */
     @FXML
     private void handleNavigateToAdmin() {
-        // تغییر مسیر به صفحه FXML جدیدی که ساختی
         NavigationUtils.navigateTo(btnAdminPanel, "/com/secondhand/frontend/view/admin_panel.fxml", "Admin Dashboard");
     }
 }
