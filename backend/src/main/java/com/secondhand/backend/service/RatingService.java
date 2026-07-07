@@ -16,4 +16,7 @@ public interface RatingService {
     List<RatingDto> getSellerRatings(
             Long sellerId
     );
+
+
+    double getSellerAverageScore(Long sellerId);
 }

@@ -133,4 +133,22 @@ public class RatingServiceImpl implements RatingService {
 
                 .build();
     }
+
+    @Override
+    public double getSellerAverageScore(Long sellerId) {
+        User seller = userRepository.findById(sellerId)
+                .orElseThrow(() -> new UserNotFoundException("Seller not found"));
+
+        List<Rating> ratings = ratingRepository.findBySeller(seller);
+        if (ratings.isEmpty()) {
+            return 0.0;
+        }
+
+        return ratings.stream()
+                .mapToInt(Rating::getScore)
+                .average()
+                .orElse(0.0);
+    }
+
+
 }

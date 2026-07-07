@@ -14,25 +14,32 @@ public class RatingController {
 
     private final RatingService ratingService;
 
+    /**
+     * 📥 ثبت امتیاز جدید برای فروشنده توسط خریدار
+     */
     @PostMapping
-    public RatingDto createRating(
-            @RequestParam Long buyerId,
-            @RequestParam Long advertisementId,
-            @RequestParam Integer score,
-            @RequestParam String comment
-    ) {
+    public RatingDto createRating(@RequestBody RatingDto requestDto) {
         return ratingService.createRating(
-                buyerId,
-                advertisementId,
-                score,
-                comment
+                requestDto.getBuyerId(),
+                requestDto.getAdvertisementId(),
+                requestDto.getScore(),
+                requestDto.getComment()
         );
     }
 
+    /**
+     * 📤 دریافت تمام امتیازها و نظرات یک فروشنده بر اساس شناسه او
+     */
     @GetMapping("/seller/{sellerId}")
-    public List<RatingDto> getSellerRatings(
-            @PathVariable Long sellerId
-    ) {
+    public List<RatingDto> getSellerRatings(@PathVariable Long sellerId) {
         return ratingService.getSellerRatings(sellerId);
+    }
+
+    /**
+     * ⭐ دریافت میانگین امتیازهای یک فروشنده
+     */
+    @GetMapping("/seller/{sellerId}/average")
+    public double getSellerAverageScore(@PathVariable Long sellerId) {
+        return ratingService.getSellerAverageScore(sellerId);
     }
 }

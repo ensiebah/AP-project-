@@ -7,14 +7,18 @@ public class AdItem {
     private final String price;
     private final String city;
     private final String category;
+    private final Long sellerId;      // 🟢 اضافه شد برای امتیازدهی
+    private final String sellerName;  // 🟢 اضافه شد برای نمایش نام فروشنده
 
-    public AdItem(String id, String title, String description, String price, String city, String category) {
+    public AdItem(String id, String title, String description, String price, String city, String category, Long sellerId, String sellerName) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.price = price;
         this.city = city;
         this.category = category;
+        this.sellerId = sellerId;
+        this.sellerName = sellerName;
     }
 
     public String getId() {
@@ -40,8 +44,17 @@ public class AdItem {
     public String getCategory() {
         return category;
     }
+
+    public Long getSellerId() {
+        return sellerId;
+    }
+
+    public String getSellerName() {
+        return sellerName;
+    }
+
     @Override
-    public String toString(){
-        return title+" - $"+price+" ["+category+"] ("+city+")" ;
+    public String toString() {
+        return title + " - $" + price + " [" + category + "] (" + city + ")";
     }
 }
