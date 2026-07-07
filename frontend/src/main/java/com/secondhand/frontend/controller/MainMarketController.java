@@ -37,6 +37,9 @@ public class MainMarketController {
         });
 
         Platform.runLater(this::loadActiveAdvertisements);
+
+        // در انتهای متد initialize کلاس MainMarketController
+        configureNavigationBasedOnRole(NetworkClient.userRole);
     }
 
     private void loadActiveAdvertisements() {

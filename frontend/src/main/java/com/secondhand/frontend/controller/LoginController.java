@@ -50,10 +50,10 @@ public class LoginController {
                 MainMarketController marketController = loader.getController();
 
                 if (response.contains("\"role\":\"ADMIN\"")) {
-                    // 👮‍♂️ کاربر ادمین است -> دکمه پنل نمایش داده شود
+                    NetworkClient.userRole = "ADMIN";
                     marketController.configureNavigationBasedOnRole("ADMIN");
                 } else {
-                    // 🧑‍💻 کاربر عادی است -> دکمه پنل کاملاً غیب و غیرفعال شود
+                    NetworkClient.userRole = "USER";
                     marketController.configureNavigationBasedOnRole("USER");
                 }
 

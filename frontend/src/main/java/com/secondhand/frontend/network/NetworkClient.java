@@ -8,6 +8,8 @@ import java.time.Duration;
 
 public class NetworkClient {
 
+    public static String userRole = "USER"; // مقدار پیش‌فرض کاربر عادی
+
     private static final String BASE_URL = "http://localhost:8080/api";
     // توکن امنیتی که پس از لاگین/ثبت‌نام اینجا ذخیره می‌شود تا در درخواست‌های بعدی ارسال شود
     public static String authToken = null;
