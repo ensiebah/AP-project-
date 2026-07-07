@@ -15,4 +15,5 @@ public interface AdvertisementService {
     AdvertisementDto approveAdvertisement(Long id) ;
     AdvertisementDto rejectAdvertisement(Long id) ;
     AdvertisementDto createAdvertisementByUsername(AdvertisementCreateDto dto,String username);
+    List<AdvertisementDto> getAllPendingAdvertisements();
 }

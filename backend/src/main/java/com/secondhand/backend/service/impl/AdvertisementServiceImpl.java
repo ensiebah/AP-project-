@@ -30,15 +30,26 @@ public class AdvertisementServiceImpl implements AdvertisementService {
      * سپس صحت وجود دسته‌بندی و شهر را بررسی کرده و آگهی را با وضعیت PENDING ذخیره می‌کند.
      */
     public AdvertisementDto createAdvertisementByUsername(AdvertisementCreateDto dto, String username) {
-        // پیدا کردن کاربر ثبت‌کننده آگهی از روی نام کاربری دیتابیس
         User seller = userRepository.findByUserName(username)
                 .orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found"));
 
+        // 📁 هوشمندسازی بخش دسته‌بندی: اگر آی‌دی نبود، خودکار آن را با یک نام می‌سازد
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseGet(() -> {
+                    Category newCategory = new Category();
+                    newCategory.setId(dto.getCategoryId());
+                    newCategory.setName("Category " + dto.getCategoryId());
+                    return categoryRepository.save(newCategory);
+                });
 
+        // 🏙️ هوشمندسازی بخش شهر: اگر آی‌دی نبود، خودکار آن را با نام استاندارد ثبت می‌کند
         City city = cityRepository.findById(dto.getCityId())
-                .orElseThrow(() -> new RuntimeException("City not found"));
+                .orElseGet(() -> {
+                    City newCity = new City();
+                    newCity.setId(dto.getCityId());
+                    newCity.setName("City " + dto.getCityId());
+                    return cityRepository.save(newCity);
+                });
 
         Advertisement advertisement = new Advertisement();
         advertisement.setTitle(dto.getTitle());
@@ -47,7 +58,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         advertisement.setSeller(seller);
         advertisement.setCategory(category);
         advertisement.setCity(city);
-        advertisement.setStatus(AdvertisementStatus.PENDING); // طبق داک، ابتدا در انتظار تایید است
+        advertisement.setStatus(AdvertisementStatus.PENDING);
 
         Advertisement saved = advertisementRepository.save(advertisement);
         return mapToDto(saved);
@@ -128,6 +139,14 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .orElseThrow(() -> new RuntimeException("Advertisement not found"));
         advertisement.setStatus(AdvertisementStatus.REJECTED);
         return mapToDto(advertisementRepository.save(advertisement));
+    }
+
+    @Override
+    public List<AdvertisementDto> getAllPendingAdvertisements() {
+        // 💡 نقشه ذهنی: با استفاده از انتیتی وضعیت، تمام آگهی‌های PENDING را از دیتابیس واکشی کرده و به DTO مپ می‌کند.
+        return advertisementRepository.findByStatus(AdvertisementStatus.PENDING).stream()
+                .map(this::mapToDto)
+                .toList();
     }
 
     /**

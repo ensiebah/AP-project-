@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.secondhand.frontend.controller.AdminPanelController"
+      prefWidth="900.0" prefHeight="650.0">
+
+    <padding>
+        <Insets top="15.0" right="15.0" bottom="15.0" left="15.0"/>
+    </padding>
+
+    <Label text="پنل مدیریت سامانه" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+
+    <TabPane fx:id="adminTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <tabs>
+
+            <Tab text="تایید آگهی‌ها">
+                <VBox spacing="10.0">
+                    <padding>
+                        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                    </padding>
+                    <TableView fx:id="pendingTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="idColumn" text="آی‌دی" prefWidth="60.0" />
+                            <TableColumn fx:id="titleColumn" text="عنوان آگهی" prefWidth="250.0" />
+                            <TableColumn fx:id="priceColumn" text="قیمت" prefWidth="120.0" />
+                            <TableColumn fx:id="sellerColumn" text="فروشنده" prefWidth="150.0" />
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                        <Button text="رد کردن" onAction="#handleReject" style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+                        <Button text="تایید و انتشار" onAction="#handleApprove" style="-fx-background-color: #2ecc71; -fx-text-fill: white;"/>
+                    </HBox>
+                </VBox>
+            </Tab>
+
+            <Tab text="مدیریت کاربران">
+                <VBox spacing="10.0" alignment="CENTER">
+                    <padding>
+                        <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
+                    </padding>
+                    <Label text="لیست کاربران و قابلیت مسدودسازی در این برگه قرار می‌گیرد." style="-fx-font-style: italic;"/>
+                </VBox>
+            </Tab>
+
+        </tabs>
+    </TabPane>
+</VBox>
