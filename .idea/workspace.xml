@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ff106288-4ee5-4916-84b0-2d67a2b76cb0" name="Changes" comment="Merge branch 'main' of https://github.com/ensiebah/AP-project-&#10;&#10;# Conflicts:&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AdvertisementNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AlreadyRatedException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CategoryNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CityNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/ConversationNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/FavoriteNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/MessageNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/RatingNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/UnauthorizedAdvertisementAccessException.java&#10;#&#9;backend/src/main/resources/fxml/login.fxml&#10;#&#9;backend/src/main/resources/import.sql">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="ff106288-4ee5-4916-84b0-2d67a2b76cb0" name="Changes" comment="Merge branch 'main' of https://github.com/ensiebah/AP-project-&#10;&#10;# Conflicts:&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AdvertisementNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AlreadyRatedException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CategoryNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CityNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/ConversationNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/FavoriteNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/MessageNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/RatingNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/UnauthorizedAdvertisementAccessException.java&#10;#&#9;backend/src/main/resources/fxml/login.fxml&#10;#&#9;backend/src/main/resources/import.sql" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -99,7 +96,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "Shell Script.gradlew.executor": "Run",
     "Spring Boot.SecondHandBackendApplication.executor": "Run",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "Rebasing main",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/java/Ap",
@@ -201,10 +198,26 @@
       <workItem from="1783291298511" duration="1492000" />
       <workItem from="1783292898961" duration="619000" />
       <workItem from="1783293757012" duration="552000" />
+      <workItem from="1783376784373" duration="719000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="my_chat_code" />
+    <option name="LAST_COMMIT_MESSAGE" value="my_chat_code" />
   </component>
 </project>

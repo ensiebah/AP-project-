@@ -1,11 +1,13 @@
 package com.secondhand.backend.controller;
 
 import com.secondhand.backend.dto.ConversationDto;
+import com.secondhand.backend.entity.User;
+import com.secondhand.backend.repository.UserRepository;
 import com.secondhand.backend.service.ConversationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -14,27 +16,33 @@ import java.util.List;
 public class ConversationController {
 
     private final ConversationService conversationService;
+    private final UserRepository userRepository;
 
-    // 👈 اصلاح: استفاده از ResponseEntity برای مدیریت خطاهای احتمالی (مثل بلاک بودن)
-    @PostMapping
+    // ایجاد چت جدید بر اساس شناسه آگهی و توکن کاربر لاگین شده
+    @PostMapping("/ad/{advertisementId}")
     public ResponseEntity<?> createConversation(
-            @RequestParam Long buyerId,
-            @RequestParam Long advertisementId
+            @PathVariable Long advertisementId,
+            Principal principal
     ) {
         try {
-            ConversationDto conversation = conversationService.createConversation(buyerId, advertisementId);
-            return ResponseEntity.ok(conversation); // بازگشت وضعیت 200 به همراه داده
+            User currentUser = userRepository.findByUserName(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+            ConversationDto conversation = conversationService.createConversation(currentUser.getId(), advertisementId);
+            return ResponseEntity.ok(conversation);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage()); // بازگشت وضعیت 400 در صورت بروز خطا
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ConversationDto>> getUserConversations(
-            @PathVariable Long userId
-    ) {
+    // دریافت لیست کامل چت‌های کاربر فعلی
+    @GetMapping("/my-chats")
+    public ResponseEntity<List<ConversationDto>> getUserConversations(Principal principal) {
         try {
-            List<ConversationDto> conversations = conversationService.getUserConversations(userId);
+            User currentUser = userRepository.findByUserName(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+
+            List<ConversationDto> conversations = conversationService.getUserConversations(currentUser.getId());
             return ResponseEntity.ok(conversations);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

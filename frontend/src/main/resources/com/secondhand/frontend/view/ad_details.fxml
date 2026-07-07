@@ -25,7 +25,8 @@
                 <ColumnConstraints minWidth="100" />
                 <ColumnConstraints minWidth="200"/>
             </columnConstraints>
-
+        <Button fx:id="chatWithSellerBtn" text="Chat with Seller" onAction="#handleChatWithSeller"
+                style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;"/>
     <Label text="Price: " GridPane.rowIndex="0" GridPane.columnIndex="0"/>
     <Label fx:id="priceLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 

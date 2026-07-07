@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox spacing="15" prefWidth="750" prefHeight="500" xmlns="http://javafx.com/fxml/1"
+      fx:controller="com.secondhand.frontend.controller.SearchController">
