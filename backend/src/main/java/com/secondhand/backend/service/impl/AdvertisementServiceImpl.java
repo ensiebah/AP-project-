@@ -24,16 +24,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     private final CategoryRepository categoryRepository;
     private final CityRepository cityRepository;
 
-    /**
-     * 🟢 وظیفه: متد جدید برای ساخت آگهی بر اساس نام کاربری استخراج شده از JWT
-     * 🔍 نقشه ذهنی: ابتدا کاربر را بر اساس یوزرنیم یکتایش پیدا می‌کند،
-     * سپس صحت وجود دسته‌بندی و شهر را بررسی کرده و آگهی را با وضعیت PENDING ذخیره می‌کند.
-     */
+    @Override
     public AdvertisementDto createAdvertisementByUsername(AdvertisementCreateDto dto, String username) {
         User seller = userRepository.findByUserName(username)
                 .orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found"));
 
-        // 📁 هوشمندسازی بخش دسته‌بندی: اگر آی‌دی نبود، خودکار آن را با یک نام می‌سازد
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseGet(() -> {
                     Category newCategory = new Category();
@@ -42,7 +37,6 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                     return categoryRepository.save(newCategory);
                 });
 
-        // 🏙️ هوشمندسازی بخش شهر: اگر آی‌دی نبود، خودکار آن را با نام استاندارد ثبت می‌کند
         City city = cityRepository.findById(dto.getCityId())
                 .orElseGet(() -> {
                     City newCity = new City();
@@ -64,7 +58,6 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return mapToDto(saved);
     }
 
-    // این متد قدیمی را جهت سازگاری با اینترفیس حفظ می‌کنیم
     @Override
     public AdvertisementDto createAdvertisement(AdvertisementCreateDto dto, Long sellerId) {
         User seller = userRepository.findById(sellerId)
@@ -128,7 +121,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return advertisementRepository
                 .findByTitleContainingIgnoreCase(keyword)
                 .stream()
-                .filter(ad->ad.getStatus()== AdvertisementStatus.ACTIVE)
+                .filter(ad -> ad.getStatus() == AdvertisementStatus.ACTIVE)
                 .map(this::mapToDto)
                 .toList();
     }
@@ -143,15 +136,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     @Override
     public List<AdvertisementDto> getAllPendingAdvertisements() {
-        // 💡 نقشه ذهنی: با استفاده از انتیتی وضعیت، تمام آگهی‌های PENDING را از دیتابیس واکشی کرده و به DTO مپ می‌کند.
         return advertisementRepository.findByStatus(AdvertisementStatus.PENDING).stream()
                 .map(this::mapToDto)
                 .toList();
     }
 
-    /**
-     * 🔄 وظیفه: تبدیل انتیتی پایگاه داده (Entity) به دی‌تی‌او خروجی (DTO) برای ارسال به فرانت‌آند
-     */
     private AdvertisementDto mapToDto(Advertisement advertisement) {
         return AdvertisementDto.builder()
                 .id(advertisement.getId())
