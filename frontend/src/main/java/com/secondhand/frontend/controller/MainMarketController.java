@@ -24,6 +24,14 @@ public class MainMarketController {
 
     @FXML
     public void initialize() {
+        // 🔴 حل باگ: دکمه ادمین در ثانیه اول لود صفحه کاملاً مخفی و غیرفعال می‌شود
+        // تا بعداً بر اساس نقش کاربر (USER یا ADMIN) تعیین تکلیف شود
+        if (btnAdminPanel != null) {
+            btnAdminPanel.setVisible(false);
+            btnAdminPanel.setDisable(true);
+        }
+
+        // تنظیم ساختار نمایش آیتم‌های لیست آگهی‌ها
         adListView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(AdvertisementDto item, boolean empty) {
@@ -36,6 +44,7 @@ public class MainMarketController {
             }
         });
 
+        // اجرای امن متد لود پس از رندر کامل کامپوننت‌های JavaFX
         Platform.runLater(this::loadActiveAdvertisements);
     }
 

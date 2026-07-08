@@ -21,25 +21,20 @@
     <Separator/>
 
     <GridPane vgap="10" hgap="20">
-        <columnConstraints>
-            <ColumnConstraints minWidth="100" />
-            <ColumnConstraints minWidth="200"/>
-        </columnConstraints>
+            <columnConstraints>
+                <ColumnConstraints minWidth="100" />
+                <ColumnConstraints minWidth="200"/>
+            </columnConstraints>
+        <Button fx:id="chatWithSellerBtn" text="Chat with Seller" onAction="#handleChatWithSeller"
+                style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;"/>
+    <Label text="Price: " GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <Label fx:id="priceLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-        <Label text="Price: " GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
-        <Label fx:id="priceLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-
-        <Label text="City: " GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
-        <Label fx:id="cityLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    <Label text="City: " GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <Label fx:id="cityLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
         <Label text="Category:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
         <Label fx:id="categoryLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-
-        <Label text="Seller:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
-        <Label fx:id="sellerLabel" GridPane.rowIndex="3" GridPane.columnIndex="1" text="Loading..."/>
-
-        <Label text="Seller Rating:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
-        <Label fx:id="ratingLabel" GridPane.rowIndex="4" GridPane.columnIndex="1" text="No ratings yet" style="-fx-text-fill: #f39c12; -fx-font-weight: bold;"/>
     </GridPane>
 
     <Separator/>
@@ -47,7 +42,6 @@
     <TextArea fx:id="descriptionArea" editable="false" wrapText="true" style="-fx-pref-height: 100;"/>
 
     <HBox spacing="10" alignment="BASELINE_RIGHT">
-        <Button text="Rate this Seller" onAction="#handleRateSeller" style="-fx-background-color: #f1c40f; -fx-text-fill: #2c3e50; -fx-font-weight: bold;"/>
         <Button text="Back to Market" onAction="#handleBack"/>
     </HBox>
 

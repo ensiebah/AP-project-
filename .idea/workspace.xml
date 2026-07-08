@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ff106288-4ee5-4916-84b0-2d67a2b76cb0" name="Changes" comment="ADMIN PANEL CREATED" />
+    <list default="true" id="ff106288-4ee5-4916-84b0-2d67a2b76cb0" name="Changes" comment="Merge branch 'main' of https://github.com/ensiebah/AP-project-&#10;&#10;# Conflicts:&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AdvertisementNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AlreadyRatedException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CategoryNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CityNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/ConversationNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/FavoriteNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/MessageNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/RatingNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/UnauthorizedAdvertisementAccessException.java&#10;#&#9;backend/src/main/resources/fxml/login.fxml&#10;#&#9;backend/src/main/resources/import.sql" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -69,18 +69,6 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;Rian-mk&quot;
-  }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/ensiebah/AP-project-.git&quot;,
-    &quot;accountId&quot;: &quot;2e95d4cd-abff-439d-ad9f-9eddd881b830&quot;
-  }
-}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -92,38 +80,38 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.Build Ap.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build secondhand-backend.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.D:/java/Ap [clean].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;Shell Script.gradlew.executor&quot;: &quot;Run&quot;,
-    &quot;Spring Boot.SecondHandBackendApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Reihaneh/Desktop/Java Projects/Project/AP-project-&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;project.scopes&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.Build Ap.executor": "Run",
+    "Gradle.Build secondhand-backend.executor": "Run",
+    "Gradle.D:/java/Ap [clean].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Shell Script.gradlew.executor": "Run",
+    "Spring Boot.SecondHandBackendApplication.executor": "Run",
+    "git-widget-placeholder": "Rebasing main",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/java/Ap",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "project.scopes",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="Gradle.D:/java/Ap [clean]">
     <configuration name="D:/java/Ap [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
@@ -210,34 +198,26 @@
       <workItem from="1783291298511" duration="1492000" />
       <workItem from="1783292898961" duration="619000" />
       <workItem from="1783293757012" duration="552000" />
-      <workItem from="1783375900979" duration="2129000" />
-      <workItem from="1783422887246" duration="515000" />
+      <workItem from="1783376784373" duration="719000" />
     </task>
-    <task id="LOCAL-00001" summary="CREATE AD DONE">
-      <option name="closed" value="true" />
-      <created>1783375932759</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1783375932759</updated>
-    </task>
-    <task id="LOCAL-00002" summary="ADMIN PANEL CREATED">
-      <option name="closed" value="true" />
-      <created>1783422913404</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1783422913404</updated>
-    </task>
-    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="CREATE AD DONE" />
-    <MESSAGE value="ADMIN PANEL CREATED" />
-    <option name="LAST_COMMIT_MESSAGE" value="ADMIN PANEL CREATED" />
+    <MESSAGE value="my_chat_code" />
+    <option name="LAST_COMMIT_MESSAGE" value="my_chat_code" />
   </component>
 </project>

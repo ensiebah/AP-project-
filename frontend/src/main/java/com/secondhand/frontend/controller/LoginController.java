@@ -3,14 +3,9 @@ package com.secondhand.frontend.controller;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.util.NavigationUtils;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
-import java.io.IOException;
 
 public class LoginController {
 
@@ -43,29 +38,20 @@ public class LoginController {
                 NetworkClient.authToken = token;
             }
 
-            try {
-                // 🟢 یکسان‌سازی ناوبری برای ادمین و کاربر عادی جهت مدیریت قاطع دکمه ادمین دشبورد
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/secondhand/frontend/view/main_market.fxml"));
-                Parent root = loader.load();
-                MainMarketController marketController = loader.getController();
+            // 🟢 ۱. ناوبری استاندارد و یکپارچه به صفحه مارکت با استفاده از ابزار ناوبری خودتان
+            MainMarketController marketController = NavigationUtils.navigateTo(
+                    usernameField,
+                    "/com/secondhand/frontend/view/main_market.fxml",
+                    "SecondHand Market - SHOP"
+            );
 
+            // 🟢 ۲. بررسی هوشمند نقش کاربر و اعمال روی کنترلر مارکت جهت رفع قاطع باگ دکمه ادمین
+            if (marketController != null) {
                 if (response.contains("\"role\":\"ADMIN\"")) {
-                    // 👮‍♂️ کاربر ادمین است -> دکمه پنل نمایش داده شود
                     marketController.configureNavigationBasedOnRole("ADMIN");
                 } else {
-                    // 🧑‍💻 کاربر عادی است -> دکمه پنل کاملاً غیب و غیرفعال شود
                     marketController.configureNavigationBasedOnRole("USER");
                 }
-
-                Stage stage = (Stage) usernameField.getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.setTitle("SecondHand Market - SHOP");
-                stage.show();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                messageLabel.setStyle("-fx-text-fill: red;");
-                messageLabel.setText("Error loading main market page.");
             }
 
         } else {

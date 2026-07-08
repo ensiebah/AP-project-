@@ -1,32 +1,58 @@
 package com.secondhand.frontend.util;
 
+import com.secondhand.frontend.dto.ConversationDto;
+import com.secondhand.frontend.controller.ChatController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Control;
 import javafx.stage.Stage;
-import javafx.scene.Node;
+import java.io.IOException;
 
 public class NavigationUtils {
 
-    /**
-     * 🔀 متد ناوبری هوشمند با قابلیت بازگرداندن کنترلر صفحه مقصد
-     */
-    public static <T> T navigateTo(Node node, String fxmlPath, String title) {
+    public static <T> T navigateTo(Control control, String fxmlPath, String title) {
         try {
+            Stage stage = (Stage) control.getScene().getWindow();
+
+            // ۱. ساخت اسمی لودر برای دسترسی به کنترلر
             FXMLLoader loader = new FXMLLoader(NavigationUtils.class.getResource(fxmlPath));
             Parent root = loader.load();
 
-            Stage stage = (Stage) node.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle(title);
             stage.show();
 
-            // 🟢 بازگرداندن کنترلر لود شده به جای void برای حل خطای اینکامپتیبل تایپ
+            // ۲. بازگرداندن کنترلر صفحه جدید
             return loader.getController();
 
-        } catch (Exception e) {
+        } catch (IOException e) {
+            System.err.println("ERROR IN LOADING FXML FILE :" + fxmlPath);
             e.printStackTrace();
             return null;
+        }
+    }
+
+    // 👈 متد جدیدی که باید اضافه کنی تا پنجره چت را باز کند
+    public static void openChatBox(ConversationDto conversation) {
+        try {
+            // ۱. ساخت لودر برای فایل fxml چت‌باکس
+            FXMLLoader loader = new FXMLLoader(NavigationUtils.class.getResource("/com/secondhand/frontend/view/chat_box.fxml"));
+            Parent root = loader.load();
+
+            // ۲. بیرون کشیدن کنترلر صفحه چت‌باکس جهت پاس دادن اطلاعات مکالمه
+            ChatController controller = loader.getController();
+            controller.setConversationData(conversation);
+
+            // ۳. باز کردن چت در یک پنجره (Stage) جدید و مستقل
+            Stage stage = new Stage();
+            stage.setTitle("Chat Room - " + conversation.getAdvertisementTitle());
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (IOException e) {
+            System.err.println("ERROR IN LOADING CHAT FXML FILE!");
+            e.printStackTrace();
         }
     }
 }
