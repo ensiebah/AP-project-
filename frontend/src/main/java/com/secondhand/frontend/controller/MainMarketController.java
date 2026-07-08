@@ -37,6 +37,7 @@ public class MainMarketController {
         });
 
         Platform.runLater(this::loadActiveAdvertisements);
+        configureNavigationBasedOnRole(NetworkClient.userRole);
     }
 
     private void loadActiveAdvertisements() {

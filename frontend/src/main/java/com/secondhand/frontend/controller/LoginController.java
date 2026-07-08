@@ -44,18 +44,19 @@ public class LoginController {
             }
 
             try {
-                // 🟢 یکسان‌سازی ناوبری برای ادمین و کاربر عادی جهت مدیریت قاطع دکمه ادمین دشبورد
+                // 🟢 ۱. ابتدا شناسایی و ست کردن قطعی نقش کاربر در حافظه سراسری
+                String upperResponse = response.toUpperCase();
+                if (upperResponse.contains("ADMIN")) {
+                    NetworkClient.userRole = "ADMIN";
+                    System.out.println("🟢 Registered in Session: ADMIN");
+                } else {
+                    NetworkClient.userRole = "USER";
+                    System.out.println("🔵 Registered in Session: USER");
+                }
+
+                // 🟢 ۲. حالا لود کردن صفحه بازار (در این حالت متد initialize مقدار درست را خواهد خواند)
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/secondhand/frontend/view/main_market.fxml"));
                 Parent root = loader.load();
-                MainMarketController marketController = loader.getController();
-
-                if (response.contains("\"role\":\"ADMIN\"")) {
-                    // 👮‍♂️ کاربر ادمین است -> دکمه پنل نمایش داده شود
-                    marketController.configureNavigationBasedOnRole("ADMIN");
-                } else {
-                    // 🧑‍💻 کاربر عادی است -> دکمه پنل کاملاً غیب و غیرفعال شود
-                    marketController.configureNavigationBasedOnRole("USER");
-                }
 
                 Stage stage = (Stage) usernameField.getScene().getWindow();
                 stage.setScene(new Scene(root));

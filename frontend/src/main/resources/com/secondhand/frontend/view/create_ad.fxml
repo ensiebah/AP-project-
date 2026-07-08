@@ -18,21 +18,18 @@
 
     <TextField fx:id="titleField" promptText="Ad Title (e.g., iPhone 13)"/>
 
-    <!-- تغییر دادیم به TextField تا فعلاً با کدهای بک‌اِند جفت شود و ارور ندهد -->
-    <TextField fx:id="categoryIdField" promptText="Category ID (e.g., 1)"/>
+    <ComboBox fx:id="categoryComboBox" promptText="Select Category" style="-fx-pref-width: 400;"/>
 
     <TextField fx:id="priceField" promptText="Price (in USD)"/>
 
-    <TextField fx:id="cityIdField" promptText="City ID (e.g., 1)"/>
+    <ComboBox fx:id="cityComboBox" promptText="Select City" style="-fx-pref-width: 400;"/>
 
     <TextArea fx:id="descriptionArea" promptText="Describe your item in detail..." wrapText="true" style="-fx-pref-height: 120;"/>
 
-    <!-- لایبل نمایش خطاها به کاربر -->
     <Label fx:id="errorLabel" style="-fx-text-fill: red;"/>
 
-    <!-- دکمه‌ها همراه با اکشن‌های متناظر در کنترلر جاوا -->
     <HBox spacing="10">
-        <Button text="Publish Ad" onAction="#handleSaveAdvertisement"/>
+        <Button text="Publish Ad" onAction="#handleSaveAdvertisement" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;"/>
         <Button text="Cancel" onAction="#goBackToMarket"/>
     </HBox>
 </VBox>
