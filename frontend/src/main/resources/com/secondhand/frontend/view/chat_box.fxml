@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="10" prefWidth="400" prefHeight="500" xmlns="http://javafx.com/fxml/1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.secondhand.frontend.controller.ChatController">
+<VBox spacing="10" prefWidth="400" prefHeight="500" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.secondhand.frontend.controller.ChatController">
 
     <padding>
         <Insets top="10" right="10" bottom="10" left="10"/>

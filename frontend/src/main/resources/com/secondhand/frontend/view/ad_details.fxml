@@ -21,28 +21,32 @@
     <Separator/>
 
     <GridPane vgap="10" hgap="20">
-            <columnConstraints>
-                <ColumnConstraints minWidth="100" />
-                <ColumnConstraints minWidth="200"/>
-            </columnConstraints>
-        <Button fx:id="chatWithSellerBtn" text="Chat with Seller" onAction="#handleChatWithSeller"
-                style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;"/>
-    <Label text="Price: " GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-    <Label fx:id="priceLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <columnConstraints>
+            <ColumnConstraints minWidth="100" />
+            <ColumnConstraints minWidth="200"/>
+        </columnConstraints>
 
-    <Label text="City: " GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-    <Label fx:id="cityLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <Label text="Price: " GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+        <Label fx:id="priceLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="City: " GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+        <Label fx:id="cityLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
         <Label text="Category:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
         <Label fx:id="categoryLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
     </GridPane>
 
     <Separator/>
+
     <Label text="Description: " style="-fx-font-weight: bold;" />
     <TextArea fx:id="descriptionArea" editable="false" wrapText="true" style="-fx-pref-height: 100;"/>
 
-    <HBox spacing="10" alignment="BASELINE_RIGHT">
-        <Button text="Back to Market" onAction="#handleBack"/>
+    <HBox spacing="15" alignment="CENTER_RIGHT">
+        <Button fx:id="chatWithSellerBtn" text="Chat with Seller" onAction="#handleChatWithSeller"
+                style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15 8 15;"/>
+
+        <Button text="Back to Market" onAction="#handleBack"
+                style="-fx-padding: 8 15 8 15;"/>
     </HBox>
 
 </VBox>

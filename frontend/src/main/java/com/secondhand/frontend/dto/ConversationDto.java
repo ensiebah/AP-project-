@@ -45,5 +45,33 @@ package com.secondhand.frontend.dto;
         public Long getId() {
             return id ;
         }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public void setBuyerId(Long buyerId) {
+            this.buyerId = buyerId;
+        }
+
+        public void setBuyerUsername(String buyerUsername) {
+            this.buyerUsername = buyerUsername;
+        }
+
+        public void setSellerId(Long sellerId) {
+            this.sellerId = sellerId;
+        }
+
+        public void setSellerUsername(String sellerUsername) {
+            this.sellerUsername = sellerUsername;
+        }
+
+        public void setAdvertisementId(Long advertisementId) {
+            this.advertisementId = advertisementId;
+        }
+
+        public void setAdvertisementTitle(String advertisementTitle) {
+            this.advertisementTitle = advertisementTitle;
+        }
     }
 

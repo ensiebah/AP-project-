@@ -7,13 +7,13 @@ import javafx.scene.control.*;
 
 public class CreateAdController {
 
-    // 🎯 فیلدها دقیقاً با fx:id های فایل FXML شما هماهنگ شده‌اند
+    // 🎯 فیلدها دقیقاً با fx:id های فایل FXML شما هماهنگ هستند
     @FXML private TextField titleField;
     @FXML private TextField categoryIdField;
     @FXML private TextField priceField;
     @FXML private TextField cityIdField;
     @FXML private TextArea descriptionArea;
-    @FXML private Label errorLabel; // لایبل نمایش پیام‌ها که در FXML فرستادی
+    @FXML private Label errorLabel; // لایبل نمایش پیام‌ها
 
     /**
      * 🟢 وظیفه: جمع‌آوری داده‌ها، تبدیل به JSON و ارسال به بک‌آند هنگام کلیک روی Publish Ad
@@ -47,11 +47,14 @@ public class CreateAdController {
             return;
         }
 
-        // 🎯 اصلاح اصلی: استفاده از Locale.US برای جلوگیری از تولید کاما (,) به جای نقطه (.) در قیمت
+        // 💡 اصلاح کلیدی: ارسال لینک عکس پیش‌فرض برای حل باگ لود نشدن جزئیات آگهی
+        String defaultImageUrl = "https://picsum.photos/400/200";
+
+        // استفاده از Locale.US برای جلوگیری از تولید کاما (,) به جای نقطه (.) در ویندوزهای فارسی/اروپایی
         String jsonRequest = String.format(
                 java.util.Locale.US,
-                "{\"title\":\"%s\",\"description\":\"%s\",\"price\":%.2f,\"categoryId\":%d,\"cityId\":%d}",
-                title, description, price, categoryId, cityId
+                "{\"title\":\"%s\",\"description\":\"%s\",\"price\":%.2f,\"categoryId\":%d,\"cityId\":%d,\"imageUrl\":\"%s\"}",
+                title, description, price, categoryId, cityId, defaultImageUrl
         );
 
         String response = NetworkClient.sendPostRequest("/advertisements/create", jsonRequest);
@@ -60,6 +63,7 @@ public class CreateAdController {
             errorLabel.setStyle("-fx-text-fill: green;");
             errorLabel.setText("Advertisement published successfully! Awaiting admin approval.");
 
+            // پاک کردن فرم پس از موفقیت
             titleField.clear();
             categoryIdField.clear();
             priceField.clear();
@@ -67,7 +71,6 @@ public class CreateAdController {
             descriptionArea.clear();
         } else {
             errorLabel.setStyle("-fx-text-fill: red;");
-            // راهنمایی دقیق‌تر به کاربر در صورت بروز خطا از سمت دیتابیس
             errorLabel.setText("Failed to publish. Ensure Category/City IDs exist in database.");
         }
     }
@@ -78,7 +81,6 @@ public class CreateAdController {
      */
     @FXML
     public void goBackToMarket() {
-        // تغییر مسیر دقیقاً به پوشه view شما برای هماهنگی با کدهای پروژه
         NavigationUtils.navigateTo(titleField, "/com/secondhand/frontend/view/main_market.fxml", "SecondHand Market");
     }
 }
