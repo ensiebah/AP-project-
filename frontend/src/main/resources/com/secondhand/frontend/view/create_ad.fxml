@@ -2,17 +2,18 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.secondhand.frontend.controller.CreateAdController"
       spacing="15"
       alignment="CENTER_LEFT"
-      style="-fx-pref-width: 450; -fx-pref-height: 520;">
-    <padding>
-        <Insets top="30" right="30" bottom="30" left="30"/>
-    </padding>
+      style="-fx-pref-width: 450; -fx-pref-height: 600;"> <padding>
+    <Insets top="20" right="30" bottom="20" left="30"/>
+</padding>
 
     <Label text="Post a New Advertisement" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
 
@@ -24,7 +25,14 @@
 
     <ComboBox fx:id="cityComboBox" promptText="Select City" style="-fx-pref-width: 400;"/>
 
-    <TextArea fx:id="descriptionArea" promptText="Describe your item in detail..." wrapText="true" style="-fx-pref-height: 120;"/>
+    <TextArea fx:id="descriptionArea" promptText="Describe your item in detail..." wrapText="true" style="-fx-pref-height: 100;"/>
+
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <Button text="Choose Image" onAction="#handleSelectImage" style="-fx-background-color: #34495e; -fx-text-fill: white;"/>
+        <StackPane style="-fx-background-color: #eee; -fx-border-color: #ddd; -fx-min-width: 80; -fx-min-height: 60; -fx-max-width: 80; -fx-max-height: 60;">
+            <ImageView fx:id="imagePreview" fitWidth="78" fitHeight="58" preserveRatio="true"/>
+        </StackPane>
+    </HBox>
 
     <Label fx:id="errorLabel" style="-fx-text-fill: red;"/>
 

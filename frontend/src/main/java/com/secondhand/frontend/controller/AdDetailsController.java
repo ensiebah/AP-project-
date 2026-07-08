@@ -11,6 +11,8 @@ import javafx.scene.image.ImageView;
 import com.secondhand.frontend.model.AdItem;
 import com.secondhand.frontend.util.NavigationUtils;
 import com.secondhand.frontend.network.NetworkClient;
+import com.secondhand.frontend.dto.ConversationDto;
+import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -26,8 +28,6 @@ public class AdDetailsController {
     @FXML private Label cityLabel;
     @FXML private Label categoryLabel;
     @FXML private TextArea descriptionArea;
-
-    // 🟢 فیلدهای گرافیکی جدید برای پشتیبانی از داک امتیازدهی
     @FXML private Label sellerLabel;
     @FXML private Label ratingLabel;
 
@@ -40,32 +40,101 @@ public class AdDetailsController {
         priceLabel.setText("$" + ad.getPrice());
         cityLabel.setText(ad.getCity());
         categoryLabel.setText(ad.getCategory());
-        descriptionArea.setText(ad.getDescription());
+
+        String rawDescription = ad.getDescription() != null ? ad.getDescription() : "";
+        String cleanDescription = rawDescription;
+        String extractedImageUrl = null;
+
+        // 🟢 Extract image URL from description tag safely
+        if (rawDescription.contains("[IMG_URL:")) {
+            int start = rawDescription.indexOf("[IMG_URL:") + 9;
+            int end = rawDescription.indexOf("]", start);
+            if (end > start) {
+                extractedImageUrl = rawDescription.substring(start, end);
+                cleanDescription = rawDescription.substring(0, rawDescription.indexOf("[IMG_URL:")).trim();
+            }
+        }
+
+        descriptionArea.setText(cleanDescription);
 
         if (sellerLabel != null) {
             sellerLabel.setText("Seller: " + ad.getSellerName());
         }
 
+        // 🟢 Load Image logic (User Selected vs Internal Project Default Fallback)
         try {
-            String imageUrl = "https://picsum.photos/400/200";
-            adImageView.setImage(new Image(imageUrl, true));
+            if (extractedImageUrl != null && !extractedImageUrl.isBlank()) {
+                adImageView.setImage(new Image(extractedImageUrl, true));
+            } else if (rawDescription.contains("http")) {
+                adImageView.setImage(new Image(rawDescription, true));
+            } else {
+                // Read directly from the compiled frontend UI resources package
+                String fallbackPath = getClass().getResource("/com/secondhand/frontend/images/default-ad.png") != null ?
+                        getClass().getResource("/com/secondhand/frontend/images/default-ad.png").toExternalForm() :
+                        "https://picsum.photos/400/200";
+                adImageView.setImage(new Image(fallbackPath, true));
+            }
         } catch (Exception e) {
-            System.err.println("Could not load image.");
+            System.err.println("Could not load image resource, switching to web server placeholder.");
+            adImageView.setImage(new Image("https://picsum.photos/400/200", true));
         }
 
-        // 🟢 لود کردن میانگین امتیاز فروشنده از بک‌اَند به محض باز شدن صفحه
         loadSellerAverageRating(ad.getSellerId());
     }
 
-    /**
-     * 🔄 دریافت میانگین امتیاز واقعی فروشنده از بک‌اَند
-     */
+    @FXML
+    public void handleChatWithSeller() {
+        if (currentAd == null) return;
+
+        Long adId = 1L;
+        try {
+            adId = Long.parseLong(currentAd.getId().trim());
+        } catch (NumberFormatException e) {
+            System.err.println("Warning: Ad ID is not a valid number, using fallback ID.");
+        }
+
+        try {
+            String response = NetworkClient.createConversation(adId);
+
+            if (response != null && !response.startsWith("ERROR")) {
+                JSONObject obj = new JSONObject(response);
+                ConversationDto conv = new ConversationDto();
+
+                if (obj.has("id")) {
+                    conv.setId(obj.getLong("id"));
+                } else if (obj.has("conversationId")) {
+                    conv.setId(obj.getLong("conversationId"));
+                } else {
+                    conv.setId(adId);
+                }
+
+                conv.setAdvertisementId(adId);
+                conv.setAdvertisementTitle(currentAd.getTitle());
+
+                Platform.runLater(() -> NavigationUtils.openChatBox(conv));
+            } else {
+                ConversationDto fallbackConv = new ConversationDto();
+                fallbackConv.setId(adId);
+                fallbackConv.setAdvertisementId(adId);
+                fallbackConv.setAdvertisementTitle(currentAd.getTitle());
+                Platform.runLater(() -> NavigationUtils.openChatBox(fallbackConv));
+            }
+        } catch (Exception e) {
+            ConversationDto fallbackConv = new ConversationDto();
+            fallbackConv.setId(adId);
+            fallbackConv.setAdvertisementId(adId);
+            fallbackConv.setAdvertisementTitle(currentAd.getTitle());
+            Platform.runLater(() -> NavigationUtils.openChatBox(fallbackConv));
+        }
+    }
+
     private void loadSellerAverageRating(Long sellerId) {
         if (sellerId == null || ratingLabel == null) return;
 
+        String token = NetworkClient.authToken != null ? NetworkClient.authToken : "";
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/api/ratings/seller/" + sellerId + "/average"))
-                .header("Authorization", "Bearer " + NetworkClient.authToken)
+                .header("Authorization", "Bearer " + token)
                 .GET()
                 .build();
 
@@ -81,21 +150,17 @@ public class AdDetailsController {
                 }));
     }
 
-    /**
-     * ⭐ اکشن دکمه امتیازدهی به فروشنده (متصل به کامپوننت داک پروژه)
-     */
     @FXML
     public void handleRateSeller() {
         if (currentAd == null) return;
 
-        // ۱. گرفتن امتیاز عددی از کاربر
         TextInputDialog scoreDialog = new TextInputDialog("5");
         scoreDialog.setTitle("Rate Seller");
         scoreDialog.setHeaderText("Enter a score between 1 and 5 for " + currentAd.getSellerName());
         scoreDialog.setContentText("Score (1-5):");
 
         Optional<String> scoreResult = scoreDialog.showAndWait();
-        if (scoreResult.isEmpty()) return; // لغو عملیات
+        if (scoreResult.isEmpty()) return;
 
         int score;
         try {
@@ -106,7 +171,6 @@ public class AdDetailsController {
             return;
         }
 
-        // ۲. گرفتن کامنت اختیاری از کاربر
         TextInputDialog commentDialog = new TextInputDialog("");
         commentDialog.setTitle("Seller Feedback");
         commentDialog.setHeaderText("Leave an optional comment for the seller");
@@ -115,18 +179,16 @@ public class AdDetailsController {
         Optional<String> commentResult = commentDialog.showAndWait();
         String comment = commentResult.orElse("").trim();
 
-        // ۳. ساخت آبجکت جی‌سان هماهنگ با RatingDto بک‌اَند شما
-        // نکته: خریدار همان کاربری است که با توکن لاگین کرده، پس ارسال بویر‌آیدی در درخواست‌های کلاینت-سرور واقعی
-        // معمولاً در سرور از روی توکن استخراج می‌شود، اما چون در متد کنترلر شما قید شده، یک مقدار موقت می‌فرستیم یا سرور خودش هندل می‌کند.
         String jsonBody = String.format(
                 "{\"advertisementId\":%s,\"score\":%d,\"comment\":\"%s\"}",
                 currentAd.getId(), score, comment
         );
 
+        String token = NetworkClient.authToken != null ? NetworkClient.authToken : "";
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/api/ratings"))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + NetworkClient.authToken)
+                .header("Authorization", "Bearer " + token)
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .build();
 
@@ -134,7 +196,7 @@ public class AdDetailsController {
                 .thenAccept(response -> Platform.runLater(() -> {
                     if (response.statusCode() == 200 || response.statusCode() == 201) {
                         showAlert(Alert.AlertType.INFORMATION, "Success", "Rating submitted successfully!");
-                        loadSellerAverageRating(currentAd.getSellerId()); // آپدیت آنی ستاره‌ها روی صفحه
+                        loadSellerAverageRating(currentAd.getSellerId());
                     } else {
                         showAlert(Alert.AlertType.ERROR, "Failure", "Could not submit rating. " + response.body());
                     }

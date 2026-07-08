@@ -5,10 +5,15 @@ import com.secondhand.frontend.util.NavigationUtils;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -22,18 +27,15 @@ public class CreateAdController {
     @FXML private ComboBox<IdNamePair> cityComboBox;
     @FXML private TextArea descriptionArea;
     @FXML private Label errorLabel;
+    @FXML private ImageView imagePreview; // New UI component
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
+    private File selectedImageFile = null; // Holds the user's selected file in memory
 
-    /**
-     * 🏁 This method runs automatically when the view loads.
-     * It configures the drop-downs and fetches lists from the backend.
-     */
     @FXML
     public void initialize() {
         setupComboBoxConverters();
 
-        // Fetch data asynchronously from the server so the UI does not freeze
         Platform.runLater(() -> {
             fetchDropdownData("/api/lookup/cities", cityComboBox);
             fetchDropdownData("/api/lookup/categories", categoryComboBox);
@@ -41,8 +43,28 @@ public class CreateAdController {
     }
 
     /**
-     * 🟢 Form Submission Logic
+     * 📷 Action triggered by "Choose Image" button. Opens native system FileChooser.
      */
+    @FXML
+    public void handleSelectImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Product Image");
+
+        // Filter out non-image extensions
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
+        );
+
+        Stage stage = (Stage) titleField.getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+
+        if (file != null) {
+            this.selectedImageFile = file;
+            Image img = new Image(file.toURI().toString());
+            imagePreview.setImage(img); // Show preview immediately inside the form
+        }
+    }
+
     @FXML
     public void handleSaveAdvertisement() {
         String title = titleField.getText().trim();
@@ -51,7 +73,6 @@ public class CreateAdController {
         String priceText = priceField.getText().trim();
         String description = descriptionArea.getText().trim();
 
-        // 1. Validation for empty selections
         if (title.isBlank() || selectedCategory == null || selectedCity == null || priceText.isBlank() || description.isBlank()) {
             errorLabel.setStyle("-fx-text-fill: red;");
             errorLabel.setText("Please fill in all fields and select options from menus.");
@@ -67,15 +88,27 @@ public class CreateAdController {
             return;
         }
 
-        // 2. Extract hidden database IDs from objects
         long categoryId = selectedCategory.getId();
         long cityId = selectedCity.getId();
 
-        // 3. Construct clean JSON payload
+        // 🟢 Logic for Default vs User-selected Image String URL Injection
+        String finalImageUrl;
+        if (selectedImageFile != null) {
+            finalImageUrl = selectedImageFile.toURI().toString(); // Local file path URI
+        } else {
+            // Path inside target internal project resources
+            finalImageUrl = getClass().getResource("/com/secondhand/frontend/images/default-ad.png") != null ?
+                    getClass().getResource("/com/secondhand/frontend/images/default-ad.png").toExternalForm() :
+                    "https://picsum.photos/400/200"; // Fallback placeholder if file is missing from target resources
+        }
+
+        // Combine user text description and image URL together so the double-click model parses it gracefully
+        String integratedDescription = description + " [IMG_URL:" + finalImageUrl + "]";
+
         String jsonRequest = String.format(
                 java.util.Locale.US,
                 "{\"title\":\"%s\",\"description\":\"%s\",\"price\":%.2f,\"categoryId\":%d,\"cityId\":%d}",
-                title, description, price, categoryId, cityId
+                title, integratedDescription, price, categoryId, cityId
         );
 
         String response = NetworkClient.sendPostRequest("/advertisements/create", jsonRequest);
@@ -89,6 +122,8 @@ public class CreateAdController {
             descriptionArea.clear();
             categoryComboBox.setValue(null);
             cityComboBox.setValue(null);
+            imagePreview.setImage(null);
+            selectedImageFile = null;
         } else {
             errorLabel.setStyle("-fx-text-fill: red;");
             errorLabel.setText("Failed to publish advertisement. Server returned an error.");
@@ -100,13 +135,11 @@ public class CreateAdController {
         NavigationUtils.navigateTo(titleField, "/com/secondhand/frontend/view/main_market.fxml", "SecondHand Market");
     }
 
-    /**
-     * 🔄 Network Helper: Fetches JSON lookup data and populates specified ComboBox
-     */
     private void fetchDropdownData(String endpoint, ComboBox<IdNamePair> comboBox) {
+        String token = NetworkClient.authToken != null ? NetworkClient.authToken : "";
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080" + endpoint))
-                .header("Authorization", "Bearer " + NetworkClient.authToken)
+                .header("Authorization", "Bearer " + token)
                 .GET()
                 .build();
 
@@ -128,9 +161,6 @@ public class CreateAdController {
                 });
     }
 
-    /**
-     * 🛠️ UX Helper: Instructs JavaFX to display ONLY the name property to users
-     */
     private void setupComboBoxConverters() {
         StringConverter<IdNamePair> converter = new StringConverter<>() {
             @Override
@@ -140,17 +170,13 @@ public class CreateAdController {
 
             @Override
             public IdNamePair fromString(String string) {
-                return null; // Not needed for read-only selections
+                return null;
             }
         };
         categoryComboBox.setConverter(converter);
         cityComboBox.setConverter(converter);
     }
 
-    /**
-     * 📦 Local Helper Entity Class
-     * Holds both Database Identifier and Human Readable String together.
-     */
     public static class IdNamePair {
         private final long id;
         private final String name;

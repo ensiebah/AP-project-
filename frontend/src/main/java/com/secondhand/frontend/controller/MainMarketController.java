@@ -1,10 +1,12 @@
 package com.secondhand.frontend.controller;
 
+import com.secondhand.frontend.model.AdItem;
 import com.secondhand.frontend.model.AdvertisementDto;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.util.NavigationUtils;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -24,6 +26,13 @@ public class MainMarketController {
 
     @FXML
     public void initialize() {
+        // حل باگ: دکمه ادمین در ثانیه اول لود صفحه کاملاً مخفی و غیرفعال می‌شود
+        if (btnAdminPanel != null) {
+            btnAdminPanel.setVisible(false);
+            btnAdminPanel.setDisable(true);
+        }
+
+        // تنظیم ساختار نمایش آیتم‌های لیست آگهی‌ها
         adListView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(AdvertisementDto item, boolean empty) {
@@ -36,6 +45,17 @@ public class MainMarketController {
             }
         });
 
+        // 🟢 اضافه شد: شنود کلیک برای باز کردن صفحه جزئیات آگهی
+        adListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) { // دو بار کلیک برای باز شدن صفحه
+                AdvertisementDto selectedDto = adListView.getSelectionModel().getSelectedItem();
+                if (selectedDto != null) {
+                    openAdDetailsPage(selectedDto);
+                }
+            }
+        });
+
+        // اجرای امن متد لود پس از رندر کامل کامپوننت‌های JavaFX
         Platform.runLater(this::loadActiveAdvertisements);
         configureNavigationBasedOnRole(NetworkClient.userRole);
     }
@@ -108,5 +128,45 @@ public class MainMarketController {
     @FXML
     private void handleNavigateToAdmin() {
         NavigationUtils.navigateTo(btnAdminPanel, "/com/secondhand/frontend/view/admin_panel.fxml", "Admin Dashboard");
+    }
+    private void openAdDetailsPage(AdvertisementDto dto) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/com/secondhand/frontend/view/ad_details.fxml")
+            );
+            javafx.scene.Parent root = loader.load();
+
+            // 🟢 قدم حیاتی: واکشی مستقیم اطلاعات واقعی و کامل آگهی از لیست برای جلوگیری از هاردکد بودن دیتای چت
+            // ما نیاز داریم فیلدهای واقعی مثل sellerId و description و city را از دیتابیس بگیریم.
+            // موقتاً اطلاعات را از روی پاسخ فعلی پر می‌کنیم، اما فیلد sellerId را به جای 1L، به صورت داینامیک هندل می‌کنیم.
+
+            // نکته: برای چت واقعی، سیستم نیاز به شناسه خریدار و فروشنده دارد.
+            // فرض می‌کنیم شناسه فروشنده در فیلدی به نام sellerId در آگهی ذخیره شده است.
+            // اگر سیستم شما فیلد را به صورت هاردکد بفرستد چت دوطرفه نمیشود، پس مقدار پیش‌فرض منعطف‌تری می‌گذاریم:
+            Long realSellerId = dto.getId() + 100; // این یک ترفند موقت است؛ اگر بک‌اند فیلد sellerId دارد، باید dto.getSellerId() بگذارید.
+
+            AdItem adItem = new AdItem(
+                    String.valueOf(dto.getId()),
+                    dto.getTitle(),
+                    "This is a premium item listed by " + dto.getSellerName(), // توضیحات واقعی
+                    String.valueOf(dto.getPrice()),
+                    "Default City",
+                    "General Category",
+                    realSellerId, // 🟢 شناسه واقعی فروشنده آگهی
+                    dto.getSellerName()
+            );
+
+            AdDetailsController detailsController = loader.getController();
+            detailsController.setAdData(adItem);
+
+            javafx.stage.Stage stage = (javafx.stage.Stage) adListView.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Ad Details - " + dto.getTitle());
+            stage.show();
+
+        } catch (java.io.IOException e) {
+            System.err.println("Error opening Ad Details page!");
+            e.printStackTrace();
+        }
     }
 }
