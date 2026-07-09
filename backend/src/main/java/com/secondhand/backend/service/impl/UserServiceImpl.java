@@ -10,6 +10,7 @@ import com.secondhand.backend.repository.UserRepository;
 import com.secondhand.backend.security.JwtUtil;
 import com.secondhand.backend.service.UserService;
 import com.secondhand.backend.exception.UserNotFoundException;
+import com.secondhand.backend.exception.InvalidLoginException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto register(RegisterRequestDto request) {
-        // ۱. استفاده از حروف کوچک طبق DTO شما (request.getUsername)
         if (userRepository.existsByUserName(request.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
@@ -34,46 +34,42 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Email already exists");
         }
 
-        // ۲. رمزنگاری پسورد ورودی (password با حروف کوچک)
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
-        // ساخت و پر کردن فیلدهای انتیتی کاربر
         User user = new User();
         user.setUserName(request.getUsername());
         user.setPassWord(hashedPassword);
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPhoneNumber(request.getPhone());
-        user.setRole(Role.USER); // نقش پیش‌فرض طبق داک پروژه
-        user.setBlocked(false);  // وضعیت پیش‌فرض
+        user.setRole(Role.USER);
+        user.setBlocked(false);
 
-        // ۳. استفاده از متد mapToDto خودتان که از قبل موجود بود
         return mapToDto(userRepository.save(user));
     }
 
     @Override
     public LoginResponseDto login(LoginRequestDto request) {
         User user = userRepository.findByUserName(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new InvalidLoginException("Login failed. This username is not registered yet."));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassWord())) {
-            throw new RuntimeException("Invalid password");
+            throw new InvalidLoginException("Incorrect password. Please try again.");
         }
 
+        // 🟢 Check if the user account is flagged as blocked in the database
         if (user.isBlocked()) {
-            throw new RuntimeException("User is blocked");
+            throw new InvalidLoginException("Your account has been blocked by the administrator.");
         }
 
-        // 👈 تولید توکن واقعی با استفاده از نام کاربری و نام نقش کاربر
         String token = jwtUtil.generateToken(user.getUserName(), user.getRole().name());
 
-        // ساخت ریسپانس با استفاده از بیلدر دی‌تی‌او همراه با توکن واقعی
         return LoginResponseDto.builder()
                 .id(user.getId())
                 .username(user.getUserName())
                 .fullName(user.getFullName())
                 .role(user.getRole())
-                .token(token) // 👈 توکن واقعی اینجا ست می‌شود
+                .token(token)
                 .build();
     }
 
@@ -99,6 +95,9 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+    /**
+     * 🟢 Responsibility: Updates the database status to flag a specific user as blocked.
+     */
     @Override
     public void blockUser(Long userId) {
         User user = userRepository.findById(userId)
@@ -107,6 +106,9 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    /**
+     * 🟢 Responsibility: Updates the database status to unblock/activate a specific user.
+     */
     @Override
     public void unblockUser(Long userId) {
         User user = userRepository.findById(userId)
@@ -123,7 +125,7 @@ public class UserServiceImpl implements UserService {
                 .email(user.getEmail())
                 .phone(user.getPhoneNumber())
                 .role(user.getRole())
-                .isBlocked(user.isBlocked()) // بدون خطا همگام شد
+                .isBlocked(user.isBlocked())
                 .build();
     }
 }

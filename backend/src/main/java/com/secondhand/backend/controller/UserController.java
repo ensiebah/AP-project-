@@ -6,6 +6,8 @@ import com.secondhand.backend.dto.RegisterRequestDto;
 import com.secondhand.backend.dto.UserDto;
 import com.secondhand.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,13 +44,25 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-    @PutMapping("/{id}/block")
-    public void blockUser(@PathVariable Long id) {
+    /**
+     * 🟢 Responsibility: Allows an administrator to securely block a user account by ID.
+     * Accessible only by users holding the 'ADMIN' role.
+     */
+    @PutMapping("/admin/users/{id}/block")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> blockUser(@PathVariable Long id) {
         userService.blockUser(id);
+        return ResponseEntity.ok("User blocked successfully.");
     }
 
-    @PutMapping("/{id}/unblock")
-    public void unblockUser(@PathVariable Long id) {
+    /**
+     * 🟢 Responsibility: Allows an administrator to securely unblock/activate a user account by ID.
+     * Accessible only by users holding the 'ADMIN' role.
+     */
+    @PutMapping("/admin/users/{id}/unblock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> unblockUser(@PathVariable Long id) {
         userService.unblockUser(id);
+        return ResponseEntity.ok("User activated successfully.");
     }
 }

@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ff106288-4ee5-4916-84b0-2d67a2b76cb0" name="Changes" comment="Merge branch 'main' of https://github.com/ensiebah/AP-project-&#10;&#10;# Conflicts:&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AdvertisementNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AlreadyRatedException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CategoryNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CityNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/ConversationNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/FavoriteNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/MessageNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/RatingNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/UnauthorizedAdvertisementAccessException.java&#10;#&#9;backend/src/main/resources/fxml/login.fxml&#10;#&#9;backend/src/main/resources/import.sql" />
+    <list default="true" id="ff106288-4ee5-4916-84b0-2d67a2b76cb0" name="Changes" comment="Merge branch 'main' of https://github.com/ensiebah/AP-project-&#10;&#10;# Conflicts:&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AdvertisementNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AlreadyRatedException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CategoryNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CityNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/ConversationNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/FavoriteNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/MessageNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/RatingNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/UnauthorizedAdvertisementAccessException.java&#10;#&#9;backend/src/main/resources/fxml/login.fxml&#10;#&#9;backend/src/main/resources/import.sql">
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/exception/GlobalExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/AdminPanelController.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/AdminPanelController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/LoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/LoginController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/admin_panel.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/admin_panel.fxml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -69,6 +79,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Rian-mk"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/ensiebah/AP-project-.git",
+    "accountId": "2e95d4cd-abff-439d-ad9f-9eddd881b830"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -96,10 +118,10 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "Shell Script.gradlew.executor": "Run",
     "Spring Boot.SecondHandBackendApplication.executor": "Run",
-    "git-widget-placeholder": "Rebasing main",
+    "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/java/Ap",
+    "last_opened_file_path": "C:/Users/Reihaneh/Desktop/Java Projects/Project/AP-project-",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -199,6 +221,7 @@
       <workItem from="1783292898961" duration="619000" />
       <workItem from="1783293757012" duration="552000" />
       <workItem from="1783376784373" duration="719000" />
+      <workItem from="1783556109034" duration="67000" />
     </task>
     <servers />
   </component>

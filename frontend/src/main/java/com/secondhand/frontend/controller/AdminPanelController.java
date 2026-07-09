@@ -7,9 +7,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -25,13 +23,19 @@ public class AdminPanelController {
     @FXML private TableColumn<AdvertisementDto, String> titleColumn;
     @FXML private TableColumn<AdvertisementDto, Double> priceColumn;
     @FXML private TableColumn<AdvertisementDto, String> sellerColumn;
+
     @FXML private Button btnApprove;
     @FXML private Button btnReject;
-    @FXML private Button btnBack;
+    @FXML private Button btnDeleteAd;
+    @FXML private Button btnShowPending;
+    @FXML private Button btnShowApproved;
+    @FXML private Button btnLogout; // 🟢 دکمه جدید خروج
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final ObservableList<AdvertisementDto> pendingList = FXCollections.observableArrayList();
+    private final ObservableList<AdvertisementDto> adList = FXCollections.observableArrayList();
     private final String BASE_URL = "http://localhost:8080/api/advertisements";
+
+    private boolean isApprovedMode = false;
 
     @FXML
     public void initialize() {
@@ -40,21 +44,36 @@ public class AdminPanelController {
         priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
         sellerColumn.setCellValueFactory(new PropertyValueFactory<>("sellerName"));
 
-        pendingTable.setItems(pendingList);
+        pendingTable.setItems(adList);
 
-        // اجرای امن متد لود پس از رندر کامل کامپوننت‌های JavaFX
+        pendingTable.setRowFactory(tv -> {
+            TableRow<AdvertisementDto> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && (!row.isEmpty())) {
+                    AdvertisementDto rowData = row.getItem();
+                    showAdDetailsAlert(rowData);
+                }
+            });
+            return row;
+        });
+
         Platform.runLater(this::loadPendingAdvertisements);
     }
 
     private void loadPendingAdvertisements() {
-        if (NetworkClient.authToken == null) {
-            System.err.println("Admin Token is null! Cannot load pending advertisements.");
-            return;
-        }
+        if (NetworkClient.authToken == null) return;
+        fetchAdsFromServer(BASE_URL + "/pending");
+    }
 
-        pendingList.clear();
+    private void loadApprovedAdvertisements() {
+        if (NetworkClient.authToken == null) return;
+        fetchAdsFromServer(BASE_URL + "/active");
+    }
+
+    private void fetchAdsFromServer(String url) {
+        adList.clear();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/pending"))
+                .uri(URI.create(url))
                 .header("Authorization", "Bearer " + NetworkClient.authToken)
                 .GET()
                 .build();
@@ -72,12 +91,38 @@ public class AdminPanelController {
                             dto.setPrice(obj.getDouble("price"));
                             dto.setSellerName(obj.optString("sellerName", "Unknown"));
 
-                            Platform.runLater(() -> pendingList.add(dto));
+                            Platform.runLater(() -> adList.add(dto));
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 });
+    }
+
+    @FXML
+    public void showPendingMode() {
+        isApprovedMode = false;
+        btnShowPending.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnShowApproved.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: #2c3e50; -fx-font-weight: bold;");
+
+        btnApprove.setVisible(true);  btnApprove.setManaged(true);
+        btnReject.setVisible(true);   btnReject.setManaged(true);
+        btnDeleteAd.setVisible(false); btnDeleteAd.setManaged(false);
+
+        loadPendingAdvertisements();
+    }
+
+    @FXML
+    public void showApprovedMode() {
+        isApprovedMode = true;
+        btnShowApproved.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnShowPending.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: #2c3e50; -fx-font-weight: bold;");
+
+        btnApprove.setVisible(false); btnApprove.setManaged(false);
+        btnReject.setVisible(false);  btnReject.setManaged(false);
+        btnDeleteAd.setVisible(true);  btnDeleteAd.setManaged(true);
+
+        loadApprovedAdvertisements();
     }
 
     @FXML
@@ -94,7 +139,7 @@ public class AdminPanelController {
         httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> {
                     if (response.statusCode() == 200) {
-                        Platform.runLater(() -> pendingList.remove(selectedAd));
+                        Platform.runLater(() -> adList.remove(selectedAd));
                     }
                 });
     }
@@ -104,8 +149,10 @@ public class AdminPanelController {
         AdvertisementDto selectedAd = pendingTable.getSelectionModel().getSelectedItem();
         if (selectedAd == null) return;
 
+        String rejectUrl = BASE_URL + "/" + selectedAd.getId() + "/reject";
+
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/" + selectedAd.getId() + "/reject"))
+                .uri(URI.create(rejectUrl))
                 .header("Authorization", "Bearer " + NetworkClient.authToken)
                 .PUT(HttpRequest.BodyPublishers.noBody())
                 .build();
@@ -113,21 +160,54 @@ public class AdminPanelController {
         httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenAccept(response -> {
                     if (response.statusCode() == 200) {
-                        Platform.runLater(() -> pendingList.remove(selectedAd));
+                        Platform.runLater(() -> adList.remove(selectedAd));
                     }
                 });
     }
 
     @FXML
-    private void handleBackToMarket() {
-        MainMarketController marketController = NavigationUtils.navigateTo(
-                btnBack,
-                "/com/secondhand/frontend/view/main_market.fxml",
-                "SecondHand Market"
-        );
+    private void handleDeleteApprovedAd() {
+        AdvertisementDto selectedAd = pendingTable.getSelectionModel().getSelectedItem();
+        if (selectedAd == null) return;
 
-        if (marketController != null) {
-            marketController.configureNavigationBasedOnRole("ADMIN");
-        }
+        String deleteUrl = BASE_URL + "/" + selectedAd.getId();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(deleteUrl))
+                .header("Authorization", "Bearer " + NetworkClient.authToken)
+                .DELETE()
+                .build();
+
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenAccept(response -> {
+                    if (response.statusCode() == 200 || response.statusCode() == 204) {
+                        Platform.runLater(() -> adList.remove(selectedAd));
+                    }
+                });
+    }
+
+    private void showAdDetailsAlert(AdvertisementDto ad) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Advertisement Details");
+        alert.setHeaderText("Viewing Ad ID: " + ad.getId());
+        alert.setContentText("Title: " + ad.getTitle() + "\n" +
+                "Price: $" + ad.getPrice() + "\n" +
+                "Seller: " + ad.getSellerName());
+        alert.showAndWait();
+    }
+
+    // 🟢 متد جدید خروج و پاک‌سازی سشن امنیتی کاربر
+    @FXML
+    private void handleLogout() {
+        // ۱. خروج امن با صفر کردن متغیرهای وضعیت احراز هویت توکن
+        NetworkClient.authToken = null;
+        NetworkClient.userRole = null;
+
+        // ۲. هدایت ادمین به صفحه ورود اصلی اپلیکیشن
+        NavigationUtils.navigateTo(
+                btnLogout,
+                "/com/secondhand/frontend/view/login.fxml",
+                "SecondHand Market - Login"
+        );
     }
 }

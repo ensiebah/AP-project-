@@ -22,4 +22,6 @@ public interface UserService {
     void blockUser(Long userId);
 
     void unblockUser(Long userId);
+
+
 }

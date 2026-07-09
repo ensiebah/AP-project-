@@ -36,7 +36,4 @@ public class User implements Serializable {
 
     private boolean isBlocked = false;
 
-
-
-
 }

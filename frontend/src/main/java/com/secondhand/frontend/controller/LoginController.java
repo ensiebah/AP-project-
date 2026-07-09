@@ -32,7 +32,8 @@ public class LoginController {
         String jsonRequest = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
         String response = NetworkClient.sendPostRequest("/users/login", jsonRequest);
 
-        if (!response.startsWith("ERROR")) {
+        // 🟢 بررسی دقیق‌تر پاسخ برای تفکیک خطاها
+        if (response != null && !response.startsWith("ERROR")) {
             messageLabel.setStyle("-fx-text-fill: green;");
             messageLabel.setText("LOGIN SUCCESS!");
 
@@ -44,35 +45,45 @@ public class LoginController {
             }
 
             try {
-                // 🟢 ۱. ابتدا شناسایی و ست کردن قطعی نقش کاربر در حافظه سراسری
                 String upperResponse = response.toUpperCase();
+                String fxmlPath;
+                String stageTitle;
+
                 if (upperResponse.contains("ADMIN")) {
                     NetworkClient.userRole = "ADMIN";
-                    System.out.println("🟢 Registered in Session: ADMIN");
+                    // 🟢 هدایت مستقیم به پنل مدیریت در صورت ادمین بودن
+                    fxmlPath = "/com/secondhand/frontend/view/admin_panel.fxml";
+                    stageTitle = "SecondHand Market - Admin Panel";
                 } else {
                     NetworkClient.userRole = "USER";
-                    System.out.println("🔵 Registered in Session: USER");
+                    fxmlPath = "/com/secondhand/frontend/view/main_market.fxml";
+                    stageTitle = "SecondHand Market - SHOP";
                 }
 
-                // 🟢 ۲. حالا لود کردن صفحه بازار (در این حالت متد initialize مقدار درست را خواهد خواند)
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/secondhand/frontend/view/main_market.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
                 Parent root = loader.load();
 
                 Stage stage = (Stage) usernameField.getScene().getWindow();
                 stage.setScene(new Scene(root));
-                stage.setTitle("SecondHand Market - SHOP");
+                stage.setTitle(stageTitle);
                 stage.show();
 
             } catch (IOException e) {
                 e.printStackTrace();
                 messageLabel.setStyle("-fx-text-fill: red;");
-                messageLabel.setText("Error loading main market page.");
+                messageLabel.setText("Error loading page.");
             }
 
         } else {
             messageLabel.setStyle("-fx-text-fill: red;");
-            String errorMessage = response.contains("|") ? response.split("\\|")[1] : "PROBLEM IN CONNECTING TO SERVER";
-            messageLabel.setText(errorMessage);
+
+            // 🟢 فالبک هوشمند: اگر پایپ‌لاین درست پر شده بود متن را جدا کن، در غیر این صورت پیام خطای منطقی لاگین بده
+            if (response != null && response.contains("|")) {
+                messageLabel.setText(response.split("\\|")[1]);
+            } else {
+                // اگر سرور هیچ متنی نفرستاد یعنی احتمالاً یوزر وجود ندارد یا رمز غلط است
+                messageLabel.setText("Login failed. Invalid username or password.");
+            }
         }
     }
 
