@@ -6,7 +6,7 @@
 
 <VBox spacing="15.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.secondhand.frontend.controller.AdminPanelController"
-      prefWidth="900.0" prefHeight="650.0">
+      prefWidth="950.0" prefHeight="650.0">
 
     <padding>
         <Insets top="15.0" right="15.0" bottom="15.0" left="15.0"/>
@@ -26,13 +26,11 @@
                     <padding>
                         <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
                     </padding>
-
                     <HBox spacing="10.0" alignment="CENTER_LEFT">
                         <Label text="Filter Status:" style="-fx-font-weight: bold;"/>
                         <Button fx:id="btnShowPending" text="Pending Approval" onAction="#showPendingMode" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;"/>
                         <Button fx:id="btnShowApproved" text="Approved Ads" onAction="#showApprovedMode" style="-fx-background-color: #bdc3c7; -fx-text-fill: #2c3e50; -fx-font-weight: bold;"/>
                     </HBox>
-
                     <TableView fx:id="pendingTable" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="idColumn" text="ID" prefWidth="60.0" />
@@ -41,7 +39,6 @@
                             <TableColumn fx:id="sellerColumn" text="Seller Username" prefWidth="150.0" />
                         </columns>
                     </TableView>
-
                     <HBox spacing="10.0" alignment="CENTER_RIGHT">
                         <Button fx:id="btnReject" text="Reject" onAction="#handleReject" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 7px 15px;"/>
                         <Button fx:id="btnApprove" text="Approve &amp; Publish" onAction="#handleApprove" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 7px 15px;"/>
@@ -51,12 +48,37 @@
             </Tab>
 
             <Tab text="User Management">
-                <VBox spacing="10.0" alignment="CENTER">
+                <HBox spacing="15.0">
                     <padding>
-                        <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
+                        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
                     </padding>
-                    <Label text="User management options and system block lists will be populated here." style="-fx-font-style: italic; -fx-text-fill: #7f8c8d;"/>
-                </VBox>
+
+                    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                        <Label text="Active Users (Non-Blocked)" style="-fx-font-weight: bold; -fx-text-fill: #27ae60; -fx-font-size: 14px;"/>
+                        <TableView fx:id="activeUsersTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="activeUserIdColumn" text="User ID" prefWidth="80.0" />
+                                <TableColumn fx:id="activeUsernameColumn" text="Username" prefWidth="200.0" />
+                            </columns>
+                        </TableView>
+                        <HBox alignment="CENTER_RIGHT">
+                            <Button text="Block User" onAction="#handleBlockUser" style="-fx-background-color: #d35400; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                        <Label text="Blocked Users List" style="-fx-font-weight: bold; -fx-text-fill: #c0392b; -fx-font-size: 14px;"/>
+                        <TableView fx:id="blockedUsersTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="blockedUserIdColumn" text="User ID" prefWidth="80.0" />
+                                <TableColumn fx:id="blockedUsernameColumn" text="Username" prefWidth="200.0" />
+                            </columns>
+                        </TableView>
+                        <HBox alignment="CENTER_RIGHT">
+                            <Button text="Unblock User" onAction="#handleUnblockUser" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                        </HBox>
+                    </VBox>
+                </HBox>
             </Tab>
         </tabs>
     </TabPane>

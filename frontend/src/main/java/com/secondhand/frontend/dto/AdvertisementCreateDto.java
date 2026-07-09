@@ -1,4 +1,4 @@
-package com.secondhand.frontend.model;
+package com.secondhand.frontend.dto;
 
 public class AdvertisementCreateDto {
 
