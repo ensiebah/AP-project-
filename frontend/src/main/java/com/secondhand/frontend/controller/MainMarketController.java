@@ -8,16 +8,22 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.util.StringConverter;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class MainMarketController {
 
     @FXML private TextField searchField;
+    @FXML private TextField minPriceField;
+    @FXML private TextField maxPriceField;
+    @FXML private ComboBox<IdNamePair> categoryComboBox; // 🟢 Updated to match IdNamePair structure
+    @FXML private ComboBox<IdNamePair> cityComboBox;     // 🟢 Updated to match IdNamePair structure
     @FXML private ListView<AdvertisementDto> adListView;
     @FXML private Button btnAdminPanel;
 
@@ -26,13 +32,11 @@ public class MainMarketController {
 
     @FXML
     public void initialize() {
-        // حل باگ: دکمه ادمین در ثانیه اول لود صفحه کاملاً مخفی و غیرفعال می‌شود
         if (btnAdminPanel != null) {
             btnAdminPanel.setVisible(false);
             btnAdminPanel.setDisable(true);
         }
 
-        // تنظیم ساختار نمایش آیتم‌های لیست آگهی‌ها
         adListView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(AdvertisementDto item, boolean empty) {
@@ -40,14 +44,13 @@ public class MainMarketController {
                 if (empty || item == null) {
                     setText(null);
                 } else {
-                    setText(String.format("%s - $%.2f [By: %s]", item.getTitle(), item.getPrice(), item.getSellerName()));
+                    setText(String.format("%s - $%.2f [City: %s]", item.getTitle(), item.getPrice(), item.getCityName()));
                 }
             }
         });
 
-        // 🟢 اضافه شد: شنود کلیک برای باز کردن صفحه جزئیات آگهی
         adListView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) { // دو بار کلیک برای باز شدن صفحه
+            if (event.getClickCount() == 2) {
                 AdvertisementDto selectedDto = adListView.getSelectionModel().getSelectedItem();
                 if (selectedDto != null) {
                     openAdDetailsPage(selectedDto);
@@ -55,15 +58,61 @@ public class MainMarketController {
             }
         });
 
-        // اجرای امن متد لود پس از رندر کامل کامپوننت‌های JavaFX
-        Platform.runLater(this::loadActiveAdvertisements);
+        setupComboBoxConverters();
+
+        // 🟢 Fetching data from the exact endpoints you used in CreateAdController
+        Platform.runLater(() -> {
+            loadActiveAdvertisements();
+            fetchDropdownData("/api/lookup/categories", categoryComboBox);
+            fetchDropdownData("/api/lookup/cities", cityComboBox);
+        });
+
         configureNavigationBasedOnRole(NetworkClient.userRole);
+    }
+
+    private void setupComboBoxConverters() {
+        StringConverter<IdNamePair> converter = new StringConverter<>() {
+            @Override
+            public String toString(IdNamePair object) {
+                return object == null ? "" : object.getName();
+            }
+            @Override
+            public IdNamePair fromString(String string) {
+                return null;
+            }
+        };
+        categoryComboBox.setConverter(converter);
+        cityComboBox.setConverter(converter);
+    }
+
+    private void fetchDropdownData(String endpoint, ComboBox<IdNamePair> comboBox) {
+        String token = NetworkClient.authToken != null ? NetworkClient.authToken : "";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080" + endpoint))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
+
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenAccept(responseBody -> {
+                    try {
+                        JSONArray array = new JSONArray(responseBody);
+                        Platform.runLater(() -> {
+                            comboBox.getItems().clear();
+                            for (int i = 0; i < array.length(); i++) {
+                                JSONObject obj = array.getJSONObject(i);
+                                comboBox.getItems().add(new IdNamePair(obj.getLong("id"), obj.getString("name")));
+                            }
+                        });
+                    } catch (Exception e) {
+                        System.err.println("Failed to parse dropdown data from: " + endpoint);
+                    }
+                });
     }
 
     private void loadActiveAdvertisements() {
         adListView.getItems().clear();
-
-        // 🟢 ارسال هدر Authorization حاوی توکن بایرِر برای گرفتن آگهی‌های فعال بدون مسدودی توسط سرور
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/active"))
                 .header("Authorization", "Bearer " + NetworkClient.authToken)
@@ -77,58 +126,78 @@ public class MainMarketController {
                         JSONArray jsonArray = new JSONArray(responseBody);
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject obj = jsonArray.getJSONObject(i);
-                            AdvertisementDto dto = new AdvertisementDto();
-                            dto.setId(obj.getLong("id"));
-                            dto.setTitle(obj.getString("title"));
-                            dto.setPrice(obj.getDouble("price"));
-                            dto.setSellerName(obj.optString("sellerName", "Unknown"));
-
+                            AdvertisementDto dto = parseJsonToDto(obj);
                             Platform.runLater(() -> adListView.getItems().add(dto));
                         }
                     } catch (Exception e) {
-                        System.err.println("Failed to parse active advertisements. Response body was: " + responseBody);
-                        e.printStackTrace();
+                        System.err.println("Failed to load active advertisements.");
                     }
                 });
     }
 
     @FXML
-    public void goToCreatAd() {
-        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/create_ad.fxml", "Post a New Advertisement");
-    }
-
-    @FXML
     public void handleSearch() {
-        String keyword = searchField.getText().trim();
-        if (keyword.isBlank()) {
-            loadActiveAdvertisements();
-            return;
+        String query = searchField.getText().trim();
+
+        IdNamePair selectedCategory = categoryComboBox.getValue();
+        Long categoryId = selectedCategory != null ? selectedCategory.getId() : null;
+
+        IdNamePair selectedCity = cityComboBox.getValue();
+        Long cityId = selectedCity != null ? selectedCity.getId() : null;
+
+        Double minPrice = null;
+        Double maxPrice = null;
+
+        try {
+            if (!minPriceField.getText().isBlank()) minPrice = Double.parseDouble(minPriceField.getText().trim());
+            if (!maxPriceField.getText().isBlank()) maxPrice = Double.parseDouble(maxPriceField.getText().trim());
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid format for price range filters.");
         }
-        System.out.println("Searching for: " + keyword);
-    }
 
-    @FXML
-    public void handleLogout() {
-        NetworkClient.authToken = null;
-        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/login.fxml", "Login");
-    }
+        String response = NetworkClient.searchAdvertisement(query, categoryId, cityId, minPrice, maxPrice);
 
-    public void configureNavigationBasedOnRole(String userRole) {
-        if (btnAdminPanel != null) {
-            if ("ADMIN".equals(userRole)) {
-                btnAdminPanel.setVisible(true);
-                btnAdminPanel.setDisable(false);
-            } else {
-                btnAdminPanel.setVisible(false);
-                btnAdminPanel.setDisable(true);
+        adListView.getItems().clear();
+        if (response != null && !response.startsWith("ERROR")) {
+            try {
+                JSONArray jsonArray = new JSONArray(response);
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject obj = jsonArray.getJSONObject(i);
+                    AdvertisementDto dto = parseJsonToDto(obj);
+                    Platform.runLater(() -> adListView.getItems().add(dto));
+                }
+            } catch (Exception e) {
+                System.err.println("Error parsing search response.");
             }
         }
     }
 
+    /**
+     * 🟢 Reset function: Clears all visual filter components and reloads all active products.
+     */
     @FXML
-    private void handleNavigateToAdmin() {
-        NavigationUtils.navigateTo(btnAdminPanel, "/com/secondhand/frontend/view/admin_panel.fxml", "Admin Dashboard");
+    public void handleResetFilters() {
+        searchField.clear();
+        minPriceField.clear();
+        maxPriceField.clear();
+        categoryComboBox.setValue(null);
+        cityComboBox.setValue(null);
+        loadActiveAdvertisements(); // Reload all original unfiltered ads
     }
+
+    private AdvertisementDto parseJsonToDto(JSONObject obj) {
+        AdvertisementDto dto = new AdvertisementDto();
+        dto.setId(obj.getLong("id"));
+        dto.setTitle(obj.getString("title"));
+        dto.setPrice(obj.getDouble("price"));
+        dto.setDescription(obj.optString("description", "No description available."));
+        dto.setSellerId(obj.optLong("sellerId", 1L));
+        dto.setSellerName(obj.optString("sellerName", "Unknown"));
+        dto.setCityName(obj.optString("cityName", "Unknown"));
+        dto.setCategoryName(obj.optString("categoryName", "Unknown"));
+        return dto;
+    }
+
     private void openAdDetailsPage(AdvertisementDto dto) {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
@@ -136,23 +205,14 @@ public class MainMarketController {
             );
             javafx.scene.Parent root = loader.load();
 
-            // 🟢 قدم حیاتی: واکشی مستقیم اطلاعات واقعی و کامل آگهی از لیست برای جلوگیری از هاردکد بودن دیتای چت
-            // ما نیاز داریم فیلدهای واقعی مثل sellerId و description و city را از دیتابیس بگیریم.
-            // موقتاً اطلاعات را از روی پاسخ فعلی پر می‌کنیم، اما فیلد sellerId را به جای 1L، به صورت داینامیک هندل می‌کنیم.
-
-            // نکته: برای چت واقعی، سیستم نیاز به شناسه خریدار و فروشنده دارد.
-            // فرض می‌کنیم شناسه فروشنده در فیلدی به نام sellerId در آگهی ذخیره شده است.
-            // اگر سیستم شما فیلد را به صورت هاردکد بفرستد چت دوطرفه نمیشود، پس مقدار پیش‌فرض منعطف‌تری می‌گذاریم:
-            Long realSellerId = dto.getId() + 100; // این یک ترفند موقت است؛ اگر بک‌اند فیلد sellerId دارد، باید dto.getSellerId() بگذارید.
-
             AdItem adItem = new AdItem(
                     String.valueOf(dto.getId()),
                     dto.getTitle(),
-                    "This is a premium item listed by " + dto.getSellerName(), // توضیحات واقعی
+                    dto.getDescription(),
                     String.valueOf(dto.getPrice()),
-                    "Default City",
-                    "General Category",
-                    realSellerId, // 🟢 شناسه واقعی فروشنده آگهی
+                    dto.getCityName(),
+                    dto.getCategoryName(),
+                    dto.getSellerId(),
                     dto.getSellerName()
             );
 
@@ -163,10 +223,43 @@ public class MainMarketController {
             stage.setScene(new Scene(root));
             stage.setTitle("Ad Details - " + dto.getTitle());
             stage.show();
-
         } catch (java.io.IOException e) {
             System.err.println("Error opening Ad Details page!");
             e.printStackTrace();
         }
+    }
+
+    @FXML public void goToCreatAd() { NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/create_ad.fxml", "Post a New Advertisement"); }
+    @FXML public void handleLogout() { NetworkClient.authToken = null; NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/login.fxml", "Login"); }
+    @FXML private void handleNavigateToAdmin() { NavigationUtils.navigateTo(btnAdminPanel, "/com/secondhand/frontend/view/admin_panel.fxml", "Admin Dashboard"); }
+
+    public void configureNavigationBasedOnRole(String userRole) {
+        if (btnAdminPanel != null) {
+            boolean isAdmin = "ADMIN".equals(userRole);
+            btnAdminPanel.setVisible(isAdmin);
+            btnAdminPanel.setDisable(!isAdmin);
+        }
+    }
+
+    // 🟢 Internal data structure helper class matching CreateAdController
+    public static class IdNamePair {
+        private final long id;
+        private final String name;
+
+        public IdNamePair(long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public long getId() { return id; }
+        public String getName() { return name; }
+    }
+    @FXML
+    public void goToInbox() {
+        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/inbox.fxml", "My Inbox");
+    }
+    @FXML
+    public void goToFavorites() {
+        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/favorites_list.fxml", "My Favorites");
     }
 }

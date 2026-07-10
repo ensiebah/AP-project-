@@ -2,16 +2,14 @@ package com.secondhand.frontend.controller;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import com.secondhand.frontend.model.AdItem;
 import com.secondhand.frontend.util.NavigationUtils;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.dto.ConversationDto;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.URI;
@@ -30,9 +28,12 @@ public class AdDetailsController {
     @FXML private TextArea descriptionArea;
     @FXML private Label sellerLabel;
     @FXML private Label ratingLabel;
+    @FXML private Button btnFavorite;
+    @FXML private ListView<String> commentsListView;
 
     private AdItem currentAd;
     private final HttpClient httpClient = HttpClient.newHttpClient();
+    private boolean isFavorite = false;
 
     public void setAdData(AdItem ad) {
         this.currentAd = ad;
@@ -45,7 +46,6 @@ public class AdDetailsController {
         String cleanDescription = rawDescription;
         String extractedImageUrl = null;
 
-        // 🟢 Extract image URL from description tag safely
         if (rawDescription.contains("[IMG_URL:")) {
             int start = rawDescription.indexOf("[IMG_URL:") + 9;
             int end = rawDescription.indexOf("]", start);
@@ -61,71 +61,24 @@ public class AdDetailsController {
             sellerLabel.setText("Seller: " + ad.getSellerName());
         }
 
-        // 🟢 Load Image logic (User Selected vs Internal Project Default Fallback)
         try {
             if (extractedImageUrl != null && !extractedImageUrl.isBlank()) {
                 adImageView.setImage(new Image(extractedImageUrl, true));
             } else if (rawDescription.contains("http")) {
                 adImageView.setImage(new Image(rawDescription, true));
             } else {
-                // Read directly from the compiled frontend UI resources package
                 String fallbackPath = getClass().getResource("/com/secondhand/frontend/images/default-ad.png") != null ?
                         getClass().getResource("/com/secondhand/frontend/images/default-ad.png").toExternalForm() :
                         "https://picsum.photos/400/200";
                 adImageView.setImage(new Image(fallbackPath, true));
             }
         } catch (Exception e) {
-            System.err.println("Could not load image resource, switching to web server placeholder.");
             adImageView.setImage(new Image("https://picsum.photos/400/200", true));
         }
 
         loadSellerAverageRating(ad.getSellerId());
-    }
-
-    @FXML
-    public void handleChatWithSeller() {
-        if (currentAd == null) return;
-
-        Long adId = 1L;
-        try {
-            adId = Long.parseLong(currentAd.getId().trim());
-        } catch (NumberFormatException e) {
-            System.err.println("Warning: Ad ID is not a valid number, using fallback ID.");
-        }
-
-        try {
-            String response = NetworkClient.createConversation(adId);
-
-            if (response != null && !response.startsWith("ERROR")) {
-                JSONObject obj = new JSONObject(response);
-                ConversationDto conv = new ConversationDto();
-
-                if (obj.has("id")) {
-                    conv.setId(obj.getLong("id"));
-                } else if (obj.has("conversationId")) {
-                    conv.setId(obj.getLong("conversationId"));
-                } else {
-                    conv.setId(adId);
-                }
-
-                conv.setAdvertisementId(adId);
-                conv.setAdvertisementTitle(currentAd.getTitle());
-
-                Platform.runLater(() -> NavigationUtils.openChatBox(conv));
-            } else {
-                ConversationDto fallbackConv = new ConversationDto();
-                fallbackConv.setId(adId);
-                fallbackConv.setAdvertisementId(adId);
-                fallbackConv.setAdvertisementTitle(currentAd.getTitle());
-                Platform.runLater(() -> NavigationUtils.openChatBox(fallbackConv));
-            }
-        } catch (Exception e) {
-            ConversationDto fallbackConv = new ConversationDto();
-            fallbackConv.setId(adId);
-            fallbackConv.setAdvertisementId(adId);
-            fallbackConv.setAdvertisementTitle(currentAd.getTitle());
-            Platform.runLater(() -> NavigationUtils.openChatBox(fallbackConv));
-        }
+        loadSellerComments(ad.getSellerId());
+        checkFavoriteStatus();
     }
 
     private void loadSellerAverageRating(Long sellerId) {
@@ -148,6 +101,110 @@ public class AdDetailsController {
                         ratingLabel.setText("Rating: No ratings yet");
                     }
                 }));
+    }
+
+    private void loadSellerComments(Long sellerId) {
+        if (sellerId == null || commentsListView == null) return;
+
+        String token = NetworkClient.authToken != null ? NetworkClient.authToken : "";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/api/ratings/seller/" + sellerId))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
+
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenAccept(jsonResponse -> Platform.runLater(() -> {
+                    try {
+                        commentsListView.getItems().clear();
+                        if (jsonResponse.startsWith("ERROR")) return;
+
+                        JSONArray arr = new JSONArray(jsonResponse);
+                        if (arr.length() == 0) {
+                            commentsListView.getItems().add("No reviews left for this seller yet.");
+                            return;
+                        }
+
+                        for (int i = 0; i < arr.length(); i++) {
+                            JSONObject obj = arr.getJSONObject(i);
+                            String buyer = obj.optString("buyerUsername", "Anonymous");
+                            int score = obj.optInt("score", 5);
+                            String comment = obj.optString("comment", "");
+
+                            String row = String.format("⭐ [%d/5] %s: %s", score, buyer, comment.isBlank() ? "(No text)" : comment);
+                            commentsListView.getItems().add(row);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }));
+    }
+
+    @FXML
+    public void handleToggleFavorite() {
+        if (currentAd == null) return;
+        Long adId = Long.parseLong(currentAd.getId().trim());
+
+        Thread favThread = new Thread(() -> {
+            if (isFavorite) {
+                String response = NetworkClient.removeFavorite(adId);
+                Platform.runLater(() -> {
+                    if (!response.startsWith("ERROR")) {
+                        isFavorite = false;
+                        btnFavorite.setText("♥ Save Ad");
+                        btnFavorite.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+                        showAlert(Alert.AlertType.INFORMATION, "Favorites", "Removed from favorites.");
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "Error", "Failed to remove from favorites.");
+                    }
+                });
+            } else {
+                String response = NetworkClient.addFavorite(adId);
+                Platform.runLater(() -> {
+                    if (!response.startsWith("ERROR")) {
+                        isFavorite = true;
+                        btnFavorite.setText("♥ Saved");
+                        btnFavorite.setStyle("-fx-background-color: #2c3e50; -fx-text-fill: white;");
+                        showAlert(Alert.AlertType.INFORMATION, "Favorites", "Added to favorites!");
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "Error", "Failed to add to favorites.");
+                    }
+                });
+            }
+        });
+        favThread.setDaemon(true);
+        favThread.start();
+    }
+
+    private void checkFavoriteStatus() {
+        if (currentAd == null) return;
+        Thread checkThread = new Thread(() -> {
+            String response = NetworkClient.getMyFavorites();
+            if (response != null && !response.startsWith("ERROR")) {
+                try {
+                    JSONArray arr = new JSONArray(response);
+                    Long adId = Long.parseLong(currentAd.getId().trim());
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject obj = arr.getJSONObject(i);
+                        if (obj.getLong("advertisementId") == adId) {
+                            isFavorite = true;
+                            break;
+                        }
+                    }
+                    Platform.runLater(() -> {
+                        if (isFavorite) {
+                            btnFavorite.setText("♥ Saved");
+                            btnFavorite.setStyle("-fx-background-color: #2c3e50; -fx-text-fill: white;");
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        checkThread.setDaemon(true);
+        checkThread.start();
     }
 
     @FXML
@@ -179,9 +236,10 @@ public class AdDetailsController {
         Optional<String> commentResult = commentDialog.showAndWait();
         String comment = commentResult.orElse("").trim();
 
+        // بدنه JSON تمیز و بدون شناسه کاربر (چون بک‌اَند خودش کاربر را تشخیص می‌دهد)
         String jsonBody = String.format(
                 "{\"advertisementId\":%s,\"score\":%d,\"comment\":\"%s\"}",
-                currentAd.getId(), score, comment
+                currentAd.getId().trim(), score, comment
         );
 
         String token = NetworkClient.authToken != null ? NetworkClient.authToken : "";
@@ -197,10 +255,52 @@ public class AdDetailsController {
                     if (response.statusCode() == 200 || response.statusCode() == 201) {
                         showAlert(Alert.AlertType.INFORMATION, "Success", "Rating submitted successfully!");
                         loadSellerAverageRating(currentAd.getSellerId());
+                        loadSellerComments(currentAd.getSellerId());
                     } else {
-                        showAlert(Alert.AlertType.ERROR, "Failure", "Could not submit rating. " + response.body());
+                        String body = response.body();
+                        if (body.contains("already rated") || body.contains("AlreadyRatedException")) {
+                            showAlert(Alert.AlertType.WARNING, "Denied", "You have already rated this advertisement.");
+                        } else if (body.contains("cannot rate yourself")) {
+                            showAlert(Alert.AlertType.WARNING, "Denied", "You cannot rate yourself.");
+                        } else {
+                            showAlert(Alert.AlertType.ERROR, "Failure", "Could not submit rating: " + body);
+                        }
                     }
                 }));
+    }
+
+    @FXML
+    public void handleChatWithSeller() {
+        if (currentAd == null) return;
+        Long adId = Long.parseLong(currentAd.getId().trim());
+
+        Thread networkThread = new Thread(() -> {
+            try {
+                String response = NetworkClient.createConversation(adId);
+                if (response != null && response.startsWith("ERROR")) {
+                    String errorMsg = response.split("\\|").length > 1 ? response.split("\\|")[1] : "Unknown error";
+                    Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Chat Error", errorMsg));
+                    return;
+                }
+
+                if (response != null && !response.isBlank()) {
+                    JSONObject obj = new JSONObject(response);
+                    ConversationDto conv = new ConversationDto();
+                    conv.setId(obj.getLong("id"));
+                    conv.setAdvertisementId(adId);
+                    conv.setAdvertisementTitle(currentAd.getTitle());
+                    conv.setSellerId(currentAd.getSellerId());
+                    conv.setSellerUsername(currentAd.getSellerName());
+
+                    Platform.runLater(() -> NavigationUtils.openChatBox(conv));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Application Error", "Unexpected connection error."));
+            }
+        });
+        networkThread.setDaemon(true);
+        networkThread.start();
     }
 
     @FXML

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="600.0" prefWidth="500.0" spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-padding: 20;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://fxml.com/fxml/1" fx:controller="com.secondhand.frontend.controller.InboxController">
+    <children>
+
+        <HBox alignment="CENTER_LEFT" style="-fx-background-color: #ffffff; -fx-padding: 15; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 0);">
+            <children>
+                <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #343a40;" text="My Conversations" HBox.hgrow="ALWAYS" />
+
+                <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                    <children>
+                        <VBox alignment="CENTER" spacing="8.0">
+                            <children>
+                                <Button mnemonicParsing="false" onAction="#loadUserConversations" prefWidth="110.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="Refresh ↻" />
+                                <Button mnemonicParsing="false" onAction="#handleBackToMarket" prefWidth="110.0" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="← Market" />
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+            </children>
+        </HBox>
+
+        <ListView fx:id="conversationListView" style="-fx-background-radius: 10; -fx-border-color: #dee2e6; -fx-border-radius: 10; -fx-background-color: white;" VBox.vgrow="ALWAYS" />
+
+    </children>
+</VBox>

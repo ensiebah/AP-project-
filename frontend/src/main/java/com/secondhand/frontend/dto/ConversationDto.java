@@ -16,6 +16,19 @@ package com.secondhand.frontend.dto;
         private Long advertisementId;
 
         private String advertisementTitle;
+        private String opponentUsername;
+        private String lastMessageContent;
+        private String lastMessageTime;
+
+        // Getter & Setter
+        public String getOpponentUsername() { return opponentUsername; }
+        public void setOpponentUsername(String opponentUsername) { this.opponentUsername = opponentUsername; }
+
+        public String getLastMessageContent() { return lastMessageContent; }
+        public void setLastMessageContent(String lastMessageContent) { this.lastMessageContent = lastMessageContent; }
+
+        public String getLastMessageTime() { return lastMessageTime; }
+        public void setLastMessageTime(String lastMessageTime) { this.lastMessageTime = lastMessageTime; }
 
         public Long getBuyerId() {
             return buyerId;

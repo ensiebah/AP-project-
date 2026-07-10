@@ -9,7 +9,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -17,7 +16,14 @@ import javafx.util.Duration;
 
 import java.util.List;
 import java.util.Map;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 public class ChatController {
 
     @FXML private Label chatTitleLabel;
@@ -26,20 +32,44 @@ public class ChatController {
     @FXML private TextField messageInputField;
 
     private ConversationDto currentConversation;
-    private final Gson gson = new Gson();
-    private Timeline autoRefreshTimeline; // 🟢 تایمر برای چت واقعی و همزمان
+
+
+    // 🟢 جایگزین خط قبلی Gson در ChatController
+    private final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new TypeAdapter<LocalDateTime>() {
+                @Override
+                public void write(JsonWriter jsonWriter, LocalDateTime localDateTime) throws IOException {
+                    if (localDateTime == null) {
+                        jsonWriter.nullValue();
+                    } else {
+                        jsonWriter.value(localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                    }
+                }
+
+                @Override
+                public LocalDateTime read(JsonReader jsonReader) throws IOException {
+                    if (jsonReader.peek() == com.google.gson.stream.JsonToken.NULL) {
+                        jsonReader.nextNull();
+                        return null;
+                    } else {
+                        return LocalDateTime.parse(jsonReader.nextString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    }
+                }
+            })
+            .create();
+    private Timeline autoRefreshTimeline;
 
     public void setConversationData(ConversationDto conversation) {
         this.currentConversation = conversation;
         if (adTitleLabel != null) adTitleLabel.setText("Ad: " + conversation.getAdvertisementTitle());
-        if (chatTitleLabel != null) chatTitleLabel.setText("Chat room ID: " + conversation.getId());
+        if (chatTitleLabel != null) chatTitleLabel.setText("Chat Room ID: " + conversation.getId());
 
         loadMessages();
-        startAutoRefresh(); // 🟢 فعال‌سازی همگام‌سازی چت دوطرفه به محض ورود
+        startAutoRefresh();
     }
 
     private void loadMessages() {
-        if (currentConversation == null) return;
+        if (currentConversation == null || currentConversation.getId() == null) return;
 
         String jsonResponse = NetworkClient.getConversationMessages(currentConversation.getId());
 
@@ -47,17 +77,17 @@ public class ChatController {
             List<MessageDto> messages = gson.fromJson(jsonResponse, new TypeToken<List<MessageDto>>(){}.getType());
             if (messages != null) {
                 Platform.runLater(() -> {
-                    // برای اینکه اسکرول چت به هم نخورد، فقط اگر تعداد پیام‌ها تغییر کرده لیست را آپدیت می‌کنیم
                     if (messages.size() != messageListView.getItems().size()) {
                         messageListView.getItems().clear();
                         for (MessageDto msg : messages) {
-                            messageListView.getItems().add(msg.getSenderUsername() + ": " + msg.getContent());
+                            String sender = msg.getSenderUsername() != null ? msg.getSenderUsername() : "User " + msg.getSenderId();
+                            messageListView.getItems().add(sender + ": " + msg.getContent());
                         }
                     }
                 });
             }
         } else {
-            System.err.println("Failed to load messages: " + jsonResponse);
+            System.err.println("Failed to sync chat messages: " + jsonResponse);
         }
     }
 
@@ -71,23 +101,21 @@ public class ChatController {
                 "content", text
         );
         String jsonBody = gson.toJson(body);
-
         String jsonResponse = NetworkClient.sendMessage(jsonBody);
 
         if (jsonResponse != null && !jsonResponse.startsWith("ERROR")) {
             MessageDto sentMessage = gson.fromJson(jsonResponse, MessageDto.class);
             Platform.runLater(() -> {
-                messageListView.getItems().add(sentMessage.getSenderUsername() + ": " + sentMessage.getContent());
+                String sender = (sentMessage != null && sentMessage.getSenderUsername() != null) ?
+                        sentMessage.getSenderUsername() : "Me";
+                messageListView.getItems().add(sender + ": " + text);
                 messageInputField.clear();
             });
         } else {
-            System.err.println("SERVER ERROR ON SEND: " + jsonResponse);
+            System.err.println("Server transmission failure: " + jsonResponse);
         }
     }
 
-    /**
-     * 🟢 هر ۳ ثانیه یک‌بار تاریخچه پیام‌ها را از بک‌اَند می‌گیرد تا پیام‌های طرف مقابل زنده رندر شوند.
-     */
     private void startAutoRefresh() {
         if (autoRefreshTimeline != null) autoRefreshTimeline.stop();
 
@@ -96,12 +124,16 @@ public class ChatController {
         autoRefreshTimeline.play();
     }
 
-    /**
-     * متدی برای متوقف کردن تایمر زمانی که صفحه چت بسته می‌شود (جلوگیری از نشت حافظه)
-     */
     public void shutdown() {
         if (autoRefreshTimeline != null) {
             autoRefreshTimeline.stop();
         }
+    }
+    @FXML
+    public void handleCloseWindow() {
+        shutdown(); // متوقف کردن تایمر ۳ ثانیه‌ای برای جلوگیری از نشت حافظه
+        // بستن پنجره فعلی چت
+        javafx.stage.Stage stage = (javafx.stage.Stage) messageListView.getScene().getWindow();
+        stage.close();
     }
 }

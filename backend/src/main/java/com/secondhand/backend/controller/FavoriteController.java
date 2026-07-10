@@ -2,9 +2,11 @@ package com.secondhand.backend.controller;
 
 import com.secondhand.backend.dto.FavoriteDto;
 import com.secondhand.backend.service.FavoriteService;
+import com.secondhand.backend.entity.User;
+import com.secondhand.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -13,33 +15,32 @@ import java.util.List;
 public class FavoriteController {
 
     private final FavoriteService favoriteService;
+    private final UserRepository userRepository;
 
     @PostMapping
-    public FavoriteDto addFavorite(
-            @RequestParam Long userId,
-            @RequestParam Long advertisementId
-    ) {
-        return favoriteService.addFavorite(
-                userId,
-                advertisementId
-        );
+    public FavoriteDto addFavorite(@RequestParam Long advertisementId, Principal principal) {
+        String username = principal.getName();
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return favoriteService.addFavorite(user.getId(), advertisementId);
     }
 
     @DeleteMapping
-    public void removeFavorite(
-            @RequestParam Long userId,
-            @RequestParam Long advertisementId
-    ) {
-        favoriteService.removeFavorite(
-                userId,
-                advertisementId
-        );
+    public void removeFavorite(@RequestParam Long advertisementId, Principal principal) {
+        String username = principal.getName();
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        favoriteService.removeFavorite(user.getId(), advertisementId);
     }
 
-    @GetMapping("/user/{userId}")
-    public List<FavoriteDto> getUserFavorites(
-            @PathVariable Long userId
-    ) {
-        return favoriteService.getUserFavorites(userId);
+    @GetMapping("/my-favorites")
+    public List<FavoriteDto> getUserFavorites(Principal principal) {
+        String username = principal.getName();
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return favoriteService.getUserFavorites(user.getId());
     }
 }

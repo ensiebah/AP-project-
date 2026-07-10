@@ -14,8 +14,6 @@ public class NavigationUtils {
     public static <T> T navigateTo(Control control, String fxmlPath, String title) {
         try {
             Stage stage = (Stage) control.getScene().getWindow();
-
-            // ۱. ساخت اسمی لودر برای دسترسی به کنترلر
             FXMLLoader loader = new FXMLLoader(NavigationUtils.class.getResource(fxmlPath));
             Parent root = loader.load();
 
@@ -23,9 +21,7 @@ public class NavigationUtils {
             stage.setTitle(title);
             stage.show();
 
-            // ۲. بازگرداندن کنترلر صفحه جدید
             return loader.getController();
-
         } catch (IOException e) {
             System.err.println("ERROR IN LOADING FXML FILE :" + fxmlPath);
             e.printStackTrace();
@@ -33,23 +29,22 @@ public class NavigationUtils {
         }
     }
 
-    // 👈 متد جدیدی که باید اضافه کنی تا پنجره چت را باز کند
     public static void openChatBox(ConversationDto conversation) {
         try {
-            // ۱. ساخت لودر برای فایل fxml چت‌باکس
             FXMLLoader loader = new FXMLLoader(NavigationUtils.class.getResource("/com/secondhand/frontend/view/chat_box.fxml"));
             Parent root = loader.load();
 
-            // ۲. بیرون کشیدن کنترلر صفحه چت‌باکس جهت پاس دادن اطلاعات مکالمه
             ChatController controller = loader.getController();
             controller.setConversationData(conversation);
 
-            // ۳. باز کردن چت در یک پنجره (Stage) جدید و مستقل
             Stage stage = new Stage();
             stage.setTitle("Chat Room - " + conversation.getAdvertisementTitle());
             stage.setScene(new Scene(root));
-            stage.show();
 
+            // 🟢 Shuts down background polling thread immediately when the chat popup is closed
+            stage.setOnCloseRequest(event -> controller.shutdown());
+
+            stage.show();
         } catch (IOException e) {
             System.err.println("ERROR IN LOADING CHAT FXML FILE!");
             e.printStackTrace();

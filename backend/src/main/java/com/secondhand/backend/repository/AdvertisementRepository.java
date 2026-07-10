@@ -38,5 +38,6 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, Lo
             @Param("minPrice") Double minPrice,
             @Param("maxPrice") Double maxPrice
     );
+
 }
 

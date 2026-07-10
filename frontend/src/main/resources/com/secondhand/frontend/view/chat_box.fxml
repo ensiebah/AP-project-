@@ -8,20 +8,29 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox spacing="10" prefWidth="400" prefHeight="500" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.secondhand.frontend.controller.ChatController">
+<VBox prefHeight="550.0" prefWidth="450.0" spacing="12.0" style="-fx-background-color: #f1f3f5; -fx-padding: 15;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://fxml.com/fxml/1" fx:controller="com.secondhand.frontend.controller.ChatController">
+    <children>
 
-    <padding>
-        <Insets top="10" right="10" bottom="10" left="10"/>
-    </padding>
+        <HBox alignment="CENTER_LEFT" spacing="12.0" style="-fx-background-color: #ffffff; -fx-padding: 12; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 4, 0, 0, 0);">
+            <children>
+                <VBox spacing="2.0" HBox.hgrow="ALWAYS">
+                    <children>
+                        <Label fx:id="chatTitleLabel" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #212529;" text="Loading Chat..." />
+                        <Label fx:id="adTitleLabel" style="-fx-font-size: 11px; -fx-text-fill: #6c757d;" text="Ad details" />
+                    </children>
+                </VBox>
+                <Button onAction="#handleCloseWindow" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;" text="✕ Close" />
+            </children>
+        </HBox>
 
-    <Label fx:id="chatTitleLabel" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-    <Label fx:id="adTitleLabel"  style="-fx-font-size: 12px; -fx-text-fill: gray;"/>
+        <ListView fx:id="messageListView" style="-fx-background-radius: 10; -fx-border-color: #dee2e6; -fx-border-radius: 10; -fx-background-color: white;" VBox.vgrow="ALWAYS" />
 
-    <ListView fx:id="messageListView" VBox.vgrow="ALWAYS"/>
+        <HBox alignment="CENTER" spacing="10.0">
+            <children>
+                <TextField fx:id="messageInputField" promptText="Type a message..." style="-fx-pref-height: 38; -fx-background-radius: 8; -fx-border-color: #ced4da; -fx-border-radius: 8;" HBox.hgrow="ALWAYS" />
+                <Button onAction="#handleSendMessage" prefWidth="85.0" style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-pref-height: 38; -fx-background-radius: 8; -fx-cursor: hand;" text="Send" />
+            </children>
+        </HBox>
 
-    <HBox spacing="10">
-        <TextField fx:id="messageInputField" HBox.hgrow="ALWAYS" promptText="Type your message here ..."/>
-        <Button text="Send" onAction="#handleSendMessage" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
-    </HBox>
-
+    </children>
 </VBox>

@@ -2,6 +2,8 @@ package com.secondhand.backend.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @Setter
@@ -23,4 +25,7 @@ public class ConversationDto {
     private Long advertisementId;
 
     private String advertisementTitle;
+    private String opponentUsername;   // نام طرف مقابل گفت‌وگو
+    private String lastMessageContent; // متن آخرین پیام
+    private LocalDateTime lastMessageTime; // زمان آخرین پیام
 }

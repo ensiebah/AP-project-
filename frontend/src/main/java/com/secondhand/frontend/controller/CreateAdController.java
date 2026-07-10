@@ -189,4 +189,20 @@ public class CreateAdController {
         public long getId() { return id; }
         public String getName() { return name; }
     }
+    @FXML
+    public void handleCancel() {
+        // پاک کردن متن تمام فیلدها
+        titleField.clear();
+        priceField.clear();
+        descriptionArea.clear();
+
+        // ریست کردن کمبوباکس‌ها
+        categoryComboBox.getSelectionModel().clearSelection();
+        cityComboBox.getSelectionModel().clearSelection();
+
+        // حذف پیش‌نمایش تصویر
+        imagePreview.setImage(null);
+        errorLabel.setText("");
+    }
+
 }

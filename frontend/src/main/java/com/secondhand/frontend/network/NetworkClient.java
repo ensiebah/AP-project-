@@ -125,21 +125,54 @@ public class NetworkClient {
         // مطابق اندپوینت بک‌اَند: /api/conversations/my-chats
         return sendGetRequest("/conversations/my-chats");
     }
-    public static String searchAdvertisement(String query , String category , Double minPrice , Double maxPrice){
-        StringBuilder urlBuilder = new StringBuilder("/search?") ;
-        if (query != null && !query.isBlank()) urlBuilder.append("query=").append(query).append("&") ;
-        if (category!= null && !category.isBlank()) urlBuilder.append("category=").append(category).append("&")  ;
-        if (minPrice != null) urlBuilder.append("minPrice=").append(minPrice).append("&") ;
-        if (maxPrice != null) urlBuilder.append("maxPrice=").append(maxPrice).append("&") ;
+    public static String searchAdvertisement(String query, Long categoryId, Long cityId, Double minPrice, Double maxPrice) {
+        // اندپوینت هماهنگ با متد فیلتر بک‌اَند شما
+        StringBuilder urlBuilder = new StringBuilder("/advertisements/search?");
 
-        //deleting the last extra & or ?
-        String path = urlBuilder.toString() ;
-        if (path.endsWith("&") || path.endsWith("?")){
-            path = path.substring(0 , path.length() -1 ) ;
+        if (query != null && !query.isBlank()) urlBuilder.append("query=").append(query).append("&");
+        if (categoryId != null) urlBuilder.append("categoryId=").append(categoryId).append("&");
+        if (cityId != null) urlBuilder.append("cityId=").append(cityId).append("&");
+        if (minPrice != null) urlBuilder.append("minPrice=").append(minPrice).append("&");
+        if (maxPrice != null) urlBuilder.append("maxPrice=").append(maxPrice).append("&");
+
+        String path = urlBuilder.toString();
+        if (path.endsWith("&") || path.endsWith("?")) {
+            path = path.substring(0, path.length() - 1);
         }
-        return sendGetRequest(path) ;
-
-
-
+        return sendGetRequest(path);
     }
+    //---------------------------------------
+    //rating and favorite system
+    //----------------------------------------
+    //adding add to favorite
+    public static String addFavorite(Long advertisementId) {
+        // ارسال درخواست امن به بک‌اَند بدون نیاز به شناسه دستی کاربر
+        return sendPostRequest("/favorites?advertisementId=" + advertisementId, null);
+    }
+
+    public static String removeFavorite(Long advertisementId) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            String queryUrl = BASE_URL + "/favorites?advertisementId=" + advertisementId;
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(queryUrl))
+                    .DELETE();
+
+            if (authToken != null) {
+                requestBuilder.header("Authorization", "Bearer " + authToken);
+            }
+
+            HttpResponse<String> response = client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return response.statusCode() == 200 ? "SUCCESS" : "ERROR|" + response.body();
+        } catch (Exception e) {
+            return "ERROR|" + e.getMessage();
+        }
+    }
+
+    public static String getMyFavorites() {
+        return sendGetRequest("/favorites/my-favorites");
+    }
+    //check their in favorite box
+
+
 }
