@@ -37,7 +37,8 @@ public class RatingServiceImpl implements RatingService {
         }
 
         // بند ۸: بررسی عدم وجود امتیاز تکراری برای این آگهی
-        if (ratingRepository.findByBuyerAndAdvertisement(buyer, advertisement).isPresent()) {
+        // 👈 اصلاح خط خطا: به جای .isPresent() مستقیماً از متد exists استفاده کن
+        if (ratingRepository.existsByBuyerAndAdvertisement(buyer, advertisement)) {
             throw new AlreadyRatedException("You have already rated the seller for this advertisement");
         }
 
@@ -64,7 +65,10 @@ public class RatingServiceImpl implements RatingService {
     public List<RatingDto> getSellerRatings(Long sellerId) {
         User seller = userRepository.findById(sellerId)
                 .orElseThrow(() -> new UserNotFoundException("Seller not found"));
-        return ratingRepository.findBySeller(seller).stream().map(this::mapToDto).toList();
+
+        return ratingRepository.findBySeller(seller).stream()
+                .map(this::mapToDto)
+                .collect(java.util.stream.Collectors.toList()); // 👈 اصلاح به حالت Collect استاندارد
     }
 
     @Override

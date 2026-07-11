@@ -30,6 +30,11 @@ public class AdDetailsController {
     @FXML private Label ratingLabel;
     @FXML private Button btnFavorite;
     @FXML private ListView<String> commentsListView;
+    @FXML private TextField newCommentField;
+    @FXML private Button btnTabProductComments;
+    @FXML private Button btnTabSellerRatings;
+
+    private boolean showingProductComments = true;
 
     private AdItem currentAd;
     private final HttpClient httpClient = HttpClient.newHttpClient();
@@ -78,6 +83,8 @@ public class AdDetailsController {
 
         loadSellerAverageRating(ad.getSellerId());
         loadSellerComments(ad.getSellerId());
+        loadProductComments(Long.parseLong(ad.getId().trim()));
+        switchTabToProductComments();
         checkFavoriteStatus();
     }
 
@@ -210,7 +217,42 @@ public class AdDetailsController {
     @FXML
     public void handleRateSeller() {
         if (currentAd == null) return;
+        Long adId = Long.parseLong(currentAd.getId().trim());
 
+        // ⚡ اولین قدم: استعلام زودهنگام وضعیت مجاز بودن کاربر از بک‌اَند قبل از باز شدن پنجره دیالوگ
+        Thread checkEligibilityThread = new Thread(() -> {
+            String response = NetworkClient.checkRatingEligibility(adId);
+            Platform.runLater(() -> {
+                if (response == null || response.startsWith("ERROR")) {
+                    showAlert(Alert.AlertType.ERROR, "Network Error", "Could not verify rating status.");
+                    return;
+                }
+
+                try {
+                    JSONObject json = new JSONObject(response);
+                    boolean allowed = json.getBoolean("allowed");
+
+                    if (!allowed) {
+                        // اگر مجاز نبود (خودش فروشنده بود یا قبلا رای داده بود)، همان ابتدا پیام خطا را نمایش بده و متوقف شو
+                        String reason = json.optString("reason", "You are not allowed to rate this advertisement.");
+                        showAlert(Alert.AlertType.WARNING, "Rating Denied", reason);
+                        return;
+                    }
+
+                    // 🟢 اگر کاربر کاملاً مجاز بود، حالا مراحل گرفتن امتیاز و کامنت را شروع کن:
+                    openRatingDialogs();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+        checkEligibilityThread.setDaemon(true);
+        checkEligibilityThread.start();
+    }
+
+    // انتقال بخش‌های دریافت ورودی به متد کمکی مجزا
+    private void openRatingDialogs() {
         TextInputDialog scoreDialog = new TextInputDialog("5");
         scoreDialog.setTitle("Rate Seller");
         scoreDialog.setHeaderText("Enter a score between 1 and 5 for " + currentAd.getSellerName());
@@ -236,7 +278,6 @@ public class AdDetailsController {
         Optional<String> commentResult = commentDialog.showAndWait();
         String comment = commentResult.orElse("").trim();
 
-        // بدنه JSON تمیز و بدون شناسه کاربر (چون بک‌اَند خودش کاربر را تشخیص می‌دهد)
         String jsonBody = String.format(
                 "{\"advertisementId\":%s,\"score\":%d,\"comment\":\"%s\"}",
                 currentAd.getId().trim(), score, comment
@@ -255,16 +296,12 @@ public class AdDetailsController {
                     if (response.statusCode() == 200 || response.statusCode() == 201) {
                         showAlert(Alert.AlertType.INFORMATION, "Success", "Rating submitted successfully!");
                         loadSellerAverageRating(currentAd.getSellerId());
-                        loadSellerComments(currentAd.getSellerId());
-                    } else {
-                        String body = response.body();
-                        if (body.contains("already rated") || body.contains("AlreadyRatedException")) {
-                            showAlert(Alert.AlertType.WARNING, "Denied", "You have already rated this advertisement.");
-                        } else if (body.contains("cannot rate yourself")) {
-                            showAlert(Alert.AlertType.WARNING, "Denied", "You cannot rate yourself.");
-                        } else {
-                            showAlert(Alert.AlertType.ERROR, "Failure", "Could not submit rating: " + body);
+                        // اگر در حال حاضر تب امتیازات فروشنده باز بود، لیست را آپدیت کن
+                        if (!showingProductComments) {
+                            switchTabToSellerRatings();
                         }
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "Failure", "Could not submit rating: " + response.body());
                     }
                 }));
     }
@@ -315,4 +352,69 @@ public class AdDetailsController {
         alert.setContentText(content);
         alert.showAndWait();
     }
+    private void loadProductComments(Long adId) {
+        Thread thread = new Thread(() -> {
+            String response = NetworkClient.getAdComments(adId);
+            Platform.runLater(() -> {
+                commentsListView.getItems().clear();
+                if (response == null || response.startsWith("ERROR")) return;
+                try {
+                    JSONArray arr = new JSONArray(response);
+                    if (arr.length() == 0) {
+                        commentsListView.getItems().add("No public comments yet. Be the first to ask!");
+                        return;
+                    }
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject obj = arr.getJSONObject(i);
+                        commentsListView.getItems().add(obj.getString("username") + ": " + obj.getString("content"));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    @FXML
+    public void handleSendProductComment() {
+        if (currentAd == null || newCommentField.getText().trim().isBlank()) return;
+        Long adId = Long.parseLong(currentAd.getId().trim());
+        String content = newCommentField.getText().trim();
+
+        Thread thread = new Thread(() -> {
+            String response = NetworkClient.addAdComment(adId, content);
+            Platform.runLater(() -> {
+                if (response != null && !response.startsWith("ERROR")) {
+                    newCommentField.clear();
+                    loadProductComments(adId); // لیست کامنت‌ها بلافاصله تازه می‌شود
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Could not post comment.");
+                }
+            });
+        });
+        thread.setDaemon(true);
+        thread.start();
+    }
+    @FXML
+    public void switchTabToProductComments() {
+        showingProductComments = true;
+        btnTabProductComments.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnTabSellerRatings.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: #333; -fx-font-weight: bold;");
+        if (currentAd != null) {
+            loadProductComments(Long.parseLong(currentAd.getId().trim()));
+        }
+    }
+
+    @FXML
+    public void switchTabToSellerRatings() {
+        showingProductComments = false;
+        btnTabSellerRatings.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold;");
+        btnTabProductComments.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: #333; -fx-font-weight: bold;");
+        if (currentAd != null) {
+            loadSellerComments(currentAd.getSellerId());
+        }
+    }
+
 }

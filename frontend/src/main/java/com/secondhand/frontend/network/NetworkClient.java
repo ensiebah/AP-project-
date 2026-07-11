@@ -174,5 +174,19 @@ public class NetworkClient {
     }
     //check their in favorite box
 
+    public static String addAdComment(Long adId, String content) {
+        String jsonBody = "{\"content\":\"" + content + "\"}";
+        return sendPostRequest("/comments/ad/" + adId, jsonBody);
+    }
 
+    public static String getAdComments(Long adId) {
+        return sendGetRequest("/comments/ad/" + adId);
+    }
+
+    public static String getAdDetailsRaw(Long adId) {
+        return sendGetRequest("/advertisements/" + adId);
+    }
+    public static String checkRatingEligibility(Long adId) {
+        return sendGetRequest("/ratings/check-eligibility/" + adId);
+    }
 }
