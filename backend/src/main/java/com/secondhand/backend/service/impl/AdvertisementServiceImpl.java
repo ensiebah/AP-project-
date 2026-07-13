@@ -141,6 +141,20 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .toList();
     }
 
+    /**
+     * Fetches all personal advertisements belonging to the seller, filtered to exclude DELETED status, ordered by newest.
+     */
+    @Override
+    public List<AdvertisementDto> getAdvertisementsBySellerUsername(String username) {
+        User seller = userRepository.findByUserName(username)
+                .orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found"));
+
+        return advertisementRepository.findBySellerAndStatusNotOrderByIdDesc(seller, AdvertisementStatus.DELETED)
+                .stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
     private AdvertisementDto mapToDto(Advertisement advertisement) {
         return AdvertisementDto.builder()
                 .id(advertisement.getId())

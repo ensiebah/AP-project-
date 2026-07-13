@@ -18,6 +18,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CreateAdController {
 
@@ -27,10 +29,11 @@ public class CreateAdController {
     @FXML private ComboBox<IdNamePair> cityComboBox;
     @FXML private TextArea descriptionArea;
     @FXML private Label errorLabel;
-    @FXML private ImageView imagePreview; // New UI component
+    @FXML private ImageView imagePreview;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    private File selectedImageFile = null; // Holds the user's selected file in memory
+    // لیست نگهداری عکس‌ها
+    private List<File> selectedImageFiles = new ArrayList<>();
 
     @FXML
     public void initialize() {
@@ -43,25 +46,35 @@ public class CreateAdController {
     }
 
     /**
-     * 📷 Action triggered by "Choose Image" button. Opens native system FileChooser.
+     * 📷 متد انتخاب عکس با قابلیت افزودن متوالی (Append) و انتخاب همزمان
      */
     @FXML
     public void handleSelectImage() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Product Image");
+        fileChooser.setTitle("Select Product Images");
 
-        // Filter out non-image extensions
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
         );
 
         Stage stage = (Stage) titleField.getScene().getWindow();
-        File file = fileChooser.showOpenDialog(stage);
+        // قابلیت انتخاب چند عکس به صورت همزمان با کلید Ctrl/Shift
+        List<File> files = fileChooser.showOpenMultipleDialog(stage);
 
-        if (file != null) {
-            this.selectedImageFile = file;
-            Image img = new Image(file.toURI().toString());
-            imagePreview.setImage(img); // Show preview immediately inside the form
+        if (files != null && !files.isEmpty()) {
+            // 🟢 اصلاح اصلی: بجای جایگزین کردن، عکس‌های جدید را به لیست قبلی اضافه می‌کنیم
+            for (File file : files) {
+                if (!this.selectedImageFiles.contains(file)) {
+                    this.selectedImageFiles.add(file);
+                }
+            }
+
+            // نمایش آخرین عکس انتخاب شده در پیش‌نمایش فرم
+            Image img = new Image(files.get(files.size() - 1).toURI().toString());
+            imagePreview.setImage(img);
+
+            errorLabel.setStyle("-fx-text-fill: #2ecc71;");
+            errorLabel.setText("Total " + this.selectedImageFiles.size() + " images selected.");
         }
     }
 
@@ -91,19 +104,22 @@ public class CreateAdController {
         long categoryId = selectedCategory.getId();
         long cityId = selectedCity.getId();
 
-        // 🟢 Logic for Default vs User-selected Image String URL Injection
-        String finalImageUrl;
-        if (selectedImageFile != null) {
-            finalImageUrl = selectedImageFile.toURI().toString(); // Local file path URI
+        // چسباندن آدرس تمام عکس‌ها با کاما (,) به یکدیگر
+        StringBuilder imgUrlsBuilder = new StringBuilder();
+        if (!selectedImageFiles.isEmpty()) {
+            for (int i = 0; i < selectedImageFiles.size(); i++) {
+                imgUrlsBuilder.append(selectedImageFiles.get(i).toURI().toString());
+                if (i < selectedImageFiles.size() - 1) {
+                    imgUrlsBuilder.append(",");
+                }
+            }
         } else {
-            // Path inside target internal project resources
-            finalImageUrl = getClass().getResource("/com/secondhand/frontend/images/default-ad.png") != null ?
+            imgUrlsBuilder.append(getClass().getResource("/com/secondhand/frontend/images/default-ad.png") != null ?
                     getClass().getResource("/com/secondhand/frontend/images/default-ad.png").toExternalForm() :
-                    "https://picsum.photos/400/200"; // Fallback placeholder if file is missing from target resources
+                    "https://picsum.photos/400/200");
         }
 
-        // Combine user text description and image URL together so the double-click model parses it gracefully
-        String integratedDescription = description + " [IMG_URL:" + finalImageUrl + "]";
+        String integratedDescription = description + " [IMG_URL:" + imgUrlsBuilder.toString() + "]";
 
         String jsonRequest = String.format(
                 java.util.Locale.US,
@@ -123,7 +139,7 @@ public class CreateAdController {
             categoryComboBox.setValue(null);
             cityComboBox.setValue(null);
             imagePreview.setImage(null);
-            selectedImageFile = null;
+            selectedImageFiles.clear();
         } else {
             errorLabel.setStyle("-fx-text-fill: red;");
             errorLabel.setText("Failed to publish advertisement. Server returned an error.");
@@ -189,20 +205,16 @@ public class CreateAdController {
         public long getId() { return id; }
         public String getName() { return name; }
     }
+
     @FXML
     public void handleCancel() {
-        // پاک کردن متن تمام فیلدها
         titleField.clear();
         priceField.clear();
         descriptionArea.clear();
-
-        // ریست کردن کمبوباکس‌ها
         categoryComboBox.getSelectionModel().clearSelection();
         cityComboBox.getSelectionModel().clearSelection();
-
-        // حذف پیش‌نمایش تصویر
         imagePreview.setImage(null);
+        selectedImageFiles.clear();
         errorLabel.setText("");
     }
-
 }

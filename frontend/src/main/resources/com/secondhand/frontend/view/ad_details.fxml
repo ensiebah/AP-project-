@@ -18,9 +18,20 @@
 <VBox prefHeight="740.0" prefWidth="500.0" spacing="12" style="-fx-background-color: #f8f9fa; -fx-padding: 15;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://fxml.com/fxml/1" fx:controller="com.secondhand.frontend.controller.AdDetailsController">
     <children>
 
-        <StackPane style="-fx-background-color: #eee; -fx-min-height: 180; -fx-border-color: #ddd; -fx-background-radius: 8; -fx-border-radius: 8;">
+        <!-- 🟢 لایه تصویر تغییر یافته به StackPane مجهز به دکمه‌های چپ و راست کمرنگ شناور -->
+        <StackPane fx:id="imageContainer" style="-fx-background-color: #eee; -fx-min-height: 220; -fx-max-height: 220; -fx-border-color: #ddd; -fx-background-radius: 8; -fx-border-radius: 8;">
             <children>
-                <ImageView fx:id="adImageView" fitHeight="160" fitWidth="440" preserveRatio="true" />
+                <ImageView fx:id="adImageView" fitHeight="200" fitWidth="460" preserveRatio="true" />
+
+                <!-- دکمه ناوبری قبلی (سمت چپ) -->
+                <Button fx:id="btnPrevImage" mnemonicParsing="false" onAction="#handlePrevImage" visible="false" text="❮"
+                        style="-fx-background-color: rgba(0,0,0,0.3); -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-cursor: hand; -fx-pref-width: 40; -fx-pref-height: 60; -fx-background-radius: 0 5 5 0;"
+                        StackPane.alignment="CENTER_LEFT" />
+
+                <!-- دکمه ناوبری بعدی (سمت راست) -->
+                <Button fx:id="btnNextImage" mnemonicParsing="false" onAction="#handleNextImage" visible="false" text="❯"
+                        style="-fx-background-color: rgba(0,0,0,0.3); -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-cursor: hand; -fx-pref-width: 40; -fx-pref-height: 60; -fx-background-radius: 5 0 0 5;"
+                        StackPane.alignment="CENTER_RIGHT" />
             </children>
         </StackPane>
 

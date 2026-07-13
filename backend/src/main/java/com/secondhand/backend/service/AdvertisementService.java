@@ -16,4 +16,9 @@ public interface AdvertisementService {
     AdvertisementDto rejectAdvertisement(Long id) ;
     AdvertisementDto createAdvertisementByUsername(AdvertisementCreateDto dto,String username);
     List<AdvertisementDto> getAllPendingAdvertisements();
+
+    /**
+     * Retrieves all advertisements owned by a specific user using their username, ordered by newest first.
+     */
+    List<AdvertisementDto> getAdvertisementsBySellerUsername(String username);
 }

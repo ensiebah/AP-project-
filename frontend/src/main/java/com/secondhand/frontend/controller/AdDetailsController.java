@@ -9,6 +9,7 @@ import com.secondhand.frontend.model.AdItem;
 import com.secondhand.frontend.util.NavigationUtils;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.dto.ConversationDto;
+import javafx.scene.layout.StackPane;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -16,6 +17,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class AdDetailsController {
@@ -34,8 +37,16 @@ public class AdDetailsController {
     @FXML private Button btnTabProductComments;
     @FXML private Button btnTabSellerRatings;
 
-    private boolean showingProductComments = true;
+    // اجزای جدید FXML برای کنترل کاروسل مالتی‌مدیا
+    @FXML private StackPane imageContainer;
+    @FXML private Button btnPrevImage;
+    @FXML private Button btnNextImage;
 
+    // متغیرهای فرانت‌اند جهت پیمایش لیست تصاویر
+    private final List<String> imageList = new ArrayList<>();
+    private int currentImageIndex = 0;
+
+    private boolean showingProductComments = true;
     private AdItem currentAd;
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private boolean isFavorite = false;
@@ -49,15 +60,24 @@ public class AdDetailsController {
 
         String rawDescription = ad.getDescription() != null ? ad.getDescription() : "";
         String cleanDescription = rawDescription;
-        String extractedImageUrl = null;
+
+        imageList.clear();
 
         if (rawDescription.contains("[IMG_URL:")) {
             int start = rawDescription.indexOf("[IMG_URL:") + 9;
             int end = rawDescription.indexOf("]", start);
             if (end > start) {
-                extractedImageUrl = rawDescription.substring(start, end);
+                String allUrls = rawDescription.substring(start, end);
+                String[] splitUrls = allUrls.split(",");
+                for (String url : splitUrls) {
+                    if (!url.isBlank()) {
+                        imageList.add(url.trim());
+                    }
+                }
                 cleanDescription = rawDescription.substring(0, rawDescription.indexOf("[IMG_URL:")).trim();
             }
+        } else if (rawDescription.contains("http")) {
+            imageList.add(rawDescription.trim());
         }
 
         descriptionArea.setText(cleanDescription);
@@ -66,26 +86,99 @@ public class AdDetailsController {
             sellerLabel.setText("Seller: " + ad.getSellerName());
         }
 
-        try {
-            if (extractedImageUrl != null && !extractedImageUrl.isBlank()) {
-                adImageView.setImage(new Image(extractedImageUrl, true));
-            } else if (rawDescription.contains("http")) {
-                adImageView.setImage(new Image(rawDescription, true));
-            } else {
+        if (!imageList.isEmpty()) {
+            currentImageIndex = 0;
+            displayCurrentImage();
+        } else {
+            try {
                 String fallbackPath = getClass().getResource("/com/secondhand/frontend/images/default-ad.png") != null ?
                         getClass().getResource("/com/secondhand/frontend/images/default-ad.png").toExternalForm() :
                         "https://picsum.photos/400/200";
                 adImageView.setImage(new Image(fallbackPath, true));
+            } catch (Exception e) {
+                adImageView.setImage(new Image("https://picsum.photos/400/200", true));
             }
-        } catch (Exception e) {
-            adImageView.setImage(new Image("https://picsum.photos/400/200", true));
         }
+
+        // فعال‌سازی پایشگر حرکت و کلیک روی عکس
+        setupCarouselHoverLogic();
 
         loadSellerAverageRating(ad.getSellerId());
         loadSellerComments(ad.getSellerId());
         loadProductComments(Long.parseLong(ad.getId().trim()));
         switchTabToProductComments();
         checkFavoriteStatus();
+    }
+
+    private void displayCurrentImage() {
+        if (imageList.isEmpty()) return;
+        try {
+            adImageView.setImage(new Image(imageList.get(currentImageIndex), true));
+        } catch (Exception e) {
+            adImageView.setImage(new Image("https://picsum.photos/400/200", true));
+        }
+    }
+
+    /**
+     * 🟢 متد بهینه‌شده برای مدیریت حرکت ماوس و کلیک روی لبه‌های چپ و راست کانتینر تصویر
+     */
+    private void setupCarouselHoverLogic() {
+        if (imageContainer == null) return;
+
+        // مدیریت تغییر وضعیت فلش‌ها بر اساس هوور ماوس
+        imageContainer.setOnMouseMoved(event -> {
+            double mouseX = event.getX();
+            double containerWidth = imageContainer.getWidth();
+
+            if (mouseX < containerWidth * 0.4 && currentImageIndex > 0) {
+                btnPrevImage.setVisible(true);
+            } else {
+                btnPrevImage.setVisible(false);
+            }
+
+            if (mouseX > containerWidth * 0.6 && currentImageIndex < imageList.size() - 1) {
+                btnNextImage.setVisible(true);
+            } else {
+                btnNextImage.setVisible(false);
+            }
+        });
+
+        imageContainer.setOnMouseExited(event -> {
+            if (btnPrevImage != null) btnPrevImage.setVisible(false);
+            if (btnNextImage != null) btnNextImage.setVisible(false);
+        });
+
+        // 🟢 قابلیت جدید: کلیک روی سمت راست یا چپ باکس تصویر برای رفتن به بعدی/قبلی
+        imageContainer.setOnMouseClicked(event -> {
+            double mouseX = event.getX();
+            double containerWidth = imageContainer.getWidth();
+
+            if (mouseX > containerWidth * 0.5) {
+                handleNextImage(); // کلیک روی نیمه سمت راست
+            } else {
+                handlePrevImage(); // کلیک روی نیمه سمت چپ
+            }
+        });
+    }
+
+    @FXML
+    public void handleNextImage() {
+        if (currentImageIndex < imageList.size() - 1) {
+            currentImageIndex++;
+            displayCurrentImage();
+            btnNextImage.setVisible(currentImageIndex < imageList.size() - 1);
+            btnPrevImage.setVisible(true);
+        }
+    }
+
+    @FXML
+    public void handlePrevImage() {
+        if (currentImageIndex > 0) {
+            currentImageIndex--;
+            displayCurrentImage();
+            btnPrevImage.setVisible(currentImageIndex > 0);
+            btnNextImage.setVisible(true);
+        }
     }
 
     private void loadSellerAverageRating(Long sellerId) {
@@ -219,7 +312,6 @@ public class AdDetailsController {
         if (currentAd == null) return;
         Long adId = Long.parseLong(currentAd.getId().trim());
 
-        // ⚡ اولین قدم: استعلام زودهنگام وضعیت مجاز بودن کاربر از بک‌اَند قبل از باز شدن پنجره دیالوگ
         Thread checkEligibilityThread = new Thread(() -> {
             String response = NetworkClient.checkRatingEligibility(adId);
             Platform.runLater(() -> {
@@ -233,13 +325,11 @@ public class AdDetailsController {
                     boolean allowed = json.getBoolean("allowed");
 
                     if (!allowed) {
-                        // اگر مجاز نبود (خودش فروشنده بود یا قبلا رای داده بود)، همان ابتدا پیام خطا را نمایش بده و متوقف شو
                         String reason = json.optString("reason", "You are not allowed to rate this advertisement.");
                         showAlert(Alert.AlertType.WARNING, "Rating Denied", reason);
                         return;
                     }
 
-                    // 🟢 اگر کاربر کاملاً مجاز بود، حالا مراحل گرفتن امتیاز و کامنت را شروع کن:
                     openRatingDialogs();
 
                 } catch (Exception e) {
@@ -251,7 +341,6 @@ public class AdDetailsController {
         checkEligibilityThread.start();
     }
 
-    // انتقال بخش‌های دریافت ورودی به متد کمکی مجزا
     private void openRatingDialogs() {
         TextInputDialog scoreDialog = new TextInputDialog("5");
         scoreDialog.setTitle("Rate Seller");
@@ -296,7 +385,6 @@ public class AdDetailsController {
                     if (response.statusCode() == 200 || response.statusCode() == 201) {
                         showAlert(Alert.AlertType.INFORMATION, "Success", "Rating submitted successfully!");
                         loadSellerAverageRating(currentAd.getSellerId());
-                        // اگر در حال حاضر تب امتیازات فروشنده باز بود، لیست را آپدیت کن
                         if (!showingProductComments) {
                             switchTabToSellerRatings();
                         }
@@ -352,6 +440,7 @@ public class AdDetailsController {
         alert.setContentText(content);
         alert.showAndWait();
     }
+
     private void loadProductComments(Long adId) {
         Thread thread = new Thread(() -> {
             String response = NetworkClient.getAdComments(adId);
@@ -388,7 +477,7 @@ public class AdDetailsController {
             Platform.runLater(() -> {
                 if (response != null && !response.startsWith("ERROR")) {
                     newCommentField.clear();
-                    loadProductComments(adId); // لیست کامنت‌ها بلافاصله تازه می‌شود
+                    loadProductComments(adId);
                 } else {
                     showAlert(Alert.AlertType.ERROR, "Error", "Could not post comment.");
                 }
@@ -397,6 +486,7 @@ public class AdDetailsController {
         thread.setDaemon(true);
         thread.start();
     }
+
     @FXML
     public void switchTabToProductComments() {
         showingProductComments = true;
@@ -416,5 +506,4 @@ public class AdDetailsController {
             loadSellerComments(currentAd.getSellerId());
         }
     }
-
 }

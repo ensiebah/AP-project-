@@ -8,14 +8,14 @@ import java.time.Duration;
 
 public class NetworkClient {
 
-    public static String userRole = "USER"; // مقدار پیش‌فرض کاربر عادی
+    public static String userRole = "USER"; // Default user role
 
     private static final String BASE_URL = "http://localhost:8080/api";
-    // توکن امنیتی که پس از لاگین/ثبت‌نام اینجا ذخیره می‌شود تا در درخواست‌های بعدی ارسال شود
+    // Authentication token populated upon login
     public static String authToken = null;
 
     /**
-     * متد عمومی برای ارسال درخواست‌های POST به صورت JSON (بدون تغییر - کد خودت)
+     * Dispatches a synchronous HTTP POST request with a JSON payload.
      */
     public static String sendPostRequest(String endpoint, String jsonBody) {
         try {
@@ -28,14 +28,12 @@ public class NetworkClient {
                     .timeout(Duration.ofSeconds(10))
                     .header("Content-Type", "application/json");
 
-            // هندل کردن بادی خالی یا پر برای متد POST
             if (jsonBody != null) {
                 requestBuilder.POST(HttpRequest.BodyPublishers.ofString(jsonBody));
             } else {
                 requestBuilder.POST(HttpRequest.BodyPublishers.noBody());
             }
 
-            // اگر توکن موجود بود، آن را در هدر درخواست قرار بده
             if (authToken != null) {
                 requestBuilder.header("Authorization", "Bearer " + authToken);
             }
@@ -59,7 +57,7 @@ public class NetworkClient {
     }
 
     /**
-     * 👈 متد عمومی جدید برای ارسال درخواست‌های GET (جهت واکشی تاریخچه پیام‌ها و لیست چت‌ها)
+     * Dispatches a synchronous HTTP GET request to fetch protected cloud resources.
      */
     public static String sendGetRequest(String endpoint) {
         try {
@@ -72,7 +70,6 @@ public class NetworkClient {
                     .timeout(Duration.ofSeconds(10))
                     .GET();
 
-            // ارسال توکن JWT در درخواست‌های GET
             if (authToken != null) {
                 requestBuilder.header("Authorization", "Bearer " + authToken);
             }
@@ -91,44 +88,68 @@ public class NetworkClient {
         }
     }
 
-    // =========================================================================
-    // 👈 متدهای اختصاصی بخش سیستم چت و مکالمات (Chat APIs)
-    // =========================================================================
+    /**
+     * 🆕 Fetches all active and pending advertisements submitted by the authenticated seller user.
+     */
+    public static String getMyAdvertisements() {
+        return sendGetRequest("/advertisements/my-ads");
+    }
 
-    // 👈 ورودی متد را از String advertisementId به Long advertisementId تغییر دهید
+    /**
+     * 🆕 Dispatches an HTTP DELETE request to erase or soft-delete an advertisement completely.
+     */
+    public static String deleteAdvertisement(Long adId) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/advertisements/" + adId))
+                    .header("Authorization", "Bearer " + authToken)
+                    .DELETE()
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.statusCode() == 200 ? "SUCCESS" : "ERROR|" + response.body();
+        } catch (Exception e) {
+            return "ERROR|" + e.getMessage();
+        }
+    }
+
+    /**
+     * 🆕 Dispatches an HTTP PUT request to modify parameters of an already existing advertisement.
+     */
+    public static String updateAdvertisementRaw(Long adId, String jsonBody) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/advertisements/" + adId))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + authToken)
+                    .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.statusCode() == 200 ? response.body() : "ERROR|" + response.body();
+        } catch (Exception e) {
+            return "ERROR|" + e.getMessage();
+        }
+    }
+
     public static String createConversation(Long advertisementId) {
-        // مطابق اندپوینت بک‌اَند: /api/conversations/ad/{advertisementId}
         return sendPostRequest("/conversations/ad/" + advertisementId, null);
     }
 
-    /**
-     * ۲. ارسال پیام جدید درون یک چت‌روم
-     * @param jsonBody رشته جی‌سان حاوی conversationId و content
-     */
     public static String sendMessage(String jsonBody) {
-        // مطابق اندپوینت بک‌اَند: /api/messages
         return sendPostRequest("/messages", jsonBody);
     }
 
-    /**
-     * ۳. دریافت تاریخچه کامل پیام‌های یک چت‌روم
-     */
     public static String getConversationMessages(Long conversationId) {
-        // مطابق اندپوینت بک‌اَند: /api/messages/conversation/{conversationId}
         return sendGetRequest("/messages/conversation/" + conversationId);
     }
 
-    /**
-     * ۴. دریافت لیست چت‌های کاربر لاگین شده (اختیاری - اگر صفحه صندوق پیام داری)
-     */
     public static String getMyChats() {
-        // مطابق اندپوینت بک‌اَند: /api/conversations/my-chats
         return sendGetRequest("/conversations/my-chats");
     }
-    public static String searchAdvertisement(String query, Long categoryId, Long cityId, Double minPrice, Double maxPrice) {
-        // اندپوینت هماهنگ با متد فیلتر بک‌اَند شما
-        StringBuilder urlBuilder = new StringBuilder("/advertisements/search?");
 
+    public static String searchAdvertisement(String query, Long categoryId, Long cityId, Double minPrice, Double maxPrice) {
+        StringBuilder urlBuilder = new StringBuilder("/advertisements/search?");
         if (query != null && !query.isBlank()) urlBuilder.append("query=").append(query).append("&");
         if (categoryId != null) urlBuilder.append("categoryId=").append(categoryId).append("&");
         if (cityId != null) urlBuilder.append("cityId=").append(cityId).append("&");
@@ -141,12 +162,8 @@ public class NetworkClient {
         }
         return sendGetRequest(path);
     }
-    //---------------------------------------
-    //rating and favorite system
-    //----------------------------------------
-    //adding add to favorite
+
     public static String addFavorite(Long advertisementId) {
-        // ارسال درخواست امن به بک‌اَند بدون نیاز به شناسه دستی کاربر
         return sendPostRequest("/favorites?advertisementId=" + advertisementId, null);
     }
 
@@ -172,7 +189,6 @@ public class NetworkClient {
     public static String getMyFavorites() {
         return sendGetRequest("/favorites/my-favorites");
     }
-    //check their in favorite box
 
     public static String addAdComment(Long adId, String content) {
         String jsonBody = "{\"content\":\"" + content + "\"}";
@@ -186,6 +202,7 @@ public class NetworkClient {
     public static String getAdDetailsRaw(Long adId) {
         return sendGetRequest("/advertisements/" + adId);
     }
+
     public static String checkRatingEligibility(Long adId) {
         return sendGetRequest("/ratings/check-eligibility/" + adId);
     }

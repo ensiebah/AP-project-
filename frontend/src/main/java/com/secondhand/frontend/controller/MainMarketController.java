@@ -8,6 +8,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.Region; // 🟢 رفع خطای نبودن کلاس Region
 import javafx.util.StringConverter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,8 +23,8 @@ public class MainMarketController {
     @FXML private TextField searchField;
     @FXML private TextField minPriceField;
     @FXML private TextField maxPriceField;
-    @FXML private ComboBox<IdNamePair> categoryComboBox; // 🟢 Updated to match IdNamePair structure
-    @FXML private ComboBox<IdNamePair> cityComboBox;     // 🟢 Updated to match IdNamePair structure
+    @FXML private ComboBox<IdNamePair> categoryComboBox;
+    @FXML private ComboBox<IdNamePair> cityComboBox;
     @FXML private ListView<AdvertisementDto> adListView;
     @FXML private Button btnAdminPanel;
 
@@ -60,7 +61,6 @@ public class MainMarketController {
 
         setupComboBoxConverters();
 
-        // 🟢 Fetching data from the exact endpoints you used in CreateAdController
         Platform.runLater(() -> {
             loadActiveAdvertisements();
             fetchDropdownData("/api/lookup/categories", categoryComboBox);
@@ -172,9 +172,6 @@ public class MainMarketController {
         }
     }
 
-    /**
-     * 🟢 Reset function: Clears all visual filter components and reloads all active products.
-     */
     @FXML
     public void handleResetFilters() {
         searchField.clear();
@@ -182,7 +179,7 @@ public class MainMarketController {
         maxPriceField.clear();
         categoryComboBox.setValue(null);
         cityComboBox.setValue(null);
-        loadActiveAdvertisements(); // Reload all original unfiltered ads
+        loadActiveAdvertisements();
     }
 
     private AdvertisementDto parseJsonToDto(JSONObject obj) {
@@ -229,6 +226,11 @@ public class MainMarketController {
         }
     }
 
+    @FXML
+    public void goToMyAdvertisements() {
+        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/my_advertisements.fxml", "My Advertisements Dashboard");
+    }
+
     @FXML public void goToCreatAd() { NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/create_ad.fxml", "Post a New Advertisement"); }
     @FXML public void handleLogout() { NetworkClient.authToken = null; NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/login.fxml", "Login"); }
     @FXML private void handleNavigateToAdmin() { NavigationUtils.navigateTo(btnAdminPanel, "/com/secondhand/frontend/view/admin_panel.fxml", "Admin Dashboard"); }
@@ -241,7 +243,6 @@ public class MainMarketController {
         }
     }
 
-    // 🟢 Internal data structure helper class matching CreateAdController
     public static class IdNamePair {
         private final long id;
         private final String name;
@@ -254,10 +255,12 @@ public class MainMarketController {
         public long getId() { return id; }
         public String getName() { return name; }
     }
+
     @FXML
     public void goToInbox() {
         NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/inbox.fxml", "My Inbox");
     }
+
     @FXML
     public void goToFavorites() {
         NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/favorites_list.fxml", "My Favorites");

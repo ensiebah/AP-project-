@@ -25,19 +25,23 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, Lo
 
     Long id(Long id);
 
+    /**
+     * Finds active or pending advertisements belonging to a specific seller, sorted by ID descending (approval order).
+     * Excludes soft-deleted advertisements.
+     */
+    List<Advertisement> findBySellerAndStatusNotOrderByIdDesc(User seller, AdvertisementStatus status);
+
     @Query("SELECT a FROM Advertisement a WHERE " +
             "(:query IS NULL OR LOWER(a.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(a.description) LIKE LOWER(CONCAT('%', :query, '%'))) AND " +
-            "(:categoryId IS NULL OR a.category.id = :categoryId) AND " + // 👈 مقایسه با آیدیِ دسته‌بندی
-            "(:cityId IS NULL OR a.city.id = :cityId) AND " +             // 👈 مقایسه با آیدیِ شهر
+            "(:categoryId IS NULL OR a.category.id = :categoryId) AND " +
+            "(:cityId IS NULL OR a.city.id = :cityId) AND " +
             "(:minPrice IS NULL OR a.price >= :minPrice) AND " +
             "(:maxPrice IS NULL OR a.price <= :maxPrice)")
     List<Advertisement> filterAdvertisements(
             @Param("query") String query,
-            @Param("categoryId") Long categoryId, // 👈 جنس ورودی Long شد
-            @Param("cityId") Long cityId,         // 👈 جنس ورودی Long شد
+            @Param("categoryId") Long categoryId,
+            @Param("cityId") Long cityId,
             @Param("minPrice") Double minPrice,
             @Param("maxPrice") Double maxPrice
     );
-
 }
-

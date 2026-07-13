@@ -37,6 +37,15 @@ public class AdvertisementController {
         return advertisementService.getAllPendingAdvertisements();
     }
 
+    /**
+     * Fetches personal advertisements submitted by the authenticated user, excluding deleted items, ordered by ID desc.
+     */
+    @GetMapping("/my-ads")
+    public List<AdvertisementDto> getMyAdvertisements(Principal principal) {
+        String username = principal.getName();
+        return advertisementService.getAdvertisementsBySellerUsername(username);
+    }
+
     @PostMapping("/search")
     public List<AdvertisementDto> searchAdvertisements(@RequestBody Map<String, String> searchRequest) {
         String keywords = searchRequest.getOrDefault("query", "");
