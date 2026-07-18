@@ -8,7 +8,7 @@ import java.time.Duration;
 
 public class NetworkClient {
 
-    public static String userRole = "USER"; // Default user role
+    public static String userRole = "USER"; // Default role: USER
 
     private static final String BASE_URL = "http://localhost:8080/api";
     // Authentication token populated upon login
@@ -89,14 +89,14 @@ public class NetworkClient {
     }
 
     /**
-     * 🆕 Fetches all active and pending advertisements submitted by the authenticated seller user.
+     * Fetches all active and pending advertisements submitted by the authenticated seller user.
      */
     public static String getMyAdvertisements() {
         return sendGetRequest("/advertisements/my-ads");
     }
 
     /**
-     * 🆕 Dispatches an HTTP DELETE request to erase or soft-delete an advertisement completely.
+     * Dispatches an HTTP DELETE request to erase or soft-delete an advertisement completely.
      */
     public static String deleteAdvertisement(Long adId) {
         try {
@@ -114,7 +114,7 @@ public class NetworkClient {
     }
 
     /**
-     * 🆕 Dispatches an HTTP PUT request to modify parameters of an already existing advertisement.
+     * Dispatches an HTTP PUT request to modify parameters of an already existing advertisement.
      */
     public static String updateAdvertisementRaw(Long adId, String jsonBody) {
         try {
@@ -148,7 +148,10 @@ public class NetworkClient {
         return sendGetRequest("/conversations/my-chats");
     }
 
-    public static String searchAdvertisement(String query, Long categoryId, Long cityId, Double minPrice, Double maxPrice) {
+    /**
+     * 🟢 متد اورلود شده و جدید سرچ برای انتقال پارامترهای تفکیک‌شده‌ی مرتب‌سازی به سمت سرور اسپرینگ‌بوت
+     */
+    public static String searchAdvertisement(String query, Long categoryId, Long cityId, Double minPrice, Double maxPrice, String sortBy, String order) {
         StringBuilder urlBuilder = new StringBuilder("/advertisements/search?");
         if (query != null && !query.isBlank()) urlBuilder.append("query=").append(query).append("&");
         if (categoryId != null) urlBuilder.append("categoryId=").append(categoryId).append("&");
@@ -156,11 +159,20 @@ public class NetworkClient {
         if (minPrice != null) urlBuilder.append("minPrice=").append(minPrice).append("&");
         if (maxPrice != null) urlBuilder.append("maxPrice=").append(maxPrice).append("&");
 
+        // الصاق فیلدهای مرتب‌سازی پویا به انتهای آدرس
+        if (sortBy != null && !sortBy.isBlank()) urlBuilder.append("sortBy=").append(sortBy).append("&");
+        if (order != null && !order.isBlank()) urlBuilder.append("order=").append(order).append("&");
+
         String path = urlBuilder.toString();
         if (path.endsWith("&") || path.endsWith("?")) {
             path = path.substring(0, path.length() - 1);
         }
         return sendGetRequest(path);
+    }
+
+    // حفظ ساختار متد قبلی جهت جلوگیری از تداخل در بقیه کلاس‌ها
+    public static String searchAdvertisement(String query, Long categoryId, Long cityId, Double minPrice, Double maxPrice) {
+        return searchAdvertisement(query, categoryId, cityId, minPrice, maxPrice, "date", "desc");
     }
 
     public static String addFavorite(Long advertisementId) {
@@ -206,4 +218,22 @@ public class NetworkClient {
     public static String checkRatingEligibility(Long adId) {
         return sendGetRequest("/ratings/check-eligibility/" + adId);
     }
+
+    public static String updateAdStatus(Long adId, String jsonBody) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            // 🟢 صدا زدن مستقیم اندپوینت اختصاصی بک‌اند برای فروخته شدن آگهی
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/advertisements/" + adId + "/sold"))
+                    .header("Authorization", "Bearer " + authToken)
+                    .PUT(HttpRequest.BodyPublishers.noBody()) // بک‌اند شما به Body نیاز ندارد
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return response.statusCode() == 200 ? "SUCCESS" : "ERROR|" + response.body();
+        } catch (Exception e) {
+            return "ERROR|" + e.getMessage();
+        }
+    }
+
 }

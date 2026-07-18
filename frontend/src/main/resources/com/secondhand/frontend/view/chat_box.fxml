@@ -19,7 +19,9 @@
                         <Label fx:id="adTitleLabel" style="-fx-font-size: 11px; -fx-text-fill: #6c757d;" text="Ad details" />
                     </children>
                 </VBox>
-                <Button onAction="#handleCloseWindow" style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;" text="✕ Close" />
+                <Button onAction="#handleCloseWindow"
+                        style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;"
+                        text="✕ Close" />
             </children>
         </HBox>
 

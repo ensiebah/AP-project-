@@ -11,8 +11,10 @@ import com.secondhand.backend.repository.UserRepository;
 import com.secondhand.backend.service.AdvertisementService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -101,11 +103,55 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return mapToDto(advertisement);
     }
 
+    // 🟢 متد قدیمی برای حفظ ساختار کدهای قبلی پروژه
     @Override
     public List<AdvertisementDto> getAllActiveAdvertisement() {
-        return advertisementRepository.findByStatus(AdvertisementStatus.ACTIVE).stream()
+        return getAllActiveAdvertisement("date", "desc");
+    }
+
+    // 🟢 متد پیاده‌سازی شده جدید با قابلیت مرتب‌سازی پویای صفحه اول بازار
+    @Override
+    public List<AdvertisementDto> getAllActiveAdvertisement(String sortBy, String order) {
+        Sort.Direction direction = "asc".equalsIgnoreCase(order) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort;
+
+        if ("price".equalsIgnoreCase(sortBy)) {
+            sort = Sort.by(direction, "price");
+        } else if ("rating".equalsIgnoreCase(sortBy)) {
+            // برای رتبه‌بندی به دلیل منطق محاسباتی Average، مستقیماً از کوئری کاستوم دیتابیس کمک می‌گیریم
+            List<Advertisement> ads = advertisementRepository.filterAdvertisementsAdvanced(
+                    AdvertisementStatus.ACTIVE, null, null, null, null, null, "rating", order
+            );
+            return ads.stream().map(this::mapToDto).collect(Collectors.toList());
+        } else {
+            // حالت پیش‌فرض (مرتب‌سازی بر اساس تاریخ ثبت یعنی شناسه آگهی)
+            sort = Sort.by(direction, "id");
+        }
+
+        return advertisementRepository.findByStatus(AdvertisementStatus.ACTIVE, sort).stream()
                 .map(this::mapToDto)
                 .toList();
+    }
+
+    // 🟢 متد جدید برای جستجوی پیشرفته، فیلترها و مرتب‌سازی یکپارچه دیتابیس
+    @Override
+    public List<AdvertisementDto> searchAdvertisementsAdvanced(String query, Long categoryId, Long cityId, Double minPrice, Double maxPrice, String sortBy, String order) {
+        String cleanQuery = (query != null && !query.trim().isEmpty()) ? query.trim() : null;
+
+        List<Advertisement> advertisements = advertisementRepository.filterAdvertisementsAdvanced(
+                AdvertisementStatus.ACTIVE,
+                cleanQuery,
+                categoryId,
+                cityId,
+                minPrice,
+                maxPrice,
+                sortBy,
+                order
+        );
+
+        return advertisements.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -141,9 +187,6 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .toList();
     }
 
-    /**
-     * Fetches all personal advertisements belonging to the seller, filtered to exclude DELETED status, ordered by newest.
-     */
     @Override
     public List<AdvertisementDto> getAdvertisementsBySellerUsername(String username) {
         User seller = userRepository.findByUserName(username)
@@ -169,5 +212,15 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .cityId(advertisement.getCity().getId())
                 .cityName(advertisement.getCity().getName())
                 .build();
+    }
+
+    @Override
+    public AdvertisementDto markAsSold(Long id) {
+        Advertisement advertisement = advertisementRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Advertisement not found"));
+
+        // فرض بر این است که SOLD در AdvertisementStatus تعریف شده است
+        advertisement.setStatus(AdvertisementStatus.SOLD);
+        return mapToDto(advertisementRepository.save(advertisement));
     }
 }

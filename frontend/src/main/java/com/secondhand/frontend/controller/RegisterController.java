@@ -43,9 +43,16 @@ public class RegisterController {
             messageLabel.setStyle("-fx-text-fill: green;");
             messageLabel.setText("Registration successful! Redirecting...");
 
-            // از آنجایی که در متد قبلی بک‌آند، خروجی لاگین‌ریسپانس را دادیم، می‌توان توکن را مستقیم هم برداشت
-            // اما برای سادگی جریان فرانت، کاربر را به صفحه لاگین می‌بریم تا یوزرنیمش را بزند
-            NavigationUtils.navigateTo(usernameField, "/com/secondhand/frontend/view/login.fxml", "SecondHand Market - Login");
+            // 🟢 ایجاد یک وقفه ۱.۵ ثانیه‌ای قبل از تغییر صفحه
+            javafx.animation.PauseTransition delay = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.5));
+            delay.setOnFinished(event ->
+                    NavigationUtils.navigateTo(usernameField, "/com/secondhand/frontend/view/login.fxml", "SecondHand Market - Login")
+            );
+            delay.play();
+
+//            // از آنجایی که در متد قبلی بک‌آند، خروجی لاگین‌ریسپانس را دادیم، می‌توان توکن را مستقیم هم برداشت
+//            // اما برای سادگی جریان فرانت، کاربر را به صفحه لاگین می‌بریم تا یوزرنیمش را بزند
+//            NavigationUtils.navigateTo(usernameField, "/com/secondhand/frontend/view/login.fxml", "SecondHand Market - Login");
         }
         else {
             messageLabel.setStyle("-fx-text-fill: red;");

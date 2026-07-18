@@ -27,13 +27,19 @@
                     </content>
                 </ScrollPane>
 
-                <Button onAction="#handleAddNewPicture" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="+ Add New Picture(s)" />
+                <Button onAction="#handleAddNewPicture" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"
+                        text="+ Add New Picture(s)" />
                 <Separator />
 
                 <HBox spacing="10" alignment="CENTER_RIGHT">
                     <children>
-                        <Button onAction="#handleCancel" style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-cursor: hand;" text="Cancel" />
-                        <Button onAction="#handleUpdateAdvertisement" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Save Modifications" />
+
+                        <Button onAction="#handleCancel" style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-cursor: hand;"
+                                text="Cancel" />
+
+                        <Button onAction="#handleUpdateAdvertisement"
+                                style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"
+                                text="Save Modifications" />
                     </children>
                 </HBox>
             </children>

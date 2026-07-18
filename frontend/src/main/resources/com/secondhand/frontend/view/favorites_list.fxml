@@ -14,7 +14,9 @@
                 <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;" text="♥ My Saved Favorites" HBox.hgrow="ALWAYS" />
                 <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
                     <children>
-                        <Button onAction="#handleBackToMarket" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="← Market" />
+                        <Button onAction="#handleBackToMarket"
+                                styleClass="btn-back"
+                                text="← Market" />
                     </children>
                 </HBox>
             </children>

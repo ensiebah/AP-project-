@@ -37,6 +37,15 @@ public class AdDetailsController {
     @FXML private Button btnTabProductComments;
     @FXML private Button btnTabSellerRatings;
 
+    // دکمه‌های خریدار
+    @FXML private Button btnRateSeller;
+    @FXML private Button btnChatWithSeller;
+
+    // دکمه‌های جدید مربوط به صاحب آگهی
+    @FXML private Button btnEdit;
+    @FXML private Button btnDelete;
+    @FXML private Button btnMarkAsSold;
+
     // اجزای جدید FXML برای کنترل کاروسل مالتی‌مدیا
     @FXML private StackPane imageContainer;
     @FXML private Button btnPrevImage;
@@ -108,6 +117,154 @@ public class AdDetailsController {
         loadProductComments(Long.parseLong(ad.getId().trim()));
         switchTabToProductComments();
         checkFavoriteStatus();
+
+        // 🟢 بررسی داینامیک اینکه آیا آگهی متعلق به خود کاربر است یا خیر
+        checkOwnershipAndToggleButtons();
+    }
+
+    /**
+     * 🟢 متد هوشمند برای تشخیص هویت مالک آگهی و مدیریت نمایش دکمه‌ها
+     */
+    private void checkOwnershipAndToggleButtons() {
+        if (currentAd == null) return;
+        Long adId = Long.parseLong(currentAd.getId().trim());
+
+        Thread ownershipThread = new Thread(() -> {
+            // استفاده از اندپوینت موجود برای چک کردن واجد شرایط بودن امتیازدهی
+            String response = NetworkClient.checkRatingEligibility(adId);
+            Platform.runLater(() -> {
+                boolean isOwnAd = false;
+                if (response != null && !response.startsWith("ERROR")) {
+                    try {
+                        JSONObject json = new JSONObject(response);
+                        String reason = json.optString("reason", "");
+                        // اگر سرور بگوید شما نمی‌توانید به آگهی خودتان امتیاز دهید:
+                        if (reason.contains("own advertisement") || reason.contains("خودتان")) {
+                            isOwnAd = true;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (isOwnAd) {
+                    // آگهی متعلق به خود کاربر است -> نمایش ابزارهای مدیریت آگهی
+                    btnEdit.setVisible(true);
+                    btnEdit.setManaged(true);
+                    btnDelete.setVisible(true);
+                    btnDelete.setManaged(true);
+                    btnMarkAsSold.setVisible(true);
+                    btnMarkAsSold.setManaged(true);
+
+                    // مخفی کردن دکمه‌های تعاملی مشتری
+                    btnRateSeller.setVisible(false);
+                    btnRateSeller.setManaged(false);
+                    btnChatWithSeller.setVisible(false);
+                    btnChatWithSeller.setManaged(false);
+                    btnFavorite.setVisible(false);
+                    btnFavorite.setManaged(false);
+                } else {
+                    // آگهی عمومی است -> برگرداندن به حالت عادی خریدار
+                    btnEdit.setVisible(false);
+                    btnEdit.setManaged(false);
+                    btnDelete.setVisible(false);
+                    btnDelete.setManaged(false);
+                    btnMarkAsSold.setVisible(false);
+                    btnMarkAsSold.setManaged(false);
+
+                    btnRateSeller.setVisible(true);
+                    btnRateSeller.setManaged(true);
+                    btnChatWithSeller.setVisible(true);
+                    btnChatWithSeller.setManaged(true);
+                    btnFavorite.setVisible(true);
+                    btnFavorite.setManaged(true);
+                }
+            });
+        });
+        ownershipThread.setDaemon(true);
+        ownershipThread.start();
+    }
+
+    /**
+     * 🟢 اکشن دکمه حذف آگهی
+     */
+    @FXML
+    public void handleDeleteAd() {
+        if (currentAd == null) return;
+        Long adId = Long.parseLong(currentAd.getId().trim());
+
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Delete Advertisement");
+        confirmAlert.setHeaderText("Are you sure you want to delete this ad?");
+        confirmAlert.setContentText("This action cannot be undone.");
+
+        Optional<ButtonType> result = confirmAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            Thread deleteThread = new Thread(() -> {
+                String response = NetworkClient.deleteAdvertisement(adId);
+                Platform.runLater(() -> {
+                    if (response.equals("SUCCESS")) {
+                        showAlert(Alert.AlertType.INFORMATION, "Success", "Advertisement deleted successfully.");
+                        handleBack(); // بازگشت به بازارچه اصلی پس از حذف
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "Error", "Failed to delete advertisement.");
+                    }
+                });
+            });
+            deleteThread.setDaemon(true);
+            deleteThread.start();
+        }
+    }
+
+    /**
+     * 🟢 اکشن دکمه ویرایش آگهی (هدایت مستقیم به صفحه ادیت مشترک با My-Ads)
+     */
+    @FXML
+    public void handleEditAd() {
+        if (currentAd == null) return;
+        // جابه‌جایی به صفحه ویرایش با ساختار کاملاً ایمن و یکپارچه NavigationUtils شما
+        NavigationUtils.navigateTo(titleLabel, "/com/secondhand/frontend/view/edit_ad.fxml", "Edit Advertisement");
+    }
+
+    /**
+     * 🟢 اکشن دکمه تغییر وضعیت به فروخته شده
+     */
+    @FXML
+    public void handleMarkAsSold() {
+        if (currentAd == null) return;
+
+        Long adId;
+        try {
+            adId = Long.parseLong(currentAd.getId().trim());
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "خطا", "شناسه آگهی معتبر نیست.");
+            return;
+        }
+
+        Thread thread = new Thread(() -> {
+            // 🟢 ارسال درخواست مستقیم به اندپوینت اختصاصی sold بک‌اند
+            String response = NetworkClient.updateAdStatus(adId, null);
+
+            Platform.runLater(() -> {
+                if (response != null && (response.equals("SUCCESS") || !response.startsWith("ERROR"))) {
+                    showAlert(Alert.AlertType.INFORMATION, "موفقیت", "وضعیت آگهی با موفقیت به 'فروخته شده' تغییر یافت!");
+
+                    // بازگشت به بازارچه و لود مجدد دیتای تازه از سرور
+                    handleBack();
+                } else {
+                    String cleanError = "خطا در بروزرسانی وضعیت آگهی.";
+                    if (response != null && response.contains("|")) {
+                        String[] errorParts = response.split("\\|");
+                        if (errorParts.length > 1) {
+                            cleanError = errorParts[1];
+                        }
+                    }
+                    showAlert(Alert.AlertType.ERROR, "خطا در سیستم", "پاسخ سرور: " + cleanError);
+                }
+            });
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     private void displayCurrentImage() {
@@ -119,13 +276,9 @@ public class AdDetailsController {
         }
     }
 
-    /**
-     * 🟢 متد بهینه‌شده برای مدیریت حرکت ماوس و کلیک روی لبه‌های چپ و راست کانتینر تصویر
-     */
     private void setupCarouselHoverLogic() {
         if (imageContainer == null) return;
 
-        // مدیریت تغییر وضعیت فلش‌ها بر اساس هوور ماوس
         imageContainer.setOnMouseMoved(event -> {
             double mouseX = event.getX();
             double containerWidth = imageContainer.getWidth();
@@ -148,15 +301,14 @@ public class AdDetailsController {
             if (btnNextImage != null) btnNextImage.setVisible(false);
         });
 
-        // 🟢 قابلیت جدید: کلیک روی سمت راست یا چپ باکس تصویر برای رفتن به بعدی/قبلی
         imageContainer.setOnMouseClicked(event -> {
             double mouseX = event.getX();
             double containerWidth = imageContainer.getWidth();
 
             if (mouseX > containerWidth * 0.5) {
-                handleNextImage(); // کلیک روی نیمه سمت راست
+                handleNextImage();
             } else {
-                handlePrevImage(); // کلیک روی نیمه سمت چپ
+                handlePrevImage();
             }
         });
     }

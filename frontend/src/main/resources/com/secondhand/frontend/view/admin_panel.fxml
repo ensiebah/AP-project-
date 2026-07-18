@@ -75,7 +75,9 @@
                             </columns>
                         </TableView>
                         <HBox alignment="CENTER_RIGHT">
-                            <Button text="Unblock User" onAction="#handleUnblockUser" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                            <Button text="Unblock User"
+                                    onAction="#handleUnblockUser"
+                                    style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;"/>
                         </HBox>
                     </VBox>
                 </HBox>

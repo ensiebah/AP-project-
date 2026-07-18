@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="15.0" alignment="TOP_CENTER" stylesheets="@../styles/main.css"
+<VBox spacing="15.0" alignment="TOP_CENTER" stylesheets="@/style.css"
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.secondhand.frontend.controller.CreateAdController"
       prefWidth="500.0" prefHeight="650.0">
@@ -75,7 +75,8 @@
     <!-- Action Buttons -->
     <HBox spacing="15.0" alignment="CENTER">
         <Button text="❌ Cancel" onAction="#handleCancel" prefWidth="100.0" style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-cursor: hand;"/>
-        <Button text="⬅ Back" onAction="#goBackToMarket" prefWidth="100.0" style="-fx-background-color: #7f8c8d; -fx-text-fill: white; -fx-cursor: hand;"/>
+        <Button text="⬅ Back" onAction="#goBackToMarket" prefWidth="100.0"
+                styleClass="btn-back"/>
         <Button text="🚀 Publish Ad" onAction="#handleSaveAdvertisement" prefWidth="140.0" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"/>
     </HBox>
 

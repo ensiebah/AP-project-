@@ -6,6 +6,8 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
@@ -19,9 +21,7 @@
 
                 <HBox alignment="CENTER_RIGHT" spacing="8.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <!-- 🟢 دکمه جدید مدیریت آگهی‌های من (My Ads) با استایل اختصاصی شما -->
                         <Button mnemonicParsing="false" onAction="#goToMyAdvertisements" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="My Ads 📋" />
-
                         <Button fx:id="btnAdminPanel" mnemonicParsing="false" onAction="#handleNavigateToAdmin" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="Admin Panel" />
                         <Button mnemonicParsing="false" onAction="#goToInbox" style="-fx-background-color: #4a5568; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="My Chats ✉" />
                         <Button mnemonicParsing="false" onAction="#goToCreatAd" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5; -fx-cursor: hand;" text="Post New Ad" />
@@ -65,7 +65,18 @@
         <!-- Advertisements List View Section -->
         <VBox spacing="5.0" VBox.vgrow="ALWAYS">
             <children>
-                <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="Active Advertisements" />
+                <!-- 🟢 لایه هدر بالای لیست برای قرارگیری دکمه منوی Sort By در کنار عنوان اصلی -->
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 5 0;">
+                    <children>
+                        <Label style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="Active Advertisements" />
+                        <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                            <children>
+                                <!-- دکمه کشویی آپشن‌های مرتب سازی با استایل ست شده -->
+                                <MenuButton fx:id="sortMenuButton" mnemonicParsing="false" style="-fx-background-color: #ffffff; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-radius: 5; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-cursor: hand;" text="Sort by: Date (Newest)" />
+                            </children>
+                        </HBox>
+                    </children>
+                </HBox>
                 <ListView fx:id="adListView" style="-fx-background-radius: 8; -fx-border-color: #bdc3c7; -fx-border-radius: 8;" VBox.vgrow="ALWAYS" />
             </children>
         </VBox>

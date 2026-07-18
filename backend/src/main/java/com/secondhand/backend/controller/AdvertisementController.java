@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/advertisements")
@@ -27,9 +26,12 @@ public class AdvertisementController {
         return advertisementService.getAdvertisementById(id);
     }
 
+    // 🟢 اصلاح متد دریافت آگهی‌های فعال همراه با پارامترهای مرتب‌سازی
     @GetMapping("/active")
-    public List<AdvertisementDto> getAllActiveAdvertisements() {
-        return advertisementService.getAllActiveAdvertisement();
+    public List<AdvertisementDto> getAllActiveAdvertisements(
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String order) {
+        return advertisementService.getAllActiveAdvertisement(sortBy, order);
     }
 
     @GetMapping("/pending")
@@ -37,20 +39,24 @@ public class AdvertisementController {
         return advertisementService.getAllPendingAdvertisements();
     }
 
-    /**
-     * Fetches personal advertisements submitted by the authenticated user, excluding deleted items, ordered by ID desc.
-     */
     @GetMapping("/my-ads")
     public List<AdvertisementDto> getMyAdvertisements(Principal principal) {
         String username = principal.getName();
         return advertisementService.getAdvertisementsBySellerUsername(username);
     }
 
-    @PostMapping("/search")
-    public List<AdvertisementDto> searchAdvertisements(@RequestBody Map<String, String> searchRequest) {
-        String keywords = searchRequest.getOrDefault("query", "");
-        return advertisementService.searchByTitle(keywords);
-    }
+//    // 🟢 اصلاح متد سرچ: تبدیل از POST به GET برای هماهنگی با فرانت‌اند و اضافه کردن پارامترهای پیشرفته
+//    @GetMapping("/search")
+//    public List<AdvertisementDto> searchAdvertisements(
+//            @RequestParam(required = false) String query,
+//            @RequestParam(required = false) Long categoryId,
+//            @RequestParam(required = false) Long cityId,
+//            @RequestParam(required = false) Double minPrice,
+//            @RequestParam(required = false) Double maxPrice,
+//            @RequestParam(defaultValue = "date") String sortBy,
+//            @RequestParam(defaultValue = "desc") String order) {
+//        return advertisementService.searchAdvertisementsAdvanced(query, categoryId, cityId, minPrice, maxPrice, sortBy, order);
+//    }
 
     @PutMapping("/{id}")
     public AdvertisementDto updateAdvertisement(@PathVariable Long id, @RequestBody AdvertisementDto dto) {
@@ -71,4 +77,10 @@ public class AdvertisementController {
     public AdvertisementDto rejectAdvertisement(@PathVariable Long id) {
         return advertisementService.rejectAdvertisement(id);
     }
+
+    @PutMapping("/{id}/sold")
+    public AdvertisementDto markAsSold(@PathVariable Long id) {
+        return advertisementService.markAsSold(id);
+    }
+
 }

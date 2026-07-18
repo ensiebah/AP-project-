@@ -1,0 +1,88 @@
+/* ==========================================================================
+   ۱. استایل پایه و مشترک برای تمام دکمه‌های برنامه (بدون رنگ پس‌زمینه)
+   ========================================================================== */
+.button {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5px;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+
+/* افکت عمومی فشرده شدن سه بعدی برای تمام دکمه‌های برنامه */
+.button:pressed {
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+
+/* ==========================================================================
+   ۲. تعریف کلاس‌های رنگی اختصاصی (همراه با هاور و کلیک هماهنگ)
+   ========================================================================== */
+
+/* 🔵 دکمه‌های تم آبی (مثل لاگین یا Apply Filter) */
+.btn-blue {
+    -fx-background-color: #3498db;
+}
+.btn-blue:hover {
+    -fx-background-color: #2980b9; /* تیره شدن ملایم در هاور */
+}
+.btn-blue:pressed {
+    -fx-background-color: #1f618d; /* بسیار تیره در زمان کلیک */
+}
+
+/* 🟢 دکمه‌های تم سبز (مثل ثبت‌نام یا Post New Ad) */
+.btn-green {
+    -fx-background-color: #2ecc71;
+}
+.btn-green:hover {
+    -fx-background-color: #27ae60;
+}
+.btn-green:pressed {
+    -fx-background-color: #1e8449;
+}
+
+/* 🔴 دکمه‌های تم قرمز (مثل دیلیت، لاگ‌اوت یا Favorites) */
+.btn-red {
+    -fx-background-color: #e74c3c;
+}
+.btn-red:hover {
+    -fx-background-color: #c0392b;
+}
+.btn-red:pressed {
+    -fx-background-color: #962d22;
+}
+
+/* 🔘 دکمه‌های تم خاکستری (مثل Reset Filters یا انصراف) */
+.btn-gray {
+    -fx-background-color: #95a5a6;
+}
+.btn-gray:hover {
+    -fx-background-color: #7f8c8d;
+}
+.btn-gray:pressed {
+    -fx-background-color: #5f6a6a;
+}
+
+/* ==========================================================================
+   ۳. دکمه بازگشت (خاکستری روشن ملایم) - برای تغییر رنگ، کدهای زیر را ویرایش کنید
+   ========================================================================== */
+
+.btn-back {
+    /* 🟢 ۱. رنگ پس‌زمینه دکمه در حالت عادی */
+    -fx-background-color: #bdc3c7;
+
+    /* 🟢 ۲. رنگ متن دکمه (تیره گذاشتیم تا روی خاکستری روشن خوانا باشد) */
+    -fx-text-fill: #2c3e50;
+}
+
+.btn-back:hover {
+    /* 🟢 ۳. رنگ دکمه وقتی ماوس روی آن می‌رود (کمی تیره‌تر می‌شود) */
+    -fx-background-color: #a6b0b5;
+}
+
+.btn-back:pressed {
+    /* 🟢 ۴. رنگ دکمه در لحظه کلیک شدن */
+    -fx-background-color: #8a959a;
+}

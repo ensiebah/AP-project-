@@ -52,7 +52,7 @@ public class DataInitializer implements CommandLineRunner {
                 category.setName(catName);
                 categoryRepository.save(category);
             }
-            System.out.println("🌱 Successfully seeded all marketplace categories!");
+
         }
     }
 
@@ -75,7 +75,7 @@ public class DataInitializer implements CommandLineRunner {
                 city.setName(cityName);
                 cityRepository.save(city);
             }
-            System.out.println("🌱 Successfully seeded all major Iranian cities!");
+
         }
     }
 }

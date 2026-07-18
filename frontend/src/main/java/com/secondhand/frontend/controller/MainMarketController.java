@@ -28,8 +28,15 @@ public class MainMarketController {
     @FXML private ListView<AdvertisementDto> adListView;
     @FXML private Button btnAdminPanel;
 
+    // 🟢 اضافه شدن کنترلر دکمه کشویی مرتب‌سازی جدید
+    @FXML private MenuButton sortMenuButton;
+
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final String BASE_URL = "http://localhost:8080/api/advertisements";
+
+    // 🟢 ذخیره وضعیت‌های فعلی مرتب‌سازی (مقادیر پیش‌فرض بر اساس تاریخ ثبت نزولی)
+    private String currentSortBy = "date";
+    private String currentOrder = "desc";
 
     @FXML
     public void initialize() {
@@ -61,6 +68,9 @@ public class MainMarketController {
 
         setupComboBoxConverters();
 
+        // 🟢 راه‌اندازی گزینه‌های داخل منوی مرتب‌سازی
+        setupSortMenuOptions();
+
         Platform.runLater(() -> {
             loadActiveAdvertisements();
             fetchDropdownData("/api/lookup/categories", categoryComboBox);
@@ -68,6 +78,48 @@ public class MainMarketController {
         });
 
         configureNavigationBasedOnRole(NetworkClient.userRole);
+    }
+
+    /**
+     * 🟢 متد جدید برای تنظیم منوها و رویدادهای تغییر مرتب‌سازی
+     */
+    private void setupSortMenuOptions() {
+        if (sortMenuButton == null) return;
+
+        sortMenuButton.getItems().clear();
+
+        MenuItem dateItem = new MenuItem("📅 Date (Newest)");
+        dateItem.setOnAction(e -> applyNewSorting("date", "desc", "Sort by: Date (Newest)"));
+
+        MenuItem priceLowItem = new MenuItem("💰 Price: Low to High");
+        priceLowItem.setOnAction(e -> applyNewSorting("price", "asc", "Sort by: Price: Low to High"));
+
+        MenuItem priceHighItem = new MenuItem("📈 Price: High to Low");
+        priceHighItem.setOnAction(e -> applyNewSorting("price", "desc", "Sort by: Price: High to Low"));
+
+        MenuItem ratingItem = new MenuItem("⭐ Seller Rating");
+        ratingItem.setOnAction(e -> applyNewSorting("rating", "desc", "Sort by: Seller Rating"));
+
+        sortMenuButton.getItems().addAll(dateItem, priceLowItem, priceHighItem, ratingItem);
+        // ست کردن متن دکمه بر روی حالت پیش‌فرض
+        sortMenuButton.setText("Sort by: Date (Newest)");
+    }
+
+    /**
+     * 🟢 اعمال متد تغییر نوع مرتب‌سازی و بازخوانی مجدد لیست داده‌ها
+     */
+    private void applyNewSorting(String sortBy, String order, String buttonText) {
+        this.currentSortBy = sortBy;
+        this.currentOrder = order;
+        this.sortMenuButton.setText(buttonText);
+
+        // اگر کادر سرچ یا فیلترها پر باشند از هندلر سرچ استفاده کن در غیر این صورت لیست پیش‌فرض اکتیو را لود کن
+        if (!searchField.getText().isBlank() || categoryComboBox.getValue() != null ||
+                cityComboBox.getValue() != null || !minPriceField.getText().isBlank() || !maxPriceField.getText().isBlank()) {
+            handleSearch();
+        } else {
+            loadActiveAdvertisements();
+        }
     }
 
     private void setupComboBoxConverters() {
@@ -113,8 +165,10 @@ public class MainMarketController {
 
     private void loadActiveAdvertisements() {
         adListView.getItems().clear();
+        String finalUrl = BASE_URL + "/active?sortBy=" + currentSortBy + "&order=" + currentOrder;
+
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/active"))
+                .uri(URI.create(finalUrl))
                 .header("Authorization", "Bearer " + NetworkClient.authToken)
                 .GET()
                 .build();
@@ -127,6 +181,12 @@ public class MainMarketController {
                         for (int i = 0; i < jsonArray.length(); i++) {
                             JSONObject obj = jsonArray.getJSONObject(i);
                             AdvertisementDto dto = parseJsonToDto(obj);
+
+                            // 🟢 فیلتر کردن بر اساس شیء پارس شده‌ی معتبر
+                            if ("SOLD".equalsIgnoreCase(dto.getStatus())) {
+                                continue;
+                            }
+
                             Platform.runLater(() -> adListView.getItems().add(dto));
                         }
                     } catch (Exception e) {
@@ -138,16 +198,13 @@ public class MainMarketController {
     @FXML
     public void handleSearch() {
         String query = searchField.getText().trim();
-
         IdNamePair selectedCategory = categoryComboBox.getValue();
         Long categoryId = selectedCategory != null ? selectedCategory.getId() : null;
-
         IdNamePair selectedCity = cityComboBox.getValue();
         Long cityId = selectedCity != null ? selectedCity.getId() : null;
 
         Double minPrice = null;
         Double maxPrice = null;
-
         try {
             if (!minPriceField.getText().isBlank()) minPrice = Double.parseDouble(minPriceField.getText().trim());
             if (!maxPriceField.getText().isBlank()) maxPrice = Double.parseDouble(maxPriceField.getText().trim());
@@ -155,7 +212,7 @@ public class MainMarketController {
             System.err.println("Invalid format for price range filters.");
         }
 
-        String response = NetworkClient.searchAdvertisement(query, categoryId, cityId, minPrice, maxPrice);
+        String response = NetworkClient.searchAdvertisement(query, categoryId, cityId, minPrice, maxPrice, currentSortBy, currentOrder);
 
         adListView.getItems().clear();
         if (response != null && !response.startsWith("ERROR")) {
@@ -164,6 +221,12 @@ public class MainMarketController {
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject obj = jsonArray.getJSONObject(i);
                     AdvertisementDto dto = parseJsonToDto(obj);
+
+                    // 🟢 فیلتر کردن آگهی فروخته شده در نتایج سرچ و فیلترها
+                    if ("SOLD".equalsIgnoreCase(dto.getStatus())) {
+                        continue;
+                    }
+
                     Platform.runLater(() -> adListView.getItems().add(dto));
                 }
             } catch (Exception e) {
@@ -171,7 +234,6 @@ public class MainMarketController {
             }
         }
     }
-
     @FXML
     public void handleResetFilters() {
         searchField.clear();
@@ -179,6 +241,14 @@ public class MainMarketController {
         maxPriceField.clear();
         categoryComboBox.setValue(null);
         cityComboBox.setValue(null);
+
+        // 🟢 ریست کردن وضعیت مرتب‌سازی به حالت اولیه زمان تایید
+        this.currentSortBy = "date";
+        this.currentOrder = "desc";
+        if (sortMenuButton != null) {
+            sortMenuButton.setText("Sort by: Date (Newest)");
+        }
+
         loadActiveAdvertisements();
     }
 
@@ -192,6 +262,10 @@ public class MainMarketController {
         dto.setSellerName(obj.optString("sellerName", "Unknown"));
         dto.setCityName(obj.optString("cityName", "Unknown"));
         dto.setCategoryName(obj.optString("categoryName", "Unknown"));
+
+        // 🟢 اضافه کردن این خط بسیار حیاتی است: خواندن وضعیت آگهی از جی‌سون سرور
+        dto.setStatus(obj.optString("status", "ACTIVE"));
+
         return dto;
     }
 

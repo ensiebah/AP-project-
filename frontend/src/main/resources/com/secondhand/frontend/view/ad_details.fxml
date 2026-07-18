@@ -18,18 +18,15 @@
 <VBox prefHeight="740.0" prefWidth="500.0" spacing="12" style="-fx-background-color: #f8f9fa; -fx-padding: 15;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://fxml.com/fxml/1" fx:controller="com.secondhand.frontend.controller.AdDetailsController">
     <children>
 
-        <!-- 🟢 لایه تصویر تغییر یافته به StackPane مجهز به دکمه‌های چپ و راست کمرنگ شناور -->
         <StackPane fx:id="imageContainer" style="-fx-background-color: #eee; -fx-min-height: 220; -fx-max-height: 220; -fx-border-color: #ddd; -fx-background-radius: 8; -fx-border-radius: 8;">
             <children>
                 <ImageView fx:id="adImageView" fitHeight="200" fitWidth="460" preserveRatio="true" />
 
-                <!-- دکمه ناوبری قبلی (سمت چپ) -->
-                <Button fx:id="btnPrevImage" mnemonicParsing="false" onAction="#handlePrevImage" visible="false" text="❮"
+                <Button fx:id="btnPrevImage" mnemonicParsing="false" onAction="#handlePrevImage" visible="false" text="&lt;"
                         style="-fx-background-color: rgba(0,0,0,0.3); -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-cursor: hand; -fx-pref-width: 40; -fx-pref-height: 60; -fx-background-radius: 0 5 5 0;"
                         StackPane.alignment="CENTER_LEFT" />
 
-                <!-- دکمه ناوبری بعدی (سمت راست) -->
-                <Button fx:id="btnNextImage" mnemonicParsing="false" onAction="#handleNextImage" visible="false" text="❯"
+                <Button fx:id="btnNextImage" mnemonicParsing="false" onAction="#handleNextImage" visible="false" text="&gt;"
                         style="-fx-background-color: rgba(0,0,0,0.3); -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-cursor: hand; -fx-pref-width: 40; -fx-pref-height: 60; -fx-background-radius: 5 0 0 5;"
                         StackPane.alignment="CENTER_RIGHT" />
             </children>
@@ -70,7 +67,7 @@
 
         <Separator />
 
-        <Label style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="Product Q&amp;A / Public Comments:" />
+        <Label style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="Product Q and A / Public Comments:" />
         <HBox spacing="8">
             <children>
                 <TextField fx:id="newCommentField" promptText="Ask a question about this item..." HBox.hgrow="ALWAYS" style="-fx-pref-height: 32;" />
@@ -91,9 +88,13 @@
 
         <HBox alignment="CENTER_RIGHT" spacing="10">
             <children>
-                <Button fx:id="btnFavorite" onAction="#handleToggleFavorite" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="♥ Save Ad" />
-                <Button onAction="#handleRateSeller" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="⭐ Rate Seller" />
-                <Button fx:id="btnChatWithSeller" onAction="#handleChatWithSeller" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Chat ✉" />
+                <Button fx:id="btnEdit" onAction="#handleEditAd" visible="false" managed="false" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Edit" />
+                <Button fx:id="btnDelete" onAction="#handleDeleteAd" visible="false" managed="false" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Delete" />
+                <Button fx:id="btnMarkAsSold" onAction="#handleMarkAsSold" visible="false" managed="false" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Change to Sold" />
+
+                <Button fx:id="btnFavorite" onAction="#handleToggleFavorite" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Save Ad" />
+                <Button fx:id="btnRateSeller" onAction="#handleRateSeller" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Rate Seller" />
+                <Button fx:id="btnChatWithSeller" onAction="#handleChatWithSeller" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Chat" />
                 <Button onAction="#handleBack" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Back" />
             </children>
         </HBox>

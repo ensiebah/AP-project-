@@ -21,8 +21,13 @@
 <TextField fx:id="phoneField" promptText="Phone Number"/>
 <TextField fx:id="emailField" promptText="Email Address"/>
 
-<Button text="Register" onAction="#register"    style="-fx-min-width: 100;"/>
-<Button text="Back to login" onAction="#goToLogin"   style="-fx-min-width: 100;"/>
+<Button text="Register"
+        onAction="#register"
+        styleClass="btn-green"
+/>
+<Button text="Back to login"
+        onAction="#goToLogin"
+        styleClass="btn-back"/>
 <Label fx:id="messageLabel"/>
 
 </VBox>

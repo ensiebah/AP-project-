@@ -25,11 +25,13 @@
 
     <Button
             text="Login"
-            onAction="#login"/>
+            onAction="#login"
+            styleClass="btn-blue"/>
 
     <Button
             text="Register"
-            onAction="#goToRegister"/>
+            onAction="#goToRegister"
+            styleClass="btn-green" />
 
     <Label
             fx:id="messageLabel"/>

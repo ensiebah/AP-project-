@@ -5,6 +5,7 @@ import com.secondhand.backend.entity.AdvertisementStatus;
 import com.secondhand.backend.entity.Category;
 import com.secondhand.backend.entity.City;
 import com.secondhand.backend.entity.User;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface AdvertisementRepository extends JpaRepository<Advertisement, Long> {
+
+    // 🟢 پیدا کردن آگهی‌های فعال به همراه قابلیت مرتب‌سازی پویا از طریق پارامتر Sort اسپرینگ دیتا
+    List<Advertisement> findByStatus(AdvertisementStatus status, Sort sort);
 
     List<Advertisement> findByStatus(AdvertisementStatus status);
 
@@ -25,23 +29,35 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, Lo
 
     Long id(Long id);
 
-    /**
-     * Finds active or pending advertisements belonging to a specific seller, sorted by ID descending (approval order).
-     * Excludes soft-deleted advertisements.
-     */
     List<Advertisement> findBySellerAndStatusNotOrderByIdDesc(User seller, AdvertisementStatus status);
 
-    @Query("SELECT a FROM Advertisement a WHERE " +
+    // 🟢 کوئری فیلتر پیشرفته به همراه پیاده‌سازی منطق محاسباتی امتیاز میانگین فروشنده و مرتب‌سازی کاملاً داینامیک در دیتابیس
+    @Query("SELECT a FROM Advertisement a " +
+            "LEFT JOIN Rating r ON r.seller.id = a.seller.id " +
+            "WHERE a.status = :status AND " +
             "(:query IS NULL OR LOWER(a.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(a.description) LIKE LOWER(CONCAT('%', :query, '%'))) AND " +
             "(:categoryId IS NULL OR a.category.id = :categoryId) AND " +
             "(:cityId IS NULL OR a.city.id = :cityId) AND " +
             "(:minPrice IS NULL OR a.price >= :minPrice) AND " +
-            "(:maxPrice IS NULL OR a.price <= :maxPrice)")
-    List<Advertisement> filterAdvertisements(
+            "(:maxPrice IS NULL OR a.price <= :maxPrice) " +
+            "GROUP BY a.id " +
+            "ORDER BY " +
+            "  CASE WHEN :sortBy = 'price' AND :order = 'asc' THEN a.price END ASC, " +
+            "  CASE WHEN :sortBy = 'price' AND :order = 'desc' THEN a.price END DESC, " +
+            "  CASE WHEN :sortBy = 'date' AND :order = 'asc' THEN a.id END ASC, " +
+            "  CASE WHEN :sortBy = 'date' AND :order = 'desc' THEN a.id END DESC, " +
+            "  CASE WHEN :sortBy = 'rating' AND :order = 'asc' THEN COALESCE(AVG(r.score), 0.0) END ASC, " +
+            "  CASE WHEN :sortBy = 'rating' AND :order = 'desc' THEN COALESCE(AVG(r.score), 0.0) END DESC, " +
+            "  a.id DESC") // مرتب‌سازی ثانویه پیش‌فرض
+    List<Advertisement> filterAdvertisementsAdvanced(
+            @Param("status") AdvertisementStatus status,
             @Param("query") String query,
             @Param("categoryId") Long categoryId,
             @Param("cityId") Long cityId,
             @Param("minPrice") Double minPrice,
-            @Param("maxPrice") Double maxPrice
+            @Param("maxPrice") Double maxPrice,
+            @Param("sortBy") String sortBy,
+            @Param("order") String order
     );
+
 }
