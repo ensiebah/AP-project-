@@ -5,11 +5,12 @@ import com.secondhand.backend.dto.LoginResponseDto;
 import com.secondhand.backend.dto.RegisterRequestDto;
 import com.secondhand.backend.dto.UserDto;
 import com.secondhand.backend.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -20,7 +21,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public UserDto register(@RequestBody RegisterRequestDto request) {
+    public UserDto register(@Valid @RequestBody RegisterRequestDto request) {
         return userService.register(request);
     }
 

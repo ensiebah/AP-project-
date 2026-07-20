@@ -1,7 +1,11 @@
 package com.secondhand.frontend.controller;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import com.secondhand.frontend.dto.ConversationDto;
 import com.secondhand.frontend.dto.MessageDto;
 import com.secondhand.frontend.network.NetworkClient;
@@ -14,16 +18,12 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.util.Duration;
 
-import java.util.List;
-import java.util.Map;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+
 public class ChatController {
 
     @FXML private Label chatTitleLabel;
@@ -33,8 +33,9 @@ public class ChatController {
 
     private ConversationDto currentConversation;
 
+    // فرمت‌کننده ساعت و دقیقه (مثال: 14:35)
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
-    // 🟢 جایگزین خط قبلی Gson در ChatController
     private final Gson gson = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new TypeAdapter<LocalDateTime>() {
                 @Override
@@ -57,6 +58,7 @@ public class ChatController {
                 }
             })
             .create();
+
     private Timeline autoRefreshTimeline;
 
     public void setConversationData(ConversationDto conversation) {
@@ -81,7 +83,14 @@ public class ChatController {
                         messageListView.getItems().clear();
                         for (MessageDto msg : messages) {
                             String sender = msg.getSenderUsername() != null ? msg.getSenderUsername() : "User " + msg.getSenderId();
-                            messageListView.getItems().add(sender + ": " + msg.getContent());
+
+                            // فرمت کردن زمان برای پیام‌های قدیمی دریافتی از سرور
+                            String timeStr = "";
+                            if (msg.getSentAt() != null) {
+                                timeStr = "[" + msg.getSentAt().format(timeFormatter) + "] ";
+                            }
+
+                            messageListView.getItems().add(timeStr + sender + ": " + msg.getContent());
                         }
                     }
                 });
@@ -108,7 +117,16 @@ public class ChatController {
             Platform.runLater(() -> {
                 String sender = (sentMessage != null && sentMessage.getSenderUsername() != null) ?
                         sentMessage.getSenderUsername() : "Me";
-                messageListView.getItems().add(sender + ": " + text);
+
+                // فرمت کردن زمان برای پیامی که همین الان به صورت آنی ارسال شد
+                String timeStr = "";
+                if (sentMessage != null && sentMessage.getSentAt() != null) {
+                    timeStr = "[" + sentMessage.getSentAt().format(timeFormatter) + "] ";
+                } else {
+                    timeStr = "[" + LocalDateTime.now().format(timeFormatter) + "] ";
+                }
+
+                messageListView.getItems().add(timeStr + sender + ": " + text);
                 messageInputField.clear();
             });
         } else {
@@ -129,10 +147,10 @@ public class ChatController {
             autoRefreshTimeline.stop();
         }
     }
+
     @FXML
     public void handleCloseWindow() {
-        shutdown(); // متوقف کردن تایمر ۳ ثانیه‌ای برای جلوگیری از نشت حافظه
-        // بستن پنجره فعلی چت
+        shutdown();
         javafx.stage.Stage stage = (javafx.stage.Stage) messageListView.getScene().getWindow();
         stage.close();
     }

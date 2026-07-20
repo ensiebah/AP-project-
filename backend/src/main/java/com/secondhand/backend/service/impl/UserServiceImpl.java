@@ -14,6 +14,9 @@ import com.secondhand.backend.exception.InvalidLoginException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.secondhand.backend.exception.DuplicateEmailException;
+import com.secondhand.backend.exception.DuplicateUsernameException;
+
 
 import java.util.List;
 
@@ -28,10 +31,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto register(RegisterRequestDto request) {
         if (userRepository.existsByUserName(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new DuplicateUsernameException("this username has already taken please try another username");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new DuplicateEmailException("this Email has already registered");
         }
 
         String hashedPassword = passwordEncoder.encode(request.getPassword());

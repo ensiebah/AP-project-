@@ -2,6 +2,7 @@ package com.secondhand.backend.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -19,5 +20,31 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.OK) // Change to OK so Spring Security doesn't intercept it
                 .body(formatPayload);
+    }
+    @ExceptionHandler(DuplicateUsernameException.class)
+    public ResponseEntity<String> handleDuplicateUsername(DuplicateUsernameException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body("ERROR|" + ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<String> handleDuplicateEmail(DuplicateEmailException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body("ERROR|" + ex.getMessage());
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleValidation(MethodArgumentNotValidException ex) {
+
+        String error = ex.getBindingResult()
+                .getFieldError()
+                .getDefaultMessage();
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body("ERROR|" + error);
     }
 }
