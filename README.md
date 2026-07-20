@@ -211,7 +211,7 @@ git clone https://github.com/ensiebah/AP-project-.git
 ```
 
 ```bash
-cd SecondHand
+cd AP-project-
 ```
 
 ---
@@ -561,14 +561,12 @@ SecondHand Marketplace
 
 ## Authors
 
-This project was developed as a university course project by:
+- **Ensie Bahrevar**
+  - GitHub: https://github.com/ensiebah
 
-- Ensie Bahrevar
-GitHub:
-https://github.com/ensiebah
-- Reyhaneh Moradi
-GitHub:
-https://github.com/Rian-mk
+- **Reyhaneh Moradi**
+  - GitHub: https://github.com/Rian-mk
+
 Department of Computer Engineering  
 Amirkabir University of Technology (Tehran Polytechnic)
 ---
@@ -591,13 +589,6 @@ for providing excellent tools and documentation.
 
 ---
 
-# License
-
-This project is released under the MIT License.
-
-You are free to use, modify, and distribute this software under the terms of the license.
-
----
 
 # Project Status
 
