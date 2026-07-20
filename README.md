@@ -135,7 +135,7 @@ The following screenshots demonstrate the main components of the application.
 > Insert screenshot here
 
 ```text
-images/login-page.png
+![Login](images/login-page.png)
 ```
 
 ---
