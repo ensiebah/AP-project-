@@ -200,32 +200,12 @@ images/edit-ad.png
 
 ---
 
-## Favorites
-
-> Insert screenshot here
-
-```text
-images/favorites.png
-```
-
----
-
 ## Inbox
 
 > Insert screenshot here
 
 ```text
 images/inbox.png
-```
-
----
-
-## Chat
-
-> Insert screenshot here
-
-```text
-images/chat.png
 ```
 
 ---
@@ -240,12 +220,6 @@ images/admin-panel.png
 
 ---
 
-## Database (Optional)
-
-> Insert screenshot here
-
-```text
-images/database.png
 ```
 # Installation
 
