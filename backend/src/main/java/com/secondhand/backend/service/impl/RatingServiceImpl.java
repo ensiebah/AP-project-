@@ -15,6 +15,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
+/**
+ * Service implementation responsible for managing
+ * seller ratings and reviews.
+ */
 @Service
 @RequiredArgsConstructor
 public class RatingServiceImpl implements RatingService {
@@ -23,6 +27,15 @@ public class RatingServiceImpl implements RatingService {
     private final UserRepository userRepository;
     private final AdvertisementRepository advertisementRepository;
 
+    /**
+     * Creates a new rating for a seller.
+     *
+     * @param buyerId buyer identifier
+     * @param advertisementId advertisement identifier
+     * @param score rating score
+     * @param comment review comment
+     * @return created rating
+     */
     @Override
     public RatingDto createRating(Long buyerId, Long advertisementId, Integer score, String comment) {
         User buyer = userRepository.findById(buyerId)
@@ -61,6 +74,12 @@ public class RatingServiceImpl implements RatingService {
         return mapToDto(savedRating);
     }
 
+    /**
+     * Retrieves all ratings of a seller.
+     *
+     * @param sellerId seller identifier
+     * @return list of ratings
+     */
     @Override
     public List<RatingDto> getSellerRatings(Long sellerId) {
         User seller = userRepository.findById(sellerId)
@@ -71,6 +90,12 @@ public class RatingServiceImpl implements RatingService {
                 .collect(java.util.stream.Collectors.toList()); // 👈 اصلاح به حالت Collect استاندارد
     }
 
+    /**
+     * Calculates the average rating score of a seller.
+     *
+     * @param sellerId seller identifier
+     * @return average rating score
+     */
     @Override
     public double getSellerAverageScore(Long sellerId) {
         User seller = userRepository.findById(sellerId)

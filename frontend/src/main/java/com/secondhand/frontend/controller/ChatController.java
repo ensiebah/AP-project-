@@ -24,6 +24,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller responsible for managing the chat window between two users.
+ * <p>
+ * It loads conversation messages, sends new messages to the server,
+ * refreshes the chat periodically, and updates the JavaFX interface.
+ *
+ * @author Ensie
+ * @version 1.0
+ */
 public class ChatController {
 
     @FXML private Label chatTitleLabel;
@@ -70,6 +79,10 @@ public class ChatController {
         startAutoRefresh();
     }
 
+    /**
+     * Retrieves all messages belonging to the current conversation from the backend
+     * and refreshes the message list if new messages are available.
+     */
     private void loadMessages() {
         if (currentConversation == null || currentConversation.getId() == null) return;
 
@@ -100,6 +113,10 @@ public class ChatController {
         }
     }
 
+    /**
+     * Sends the user's message to the backend server and immediately displays
+     * the successfully delivered message inside the chat window.
+     */
     @FXML
     private void handleSendMessage() {
         String text = messageInputField.getText().trim();
@@ -134,6 +151,10 @@ public class ChatController {
         }
     }
 
+    /**
+     * Starts an automatic refresh task that periodically synchronizes
+     * the conversation with the backend server.
+     */
     private void startAutoRefresh() {
         if (autoRefreshTimeline != null) autoRefreshTimeline.stop();
 

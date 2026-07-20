@@ -16,12 +16,21 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Service implementation responsible for category management.
+ */
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    /**
+     * Creates a new category.
+     *
+     * @param name category name
+     * @return created category
+     */
     @Override
     public CategoryDto createCategory(
             String name
@@ -43,6 +52,11 @@ public class CategoryServiceImpl implements CategoryService {
         return mapToDto(savedCategory);
     }
 
+    /**
+     * Retrieves all categories.
+     *
+     * @return list of categories
+     */
     @Override
     public List<CategoryDto> getAllCategories() {
 
@@ -52,6 +66,12 @@ public class CategoryServiceImpl implements CategoryService {
                 .toList();
     }
 
+    /**
+     * Retrieves a category by its identifier.
+     *
+     * @param id category identifier
+     * @return category information
+     */
     @Override
     public CategoryDto getCategoryById(
             Long id
@@ -67,6 +87,11 @@ public class CategoryServiceImpl implements CategoryService {
         return mapToDto(category);
     }
 
+    /**
+     * Deletes a category.
+     *
+     * @param id category identifier
+     */
     @Override
     public void deleteCategory(
             Long id

@@ -21,6 +21,15 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller responsible for creating new advertisements.
+ * <p>
+ * It manages user input, image selection, category and city loading,
+ * validation of advertisement data, and submission to the backend.
+ *
+ * @author Ensie
+ * @version 1.0
+ */
 public class CreateAdController {
 
     @FXML private TextField titleField;
@@ -35,6 +44,10 @@ public class CreateAdController {
     // لیست نگهداری عکس‌ها
     private List<File> selectedImageFiles = new ArrayList<>();
 
+    /**
+     * Initializes the controller by configuring UI components
+     * and loading available categories and cities from the server.
+     */
     @FXML
     public void initialize() {
         setupComboBoxConverters();
@@ -46,7 +59,8 @@ public class CreateAdController {
     }
 
     /**
-     * 📷 متد انتخاب عکس با قابلیت افزودن متوالی (Append) و انتخاب همزمان
+     * Opens a file chooser allowing the user to select one or more images
+     * for the advertisement and displays the latest selected image as preview.
      */
     @FXML
     public void handleSelectImage() {
@@ -78,6 +92,10 @@ public class CreateAdController {
         }
     }
 
+    /**
+     * Validates advertisement data, prepares the request payload,
+     * and submits the new advertisement to the backend server.
+     */
     @FXML
     public void handleSaveAdvertisement() {
         String title = titleField.getText().trim();
@@ -151,6 +169,13 @@ public class CreateAdController {
         NavigationUtils.navigateTo(titleField, "/com/secondhand/frontend/view/main_market.fxml", "SecondHand Market");
     }
 
+    /**
+     * Retrieves lookup data from the backend and populates the specified
+     * ComboBox with identifier-name pairs.
+     *
+     * @param endpoint backend lookup endpoint
+     * @param comboBox target ComboBox to populate
+     */
     private void fetchDropdownData(String endpoint, ComboBox<IdNamePair> comboBox) {
         String token = NetworkClient.authToken != null ? NetworkClient.authToken : "";
         HttpRequest request = HttpRequest.newBuilder()

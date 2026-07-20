@@ -23,6 +23,15 @@ public class RatingController {
     private final AdvertisementRepository advertisementRepository ;
     private final RatingRepository ratingRepository ;
 
+
+    /**
+     * Creates a new rating for an advertisement.
+     * The authenticated user is automatically considered the buyer.
+     *
+     * @param requestDto the rating information
+     * @param principal the authenticated user
+     * @return the created rating
+     */
     @PostMapping
     public RatingDto createRating(@RequestBody RatingDto requestDto, Principal principal) {
         // استخراج خریدار از روی توکن لاگین شده
@@ -38,15 +47,39 @@ public class RatingController {
         );
     }
 
+
+    /**
+     * Retrieves all ratings received by a specific seller.
+     *
+     * @param sellerId the seller ID
+     * @return a list of seller ratings
+     */
     @GetMapping("/seller/{sellerId}")
     public List<RatingDto> getSellerRatings(@PathVariable Long sellerId) {
         return ratingService.getSellerRatings(sellerId);
     }
 
+    /**
+     * Calculates the average rating score of a seller.
+     *
+     * @param sellerId the seller ID
+     * @return the seller's average rating score
+     */
     @GetMapping("/seller/{sellerId}/average")
     public double getSellerAverageScore(@PathVariable Long sellerId) {
         return ratingService.getSellerAverageScore(sellerId);
     }
+
+    /**
+     * Checks whether the authenticated user is allowed to submit
+     * a rating for a specific advertisement.
+     * The user cannot rate their own advertisement or submit
+     * multiple ratings for the same advertisement.
+     *
+     * @param adId the advertisement ID
+     * @param principal the authenticated user
+     * @return a map containing the eligibility result and reason if denied
+     */
     @GetMapping("/check-eligibility/{adId}")
     public Map<String, Object> checkEligibility(@PathVariable Long adId, Principal principal) {
         String username = principal.getName();

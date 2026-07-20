@@ -18,6 +18,15 @@ public class ConversationController {
     private final ConversationService conversationService;
     private final UserRepository userRepository;
 
+    /**
+     * Creates a new conversation for a specific advertisement.
+     * The authenticated user is automatically assigned as one
+     * of the conversation participants.
+     *
+     * @param advertisementId the ID of the advertisement
+     * @param principal the authenticated user
+     * @return the created conversation
+     */
     // ایجاد چت جدید بر اساس شناسه آگهی و توکن کاربر لاگین شده
     @PostMapping("/ad/{advertisementId}")
     public ResponseEntity<?> createConversation(
@@ -35,6 +44,12 @@ public class ConversationController {
         }
     }
 
+    /**
+     * Retrieves all conversations that belong to the authenticated user.
+     *
+     * @param principal the authenticated user
+     * @return a list of the user's conversations
+     */
     // دریافت لیست کامل چت‌های کاربر فعلی
     @GetMapping("/my-chats")
     public ResponseEntity<List<ConversationDto>> getUserConversations(Principal principal) {

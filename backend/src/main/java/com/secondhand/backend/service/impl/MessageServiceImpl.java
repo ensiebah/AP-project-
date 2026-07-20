@@ -16,6 +16,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
+/**
+ * Service implementation responsible for sending
+ * and retrieving conversation messages.
+ */
 @Service
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
@@ -24,6 +29,15 @@ public class MessageServiceImpl implements MessageService {
     private final ConversationRepository conversationRepository;
     private final UserRepository userRepository;
 
+
+    /**
+     * Sends a new message in a conversation.
+     *
+     * @param senderId sender identifier
+     * @param conversationId conversation identifier
+     * @param content message content
+     * @return sent message
+     */
     @Override
     public MessageDto sendMessage(Long senderId, Long conversationId, String content) {
         User sender = userRepository.findById(senderId)
@@ -46,6 +60,12 @@ public class MessageServiceImpl implements MessageService {
         return mapToDto(savedMessage);
     }
 
+    /**
+     * Retrieves all messages of a conversation.
+     *
+     * @param conversationId conversation identifier
+     * @return list of messages
+     */
     @Override
     public List<MessageDto> getConversationMessages(Long conversationId) {
         Conversation conversation = conversationRepository.findById(conversationId)

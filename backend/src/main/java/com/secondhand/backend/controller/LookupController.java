@@ -23,6 +23,11 @@ public class LookupController {
      * 📥 Endpoint: GET http://localhost:8080/api/lookup/cities
      * Returns a list of all cities in the database.
      */
+    /**
+     * Retrieves all available cities from the database.
+     *
+     * @return a list of cities
+     */
     @GetMapping("/cities")
     public List<City> getAllCities() {
         return cityRepository.findAll();
@@ -31,6 +36,11 @@ public class LookupController {
     /**
      * 📥 Endpoint: GET http://localhost:8080/api/lookup/categories
      * Returns a list of all categories in the database.
+     */
+    /**
+     * Retrieves all available categories from the database.
+     *
+     * @return a list of categories
      */
     @GetMapping("/categories")
     public List<Category> getAllCategories() {

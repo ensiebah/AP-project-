@@ -16,6 +16,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service implementation responsible for managing advertisements.
+ * Provides operations for creating, updating, deleting, searching,
+ * approving, rejecting, and retrieving advertisements.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,6 +31,13 @@ public class AdvertisementServiceImpl implements AdvertisementService {
     private final CategoryRepository categoryRepository;
     private final CityRepository cityRepository;
 
+    /**
+     * Creates a new advertisement for the specified user.
+     *
+     * @param dto advertisement information
+     * @param username seller username
+     * @return created advertisement
+     */
     @Override
     public AdvertisementDto createAdvertisementByUsername(AdvertisementCreateDto dto, String username) {
         User seller = userRepository.findByUserName(username)
@@ -60,6 +72,14 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return mapToDto(saved);
     }
 
+
+    /**
+     * Creates a new advertisement using the seller identifier.
+     *
+     * @param dto advertisement information
+     * @param sellerId seller identifier
+     * @return created advertisement
+     */
     @Override
     public AdvertisementDto createAdvertisement(AdvertisementCreateDto dto, Long sellerId) {
         User seller = userRepository.findById(sellerId)
@@ -67,6 +87,14 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return createAdvertisementByUsername(dto, seller.getUserName());
     }
 
+
+    /**
+     * Updates an existing advertisement.
+     *
+     * @param id advertisement identifier
+     * @param dto updated advertisement information
+     * @return updated advertisement
+     */
     @Override
     public AdvertisementDto updateAdvertisement(Long id, AdvertisementDto dto) {
         Advertisement advertisement = advertisementRepository.findById(id)
@@ -88,6 +116,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return mapToDto(updated);
     }
 
+    /**
+     * Marks an advertisement as deleted.
+     *
+     * @param id advertisement identifier
+     */
     @Override
     public void deleteAdvertisement(Long id) {
         Advertisement advertisement = advertisementRepository.findById(id)
@@ -96,6 +129,13 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         advertisementRepository.save(advertisement);
     }
 
+
+    /**
+     * Retrieves an advertisement by its identifier.
+     *
+     * @param id advertisement identifier
+     * @return advertisement information
+     */
     @Override
     public AdvertisementDto getAdvertisementById(Long id) {
         Advertisement advertisement = advertisementRepository.findById(id)
@@ -103,12 +143,25 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return mapToDto(advertisement);
     }
 
+    /**
+     * Retrieves all active advertisements using the default sorting.
+     *
+     * @return list of active advertisements
+     */
     // 🟢 متد قدیمی برای حفظ ساختار کدهای قبلی پروژه
     @Override
     public List<AdvertisementDto> getAllActiveAdvertisement() {
         return getAllActiveAdvertisement("date", "desc");
     }
 
+
+    /**
+     * Retrieves all active advertisements with custom sorting.
+     *
+     * @param sortBy field used for sorting
+     * @param order sorting direction
+     * @return sorted list of advertisements
+     */
     // 🟢 متد پیاده‌سازی شده جدید با قابلیت مرتب‌سازی پویای صفحه اول بازار
     @Override
     public List<AdvertisementDto> getAllActiveAdvertisement(String sortBy, String order) {
@@ -133,6 +186,19 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .toList();
     }
 
+
+    /**
+     * Searches advertisements using advanced filtering options.
+     *
+     * @param query search keyword
+     * @param categoryId category identifier
+     * @param cityId city identifier
+     * @param minPrice minimum price
+     * @param maxPrice maximum price
+     * @param sortBy sorting field
+     * @param order sorting direction
+     * @return matching advertisements
+     */
     // 🟢 متد جدید برای جستجوی پیشرفته، فیلترها و مرتب‌سازی یکپارچه دیتابیس
     @Override
     public List<AdvertisementDto> searchAdvertisementsAdvanced(String query, Long categoryId, Long cityId, Double minPrice, Double maxPrice, String sortBy, String order) {
@@ -154,6 +220,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Approves an advertisement.
+     *
+     * @param id advertisement identifier
+     * @return approved advertisement
+     */
     @Override
     public AdvertisementDto approveAdvertisement(Long id) {
         Advertisement advertisement = advertisementRepository.findById(id)
@@ -162,6 +234,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return mapToDto(advertisementRepository.save(advertisement));
     }
 
+    /**
+     * Searches advertisements by title.
+     *
+     * @param keyword search keyword
+     * @return matching advertisements
+     */
     @Override
     public List<AdvertisementDto> searchByTitle(String keyword) {
         return advertisementRepository
@@ -172,6 +250,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .toList();
     }
 
+    /**
+     * Rejects an advertisement.
+     *
+     * @param id advertisement identifier
+     * @return rejected advertisement
+     */
     @Override
     public AdvertisementDto rejectAdvertisement(Long id) {
         Advertisement advertisement = advertisementRepository.findById(id)
@@ -180,6 +264,11 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         return mapToDto(advertisementRepository.save(advertisement));
     }
 
+    /**
+     * Retrieves all pending advertisements.
+     *
+     * @return list of pending advertisements
+     */
     @Override
     public List<AdvertisementDto> getAllPendingAdvertisements() {
         return advertisementRepository.findByStatus(AdvertisementStatus.PENDING).stream()
@@ -187,6 +276,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .toList();
     }
 
+    /**
+     * Retrieves advertisements created by a specific seller.
+     *
+     * @param username seller username
+     * @return seller advertisements
+     */
     @Override
     public List<AdvertisementDto> getAdvertisementsBySellerUsername(String username) {
         User seller = userRepository.findByUserName(username)
@@ -214,6 +309,12 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .build();
     }
 
+    /**
+     * Marks an advertisement as sold.
+     *
+     * @param id advertisement identifier
+     * @return updated advertisement
+     */
     @Override
     public AdvertisementDto markAsSold(Long id) {
         Advertisement advertisement = advertisementRepository.findById(id)

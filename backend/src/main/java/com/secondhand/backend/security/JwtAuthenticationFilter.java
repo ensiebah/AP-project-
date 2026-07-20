@@ -20,6 +20,14 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    /**
+     * Determines whether the JWT authentication filter should be skipped
+     * for the current request.
+     *
+     * @param request the incoming HTTP request
+     * @return {@code true} if authentication is not required; otherwise {@code false}
+     * @throws ServletException if an error occurs while checking the request
+     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
@@ -29,6 +37,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.equals("/api/users/register")
                 || path.startsWith("/h2-console");
     }
+
+    /**
+     * Extracts the JWT token from the Authorization header, validates it,
+     * and stores the authenticated user in the Spring Security context.
+     *
+     * @param request the incoming HTTP request
+     * @param response the outgoing HTTP response
+     * @param filterChain the remaining filter chain
+     * @throws ServletException if a servlet error occurs
+     * @throws IOException if an input/output error occurs
+     */
     @Override
     protected void doFilterInternal(
             @org.springframework.lang.NonNull HttpServletRequest request,

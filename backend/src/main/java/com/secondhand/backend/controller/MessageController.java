@@ -21,6 +21,14 @@ public class MessageController {
     private final UserRepository userRepository;
 
     // ارسال پیام جدید به صورت JSON Body به همراه ولیدیشن @Valid و بررسی JWT
+    /**
+     * Sends a new message in an existing conversation.
+     * The sender is identified using the authenticated user's token.
+     *
+     * @param messageRequest the message information including conversation ID and content
+     * @param principal the authenticated user
+     * @return the created message
+     */
     @PostMapping
     public ResponseEntity<?> sendMessage(
             @Valid @RequestBody MessageRequest messageRequest,
@@ -41,6 +49,12 @@ public class MessageController {
         }
     }
 
+    /**
+     * Retrieves the complete message history of a conversation.
+     *
+     * @param conversationId the conversation ID
+     * @return a list of messages in the conversation
+     */
     // دریافت تاریخچه پیام‌های یک گفتگو
     @GetMapping("/conversation/{conversationId}")
     public ResponseEntity<List<MessageDto>> getConversationMessages(

@@ -18,6 +18,19 @@ public class SearchController {
     @Autowired
     private AdvertisementRepository advertisementRepository;
 
+    /**
+     * Searches active advertisements using optional filters such as
+     * keyword, category, city, price range, and sorting options.
+     *
+     * @param query the search keyword
+     * @param categoryId the category ID used for filtering
+     * @param cityId the city ID used for filtering
+     * @param minPrice the minimum advertisement price
+     * @param maxPrice the maximum advertisement price
+     * @param sortBy the field used for sorting
+     * @param order the sorting order (asc or desc)
+     * @return a list of matching advertisements
+     */
     // 🟢 متد بهینه و نهایی جستجو همراه با پشتیبانی از فیلترها و مرتب‌سازی دیتابیس
     @GetMapping("/search")
     public ResponseEntity<List<AdvertisementDto>> searchAds(
@@ -49,6 +62,8 @@ public class SearchController {
 
         return ResponseEntity.ok(activeDtos);
     }
+
+
 
     // متد کمکی برای تبدیل Entity به DTO
     private AdvertisementDto convertToDto(Advertisement ad) {

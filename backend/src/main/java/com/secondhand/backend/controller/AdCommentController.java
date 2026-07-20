@@ -19,7 +19,14 @@ public class AdCommentController {
     private final AdCommentRepository adCommentRepository ;
     private final AdvertisementRepository advertisementRepository ;
     private final UserRepository userRepository ;
-
+    /**
+     * Adds a new comment to a specific advertisement.
+     *
+     * @param adId the ID of the advertisement to comment on
+     * @param body contains the comment text
+     * @param principal the currently authenticated user
+     * @return a success message if the comment is added successfully
+     */
     @PostMapping("/ad/{adId}")
     public Map<String , String> addComment(@PathVariable Long adId , @RequestBody Map<String, String> body, Principal principal){
         User user = userRepository.findByUserName(principal.getName())
@@ -35,7 +42,13 @@ public class AdCommentController {
 
         return Map.of("status", "SUCCESS", "message", "Comment added successfully");
     }
-
+    /**
+     * Retrieves all comments for a specific advertisement.
+     * Comments are returned in descending order based on their creation time.
+     *
+     * @param adId the ID of the advertisement
+     * @return a list of comments containing the username and comment content
+     */
     @GetMapping("/ad/{adId}")
     public List<Map<String, Object>> getAdComments(@PathVariable Long adId) {
         Advertisement ad = advertisementRepository.findById(adId)

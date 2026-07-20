@@ -18,12 +18,22 @@ public class StaticDataController {
     private final CityRepository cityRepository;
     private final CategoryRepository categoryRepository;
 
+    /**
+     * Retrieves all available cities.
+     *
+     * @return a list of cities
+     */
     // 🏙️ آدرس دریافت تمام شهرهای دیتابیس: GET http://localhost:8080/api/static/cities
     @GetMapping("/cities")
     public List<City> getAllCities() {
         return cityRepository.findAll();
     }
 
+    /**
+     * Retrieves all available advertisement categories.
+     *
+     * @return a list of categories
+     */
     // 📁 آدرس دریافت تمام دسته‌بندی‌ها: GET http://localhost:8080/api/static/categories
     @GetMapping("/categories")
     public List<Category> getAllCategories() {

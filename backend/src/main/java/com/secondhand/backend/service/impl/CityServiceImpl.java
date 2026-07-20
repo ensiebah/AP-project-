@@ -10,12 +10,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Service implementation responsible for city management.
+ */
 @Service
 
 @RequiredArgsConstructor
 @Transactional
 public class CityServiceImpl implements CityService {
     private final CityRepository cityRepository;
+
+    /**
+     * Creates a new city.
+     *
+     * @param dto city information
+     * @return created city
+     */
     @Override
     public CityDto creatCity(CityDto dto) {
         cityRepository.findByNameIgnoreCase(dto.getName())
@@ -27,6 +37,11 @@ public class CityServiceImpl implements CityService {
         return mapToDto(saved) ;
     }
 
+    /**
+     * Retrieves all cities.
+     *
+     * @return list of cities
+     */
     @Override
     public List<CityDto> getAllCities() {
         return cityRepository.findAll()
@@ -35,12 +50,24 @@ public class CityServiceImpl implements CityService {
                 .toList();
     }
 
+    /**
+     * Retrieves a city by its identifier.
+     *
+     * @param id city identifier
+     * @return city information
+     */
     @Override
     public CityDto getCityById(Long id) {
         City city = cityRepository.findById(id)
                 .orElseThrow(()->new RuntimeException("City not found")) ;
         return mapToDto(city) ;
     }
+
+    /**
+     * Deletes a city.
+     *
+     * @param id city identifier
+     */
     @Override
     public void deleteCity(Long id) {
 

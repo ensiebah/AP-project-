@@ -20,26 +20,60 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * Registers a new user account.
+     *
+     * @param request the registration information
+     * @return the registered user information
+     */
     @PostMapping("/register")
     public UserDto register(@Valid @RequestBody RegisterRequestDto request) {
         return userService.register(request);
     }
 
+
+    /**
+     * Authenticates a user and returns a JWT token
+     * along with the user's basic information.
+     *
+     * @param request the user's login credentials
+     * @return the authentication result
+     */
     @PostMapping("/login")
     public LoginResponseDto login(@RequestBody LoginRequestDto request) {
         return userService.login(request);
     }
 
+
+    /**
+     * Retrieves a user by their unique identifier.
+     *
+     * @param id the user ID
+     * @return the requested user
+     */
     @GetMapping("/{id}")
     public UserDto getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
+
+    /**
+     * Retrieves a user by their username.
+     *
+     * @param username the username
+     * @return the requested user
+     */
     @GetMapping("/username/{username}")
     public UserDto getUserByUsername(@PathVariable String username) {
         return userService.getUserByUsername(username);
     }
 
+
+    /**
+     * Retrieves all registered users.
+     *
+     * @return a list of users
+     */
     @GetMapping
     public List<UserDto> getAllUsers() {
         return userService.getAllUsers();

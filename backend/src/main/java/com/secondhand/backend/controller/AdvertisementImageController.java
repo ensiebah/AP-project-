@@ -17,6 +17,13 @@ public class AdvertisementImageController {
     private final AdvertisementImageService imageService; // 👈 تزریق سرویس برای انجام عملیات آپلود
     private final AdvertisementRepository advertisementRepository; // 👈 برای پیدا کردن آگهی در دیتابیس
 
+    /**
+     * Uploads an image for a specific advertisement.
+     *
+     * @param advertisementId the advertisement ID
+     * @param file the image file to upload
+     * @return a response indicating whether the upload was successful
+     */
     // 👈 تعریف متد POST برای دریافت فایل و آیدی آگهی
     @PostMapping("/upload/{advertisementId}")
     public ResponseEntity<?> uploadImage(

@@ -18,6 +18,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller responsible for editing existing advertisements.
+ * <p>
+ * It allows users to modify advertisement information, manage
+ * attached images, reorder images using drag and drop, and
+ * submit updates to the backend server.
+ *
+ * @author Ensie
+ * @version 1.0
+ */
 public class EditAdController {
 
     @FXML private TextField titleField;
@@ -33,7 +43,10 @@ public class EditAdController {
     private int draggedIndex = -1;
 
     /**
-     * Injects the active advertisement DTO records and parses the integrated local image strings out of the description text blocks.
+     * Loads the selected advertisement into the editing form
+     * and extracts all associated image URLs.
+     *
+     * @param dto advertisement to edit
      */
     public void setAdvertisementData(AdvertisementDto dto) {
         this.targetDto = dto;
@@ -110,7 +123,11 @@ public class EditAdController {
     }
 
     /**
-     * 🟢 تنظیم رویدادهای Drag & Drop بر روی کانتینر هر تصویر
+     * Configures drag-and-drop support for reordering
+     * advertisement images.
+     *
+     * @param wrapper image container
+     * @param index image position
      */
     private void setupDragAndDropHandlers(VBox wrapper, final int index) {
         // ۱. شروع عملیات درگ کردن
@@ -163,7 +180,8 @@ public class EditAdController {
     }
 
     /**
-     * Opens system file picker dialogues to seamlessly capture alternative target desktop image items.
+     * Opens a file chooser and appends one or more new images
+     * to the current advertisement.
      */
     @FXML
     public void handleAddNewPicture() {
@@ -187,7 +205,8 @@ public class EditAdController {
     }
 
     /**
-     * Recombines structural data modifications into unified network update requests.
+     * Collects the edited advertisement data, rebuilds the image
+     * metadata, and submits the updated advertisement to the backend.
      */
     @FXML
     public void handleUpdateAdvertisement() {

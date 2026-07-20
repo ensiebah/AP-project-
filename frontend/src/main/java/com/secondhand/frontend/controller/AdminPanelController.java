@@ -17,6 +17,16 @@ import java.net.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * Controller responsible for the administration panel of the marketplace.
+ * <p>
+ * It allows administrators to manage advertisements, review pending listings,
+ * approve or reject advertisements, delete approved advertisements, and
+ * manage user accounts by blocking or unblocking users.
+ *
+ * @author Ensie
+ * @version 1.0
+ */
 public class AdminPanelController {
 
     // --- بخش مربوط به آگهی‌ها ---
@@ -54,6 +64,10 @@ public class AdminPanelController {
 
     private boolean isApprovedMode = false;
 
+    /**
+     * Initializes the administration panel by configuring table columns,
+     * loading advertisements and users, and registering UI event handlers.
+     */
     @FXML
     public void initialize() {
         // ۱. مقداردهی جداول آگهی‌ها
@@ -102,6 +116,12 @@ public class AdminPanelController {
         fetchAdsFromServer(BASE_URL + "/active");
     }
 
+    /**
+     * Retrieves advertisements from the specified backend endpoint
+     * and updates the advertisement table.
+     *
+     * @param url backend endpoint used to retrieve advertisements
+     */
     private void fetchAdsFromServer(String url) {
         adList.clear();
         HttpRequest request = HttpRequest.newBuilder()
@@ -160,6 +180,10 @@ public class AdminPanelController {
         loadApprovedAdvertisements();
     }
 
+    /**
+     * Approves the selected pending advertisement and removes it
+     * from the pending advertisements list after a successful response.
+     */
     @FXML
     private void handleApprove() {
         AdvertisementDto selectedAd = pendingTable.getSelectionModel().getSelectedItem();
@@ -179,6 +203,10 @@ public class AdminPanelController {
                 });
     }
 
+    /**
+     * Rejects the selected pending advertisement and updates the table
+     * after the operation completes successfully.
+     */
     @FXML
     private void handleReject() {
         AdvertisementDto selectedAd = pendingTable.getSelectionModel().getSelectedItem();
@@ -200,6 +228,10 @@ public class AdminPanelController {
                 });
     }
 
+    /**
+     * Permanently deletes the selected approved advertisement
+     * from the marketplace.
+     */
     @FXML
     private void handleDeleteApprovedAd() {
         AdvertisementDto selectedAd = pendingTable.getSelectionModel().getSelectedItem();
@@ -249,6 +281,10 @@ public class AdminPanelController {
         );
     }
 
+    /**
+     * Retrieves all non-administrator users from the backend and
+     * separates them into active and blocked user lists.
+     */
     // --- 🟢 متدهای پیاده‌سازی سرویس هماهنگ مدیریت کاربران با سرور ---
     private void loadAllUsersFromServer() {
         if (NetworkClient.authToken == null) return;
@@ -291,6 +327,10 @@ public class AdminPanelController {
                 });
     }
 
+    /**
+     * Blocks the selected active user and moves the account
+     * to the blocked users table.
+     */
     @FXML
     private void handleBlockUser() {
         UserDto selectedUser = activeUsersTable.getSelectionModel().getSelectedItem();
@@ -316,6 +356,10 @@ public class AdminPanelController {
                 });
     }
 
+    /**
+     * Restores the selected blocked user and returns the account
+     * to the active users table.
+     */
     @FXML
     private void handleUnblockUser() {
         UserDto selectedUser = blockedUsersTable.getSelectionModel().getSelectedItem();

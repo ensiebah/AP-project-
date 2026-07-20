@@ -22,6 +22,13 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     }
 
+    /**
+     * Generates a JWT token for the specified user.
+     *
+     * @param username the authenticated user's username
+     * @param role the user's role
+     * @return a signed JWT token
+     */
     public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
@@ -35,23 +42,55 @@ public class JwtUtil {
                 .compact();
     }
 
+
+    /**
+     * Extracts the username from the specified JWT token.
+     *
+     * @param token the JWT token
+     * @return the username stored in the token
+     */
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
 
+    /**
+     * Extracts the user's role from the specified JWT token.
+     *
+     * @param token the JWT token
+     * @return the role stored in the token
+     */
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
     }
 
+    /**
+     * Checks whether the specified JWT token has expired.
+     *
+     * @param token the JWT token
+     * @return {@code true} if the token is expired; otherwise {@code false}
+     */
     public boolean isTokenExpired(String token) {
         return extractAllClaims(token).getExpiration().before(new Date());
     }
 
+    /**
+     * Validates the specified JWT token against the provided username.
+     *
+     * @param token the JWT token
+     * @param username the expected username
+     * @return {@code true} if the token is valid; otherwise {@code false}
+     */
     public boolean validateToken(String token, String username) {
         final String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
     }
 
+    /**
+     * Extracts all claims contained in the specified JWT token.
+     *
+     * @param token the JWT token
+     * @return the claims stored in the token
+     */
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSignKey()) // بدون خطا صدا زده می‌شود

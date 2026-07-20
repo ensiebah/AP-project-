@@ -19,7 +19,11 @@ public class DataInitializer implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
 
     /**
-     * 🏁 Responsibility: This method runs automatically when Spring Boot finishes starting up.
+     * Executes automatically when the application starts and initializes
+     * the required reference data in the database.
+     *
+     * @param args application startup arguments
+     * @throws Exception if an initialization error occurs
      */
     @Override
     public void run(String... args) throws Exception {
@@ -28,7 +32,8 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     /**
-     * 🟢 Responsibility: Populates the database with standard marketplace categories if empty.
+     * Inserts the default advertisement categories into the database
+     * if the category table is empty or contains only initial records.
      */
     private void seedCategories() {
         if (categoryRepository.count() <= 2) {
@@ -57,7 +62,8 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     /**
-     * 🟢 Responsibility: Populates the database with major Iranian cities if empty.
+     * Inserts the default list of cities into the database
+     * if the city table is empty or contains only initial records.
      */
     private void seedCities() {
         if (cityRepository.count() <= 2) {

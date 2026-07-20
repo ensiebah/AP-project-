@@ -18,6 +18,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service implementation responsible for managing conversations
+ * between buyers and sellers.
+ */
 @Service
 @RequiredArgsConstructor
 public class ConversationServiceImpl implements ConversationService {
@@ -26,6 +30,15 @@ public class ConversationServiceImpl implements ConversationService {
     private final UserRepository userRepository;
     private final AdvertisementRepository advertisementRepository;
     private final MessageRepository messageRepository;
+
+    /**
+     * Creates a new conversation between a buyer and a seller
+     * for a specific advertisement.
+     *
+     * @param buyerId buyer identifier
+     * @param advertisementId advertisement identifier
+     * @return created or existing conversation
+     */
     @Override
     public ConversationDto createConversation(Long buyerId, Long advertisementId) {
         User buyer = userRepository.findById(buyerId)
@@ -61,6 +74,12 @@ public class ConversationServiceImpl implements ConversationService {
         return mapToDto(savedConversation, buyerId);
     }
 
+    /**
+     * Retrieves all conversations of a specific user.
+     *
+     * @param userId user identifier
+     * @return list of conversations
+     */
     @Override
     public List<ConversationDto> getUserConversations(Long userId) {
         User user = userRepository.findById(userId)

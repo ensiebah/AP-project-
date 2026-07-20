@@ -21,6 +21,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Service implementation responsible for managing
+ * users' favorite advertisements.
+ */
 @Service
 @RequiredArgsConstructor
 public class FavoriteServiceImpl implements FavoriteService {
@@ -29,6 +33,14 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final UserRepository userRepository;
     private final AdvertisementRepository advertisementRepository;
 
+
+    /**
+     * Adds an advertisement to the user's favorites.
+     *
+     * @param userId user identifier
+     * @param advertisementId advertisement identifier
+     * @return created favorite
+     */
     @Override
     public FavoriteDto addFavorite(
             Long userId,
@@ -66,6 +78,13 @@ public class FavoriteServiceImpl implements FavoriteService {
         return mapToDto(savedFavorite);
     }
 
+
+    /**
+     * Removes an advertisement from the user's favorites.
+     *
+     * @param userId user identifier
+     * @param advertisementId advertisement identifier
+     */
     @Override
     public void removeFavorite(
             Long userId,
@@ -96,6 +115,14 @@ public class FavoriteServiceImpl implements FavoriteService {
         favoriteRepository.delete(favorite);
     }
 
+
+
+    /**
+     * Retrieves all favorite advertisements of a user.
+     *
+     * @param userId user identifier
+     * @return list of favorites
+     */
     @Override
     public List<FavoriteDto> getUserFavorites(
             Long userId

@@ -20,6 +20,10 @@ import com.secondhand.backend.exception.DuplicateUsernameException;
 
 import java.util.List;
 
+/**
+ * Service implementation responsible for user
+ * registration, authentication, and account management.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -28,6 +32,12 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+    /**
+     * Registers a new user account.
+     *
+     * @param request registration information
+     * @return registered user
+     */
     @Override
     public UserDto register(RegisterRequestDto request) {
         if (userRepository.existsByUserName(request.getUsername())) {
@@ -51,6 +61,12 @@ public class UserServiceImpl implements UserService {
         return mapToDto(userRepository.save(user));
     }
 
+    /**
+     * Authenticates a user and generates a JWT token.
+     *
+     * @param request login credentials
+     * @return authentication response
+     */
     @Override
     public LoginResponseDto login(LoginRequestDto request) {
         User user = userRepository.findByUserName(request.getUsername())
@@ -76,6 +92,12 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    /**
+     * Retrieves a user by identifier.
+     *
+     * @param id user identifier
+     * @return user information
+     */
     @Override
     public UserDto getUserById(Long id) {
         User user = userRepository.findById(id)
@@ -83,6 +105,12 @@ public class UserServiceImpl implements UserService {
         return mapToDto(user);
     }
 
+    /**
+     * Retrieves a user by username.
+     *
+     * @param username username
+     * @return user information
+     */
     @Override
     public UserDto getUserByUsername(String username) {
         User user = userRepository.findByUserName(username)
@@ -90,6 +118,11 @@ public class UserServiceImpl implements UserService {
         return mapToDto(user);
     }
 
+    /**
+     * Retrieves all registered users.
+     *
+     * @return list of users
+     */
     @Override
     public List<UserDto> getAllUsers() {
         return userRepository.findAll()

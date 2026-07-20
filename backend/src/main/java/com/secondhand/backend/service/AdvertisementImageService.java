@@ -11,6 +11,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
+/**
+ * Service responsible for uploading advertisement images
+ * and storing their paths in the database.
+ */
 @Service // 👈 به اسپرینگ‌بوت می‌گوید این کلاس یک لایه منطق تجاری (Business Logic) است.
 @RequiredArgsConstructor // 👈 به لومبوک می‌گوید سازنده را برای تزریق وابستگی repository بسازد.
 public class AdvertisementImageService {
@@ -22,7 +26,13 @@ public class AdvertisementImageService {
     private final String UPLOAD_DIR = System.getProperty("user.home") + "/Desktop/secondhand_images/";
 
     /**
-     * وظیفه متد: ذخیره فیزیکی فایل عکس روی هارد و ثبت آدرس آن در دیتابیس
+     * Uploads an image file for an advertisement and stores
+     * its path in the database.
+     *
+     * @param file uploaded image file
+     * @param advertisement related advertisement
+     * @return saved advertisement image
+     * @throws IOException if an error occurs while saving the file
      */
     public AdvertisementImage uploadImage(MultipartFile file, Advertisement advertisement) throws IOException {
         // ۱. بررسی اینکه فایل خالی نباشد

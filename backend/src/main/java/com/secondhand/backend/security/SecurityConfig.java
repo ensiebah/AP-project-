@@ -19,12 +19,26 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
 
+    /**
+     * Creates the password encoder bean used to hash and verify user passwords.
+     *
+     * @return the configured password encoder
+     */
     // ۱. برگشتن متد پسورد اینکودر برای حل ارور جدید اسپرینگ
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+
+    /**
+     * Configures the application's security rules, authentication filter,
+     * session management, and endpoint access permissions.
+     *
+     * @param http the HttpSecurity configuration object
+     * @return the configured security filter chain
+     * @throws Exception if a security configuration error occurs
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
