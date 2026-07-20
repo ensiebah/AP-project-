@@ -132,91 +132,61 @@ The following screenshots demonstrate the main components of the application.
 
 ## Login
 
-> Insert screenshot here
-
-```text
 ![Login](images/login-page.png)
-```
 
 ---
 
 ## Register
 
-> Insert screenshot here
+![Register](images/register-page.png)
 
-```text
-images/register-page.png
-```
 
 ---
 
 ## Main Marketplace
 
-> Insert screenshot here
-
-```text
-images/marketplace.png
-```
+![Marketplace](images/marketplace.png)
 
 ---
 
 ## Advertisement Details
 
-> Insert screenshot here
-
-```text
-images/ad-details.png
-```
+![AdvertisementDetails](images/ad-details.png)
 
 ---
 
 ## Create Advertisement
 
-> Insert screenshot here
 
-```text
-images/create-ad.png
-```
+![CreateAdvertisement](images/create-ad.png)
 
 ---
 
 ## My Advertisements
 
-> Insert screenshot here
 
-```text
-images/my-ads.png
-```
+![MyAdvertisements](images/my-ads.png)
 
 ---
 
 ## Edit Advertisement
 
-> Insert screenshot here
 
-```text
-images/edit-ad.png
-```
+![EditAdvertisement](images/edit-ad.png)
 
 ---
 
 ## Inbox
 
-> Insert screenshot here
+![Inbox](images/inbox.png)
 
-```text
-images/inbox.png
-```
 
 ---
 
 ## Administrator Panel
 
-> Insert screenshot here
+![AdministratorPanel](images/admin-panel.png)
 
-```text
-images/admin-panel.png
-```
 
 ---
 
