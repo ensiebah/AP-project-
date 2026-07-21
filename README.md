@@ -132,91 +132,61 @@ The following screenshots demonstrate the main components of the application.
 
 ## Login
 
-> Insert screenshot here
-
-```text
-images/login-page.png
-```
+![Login](images/login-page.png)
 
 ---
 
 ## Register
 
-> Insert screenshot here
+![Register](images/register-page.png)
 
-```text
-images/register-page.png
-```
 
 ---
 
 ## Main Marketplace
 
-> Insert screenshot here
-
-```text
-images/marketplace.png
-```
+![Marketplace](images/marketplace.png)
 
 ---
 
 ## Advertisement Details
 
-> Insert screenshot here
-
-```text
-images/ad-details.png
-```
+![AdvertisementDetails](images/ad-details.png)
 
 ---
 
 ## Create Advertisement
 
-> Insert screenshot here
 
-```text
-images/create-ad.png
-```
+![CreateAdvertisement](images/create-ad.png)
 
 ---
 
 ## My Advertisements
 
-> Insert screenshot here
 
-```text
-images/my-ads.png
-```
+![MyAdvertisements](images/my-ads.png)
 
 ---
 
 ## Edit Advertisement
 
-> Insert screenshot here
 
-```text
-images/edit-ad.png
-```
+![EditAdvertisement](images/edit-ad.png)
 
 ---
 
 ## Inbox
 
-> Insert screenshot here
+![Inbox](images/inbox.png)
 
-```text
-images/inbox.png
-```
 
 ---
 
 ## Administrator Panel
 
-> Insert screenshot here
+![AdministratorPanel](images/admin-panel.png)
 
-```text
-images/admin-panel.png
-```
 
 ---
 
@@ -241,7 +211,7 @@ git clone https://github.com/ensiebah/AP-project-.git
 ```
 
 ```bash
-cd SecondHand
+cd AP-project-
 ```
 
 ---
@@ -591,14 +561,12 @@ SecondHand Marketplace
 
 ## Authors
 
-This project was developed as a university course project by:
+- **Ensie Bahrevar**
+  - GitHub: https://github.com/ensiebah
 
-- Ensie Bahrevar
-GitHub:
-https://github.com/ensiebah
-- Reyhaneh Moradi
-GitHub:
-https://github.com/Rian-mk
+- **Reyhaneh Moradi**
+  - GitHub: https://github.com/Rian-mk
+
 Department of Computer Engineering  
 Amirkabir University of Technology (Tehran Polytechnic)
 ---
@@ -621,13 +589,6 @@ for providing excellent tools and documentation.
 
 ---
 
-# License
-
-This project is released under the MIT License.
-
-You are free to use, modify, and distribute this software under the terms of the license.
-
----
 
 # Project Status
 
