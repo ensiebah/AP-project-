@@ -85,4 +85,347 @@
 .btn-back:pressed {
     /* 🟢 ۴. رنگ دکمه در لحظه کلیک شدن */
     -fx-background-color: #8a959a;
+
+}
+/* =========================
+      LOGIN CARD
+========================= */
+
+.login-card{
+
+    -fx-background-color: rgba(255,255,255,0.93);
+
+    -fx-background-radius:25;
+
+    -fx-effect:dropshadow(gaussian,
+    rgba(0,0,0,0.25),
+    30,
+    0.2,
+    0,
+    8);
+
+}
+
+
+/* =========================
+      TITLES
+========================= */
+
+.login-title{
+
+    -fx-font-size:28;
+
+    -fx-font-weight:bold;
+
+    -fx-text-fill:#2196F3;
+
+}
+
+.login-subtitle{
+
+    -fx-font-size:14;
+
+    -fx-text-fill:#6c7a89;
+
+}
+
+
+/* =========================
+      INPUTS
+========================= */
+
+.modern-textfield{
+
+    -fx-pref-height:42;
+
+    -fx-background-radius:14;
+
+    -fx-border-radius:14;
+
+    -fx-border-color:#dce3ea;
+
+    -fx-background-color:white;
+
+    -fx-font-size:14;
+
+}
+
+.modern-textfield:focused{
+
+    -fx-border-color:#4FC3F7;
+
+    -fx-border-width:2;
+
+}
+
+
+/* =========================
+      BUTTONS
+========================= */
+
+.primary-button{
+
+    -fx-background-color:linear-gradient(to right,#4FC3F7,#2196F3);
+
+    -fx-text-fill:white;
+
+    -fx-font-weight:bold;
+
+    -fx-background-radius:14;
+
+    -fx-pref-height:42;
+
+    -fx-cursor:hand;
+
+}
+
+.primary-button:hover{
+
+    -fx-background-color:linear-gradient(to right,#64d2ff,#42a5f5);
+
+}
+
+
+.secondary-button{
+
+    -fx-background-color:linear-gradient(to right,#4FC3F7,#2196F3);
+
+    -fx-text-fill:#2196F3;
+
+    -fx-border-color:#2196F3;
+    -fx-border-width:2;
+
+    -fx-border-radius:14;
+    -fx-background-radius:14;
+
+    -fx-font-weight:bold;
+
+    -fx-font-size:15px;
+
+    -fx-pref-height:45;
+
+}
+
+.secondary-button:hover{
+
+    -fx-background-color:#eef8ff;
+
+}
+
+
+.message-label{
+
+    -fx-text-fill:#d63031;
+
+}
+/* =========================================================
+   SECONDHAND MARKETPLACE
+   Modern Sky Blue Theme
+========================================================= */
+
+.root{
+    -fx-font-family: "Segoe UI";
+}
+
+
+/* ================= BACKGROUND ================= */
+
+.login-root{
+    -fx-background-color: linear-gradient(to bottom right,#edf7ff,#dcefff,#c8e8ff);
+}
+
+
+/* ================= RIGHT CARD ================= */
+
+.login-card{
+
+    -fx-background-color:white;
+
+    -fx-background-radius:30;
+
+    -fx-border-radius:30;
+
+    -fx-padding:45;
+
+    -fx-effect:dropshadow(gaussian,
+    rgba(0,0,0,.15),
+    40,
+    .2,
+    0,
+    12);
+
+}
+
+
+/* ================= TITLES ================= */
+
+.title{
+
+    -fx-font-size:34;
+
+    -fx-font-weight:bold;
+
+    -fx-text-fill:#1b4d8f;
+
+}
+
+.subtitle{
+
+    -fx-font-size:15;
+
+    -fx-text-fill:#7a8ea8;
+
+}
+
+
+/* ================= TEXTFIELDS ================= */
+
+.text-field,
+.password-field{
+
+    -fx-pref-height:48;
+
+    -fx-background-radius:15;
+
+    -fx-border-radius:15;
+
+    -fx-background-color:white;
+
+    -fx-border-color:#d9e9ff;
+
+    -fx-border-width:2;
+
+    -fx-font-size:14;
+
+    -fx-padding:0 15;
+
+}
+
+.text-field:focused,
+.password-field:focused{
+
+    -fx-border-color:#55b7ff;
+
+    -fx-effect:dropshadow(gaussian,
+    rgba(85,183,255,.35),
+    15,
+    .4,
+    0,
+    0);
+
+}
+
+
+/* ================= BUTTONS ================= */
+
+.button{
+
+    -fx-font-size:15;
+
+    -fx-font-weight:bold;
+
+    -fx-background-radius:15;
+
+    -fx-cursor:hand;
+
+    -fx-pref-height:48;
+
+    -fx-text-fill:white;
+
+}
+
+
+/* LOGIN */
+
+.btn-blue{
+
+    -fx-background-color:linear-gradient(#63c6ff,#3ea9ff);
+
+}
+
+.btn-blue:hover{
+
+    -fx-background-color:linear-gradient(#78d0ff,#55b7ff);
+
+}
+
+.btn-blue:pressed{
+
+    -fx-scale-x:.97;
+    -fx-scale-y:.97;
+
+}
+
+
+/* REGISTER */
+
+.btn-green{
+
+    -fx-background-color:#ffffff;
+
+    -fx-border-color:#59b8ff;
+
+    -fx-border-radius:15;
+
+    -fx-text-fill:#2b87da;
+
+}
+
+.btn-green:hover{
+
+    -fx-background-color:#eef8ff;
+
+}
+
+.btn-green:pressed{
+
+    -fx-scale-x:.97;
+    -fx-scale-y:.97;
+
+}
+
+
+/* ================= LABEL ================= */
+
+.message-label{
+
+    -fx-text-fill:#e74c3c;
+
+    -fx-font-size:13;
+
+}
+
+
+/* ================= LEFT PANEL ================= */
+
+.brand-title{
+
+    -fx-font-size:42;
+
+    -fx-font-weight:bold;
+
+    -fx-text-fill:white;
+
+}
+
+.brand-subtitle{
+
+    -fx-font-size:17;
+
+    -fx-text-fill:white;
+
+}
+
+
+/* ================= IMAGE ================= */
+
+.hero-image{
+
+    -fx-effect:dropshadow(gaussian,
+    rgba(0,0,0,.15),
+    30,
+    .3,
+    0,
+    10);
+
 }

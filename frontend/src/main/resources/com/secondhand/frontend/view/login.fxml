@@ -2,38 +2,82 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.secondhand.frontend.controller.LoginController"
-      spacing="15"
-      alignment="CENTER">
+<StackPane
+        xmlns:fx="http://javafx.com/fxml"
+        fx:controller="com.secondhand.frontend.controller.LoginController"
+        stylesheets="@/style.css">
 
-    <padding>
-        <Insets top="30" right="30" bottom="30" left="30"/>
-    </padding>
+    <!-- Background -->
 
-    <Label text="SecondHand Market"/>
+    <Pane style="
+        -fx-background-image: url('/images/login-background.png');
+        -fx-background-size: cover;
+        -fx-background-position: center;
+    "/>
 
-    <TextField
-            fx:id="usernameField"
-            promptText="Username"/>
+    <!-- Dark overlay -->
 
-    <PasswordField
-            fx:id="passwordField"
-            promptText="Password"/>
+    <Pane style="
+        -fx-background-color: rgba(20,35,60,0.30);
+    "/>
 
-    <Button
-            text="Login"
-            onAction="#login"
-            styleClass="btn-blue"/>
+    <!-- Login Card -->
 
-    <Button
-            text="Register"
-            onAction="#goToRegister"
-            styleClass="btn-green" />
 
-    <Label
-            fx:id="messageLabel"/>
+    <VBox
+            prefWidth="380"
+            maxWidth="380"
+            maxHeight="430"
+            spacing="18"
+            alignment="CENTER"
 
-</VBox>
+
+            styleClass="login-card">
+
+        <padding>
+            <Insets top="28" right="30" bottom="28" left="30"/>
+        </padding>
+
+        <ImageView
+                fitWidth="70"
+                fitHeight="70"
+                preserveRatio="true"/>
+
+        <Label
+                text="SecondHand Market"
+                styleClass="login-title"/>
+
+        <Label
+                text="Buy • Sell • Discover"
+                styleClass="login-subtitle"/>
+
+        <TextField
+                fx:id="usernameField"
+                promptText="Username"
+                styleClass="modern-textfield"/>
+
+        <PasswordField
+                fx:id="passwordField"
+                promptText="Password"
+                styleClass="modern-textfield"/>
+
+        <Button
+                text="Login"
+                onAction="#login"
+                styleClass="primary-button"/>
+
+        <Button
+                text="Create Account"
+                onAction="#goToRegister"
+                styleClass="secondary-button"/>
+
+        <Label
+                fx:id="messageLabel"
+                styleClass="message-label"/>
+
+    </VBox>
+
+</StackPane>
