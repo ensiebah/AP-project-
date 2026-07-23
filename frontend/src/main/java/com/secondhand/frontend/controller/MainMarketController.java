@@ -150,14 +150,16 @@ public class MainMarketController {
         sortMenuButton.getItems().clear();
         MenuItem dateItem = new MenuItem("📅 Date (Newest)");
         dateItem.setOnAction(e -> applyNewSorting("date", "desc", "Sort by: Date (Newest)"));
+        MenuItem oldestItem = new MenuItem("📅 Date (Oldest)");
+        oldestItem.setOnAction(e -> applyNewSorting("date", "asc", "Sort by: Date (Oldest)"));
         MenuItem priceLowItem = new MenuItem("💰 Price: Low to High");
         priceLowItem.setOnAction(e -> applyNewSorting("price", "asc", "Sort by: Price: Low to High"));
         MenuItem priceHighItem = new MenuItem("📈 Price: High to Low");
         priceHighItem.setOnAction(e -> applyNewSorting("price", "desc", "Sort by: Price: High to Low"));
-        MenuItem ratingItem = new MenuItem("⭐ Seller Rating");
-        ratingItem.setOnAction(e -> applyNewSorting("rating", "desc", "Sort by: Seller Rating"));
+        MenuItem ratingItem = new MenuItem("⭐ Seller Rating: High to Low");
+        ratingItem.setOnAction(e -> applyNewSorting("rating", "desc", "Sort by: Seller Rating: High to Low"));
 
-        sortMenuButton.getItems().addAll(dateItem, priceLowItem, priceHighItem, ratingItem);
+        sortMenuButton.getItems().addAll(dateItem, oldestItem, priceLowItem, priceHighItem, ratingItem);
         sortMenuButton.setText("Sort by: Date (Newest)");
     }
 
