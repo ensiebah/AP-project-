@@ -127,16 +127,36 @@
                     </children>
                 </VBox>
 
-                <!-- Read-only Category explorer -->
+                <!-- Full category CRUD with safe deletion rules. -->
                 <VBox fx:id="categoriesPane" visible="false" managed="false" spacing="16">
                     <children>
-                        <VBox spacing="5"><Label text="CATEGORY EXPLORER" styleClass="page-kicker"/><Label text="Marketplace category hierarchy" styleClass="page-title"/><Label text="A read-only tree of all main categories and their direct subcategories." styleClass="section-subtitle"/></VBox>
-                        <VBox spacing="12" styleClass="surface-card" VBox.vgrow="ALWAYS">
+                        <VBox spacing="5"><Label text="CATEGORY MANAGEMENT" styleClass="page-kicker"/><Label text="Marketplace category hierarchy" styleClass="page-title"/><Label text="Create roots and subcategories, rename them, or safely delete unused leaf categories." styleClass="section-subtitle"/></VBox>
+                        <HBox spacing="18" VBox.vgrow="ALWAYS">
                             <children>
-                                <HBox alignment="CENTER_LEFT"><children><Label text="All categories" styleClass="section-title"/><Region HBox.hgrow="ALWAYS"/><Label fx:id="categoryTreeSummaryLabel" text="Loading categories…" styleClass="pill"/></children></HBox>
-                                <TreeView fx:id="categoriesTreeView" VBox.vgrow="ALWAYS" />
+                                <VBox spacing="12" styleClass="surface-card" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT"><children><Label text="All categories" styleClass="section-title"/><Region HBox.hgrow="ALWAYS"/><Label fx:id="categoryTreeSummaryLabel" text="Loading categories…" styleClass="pill"/></children></HBox>
+                                        <TreeView fx:id="categoriesTreeView" VBox.vgrow="ALWAYS" />
+                                    </children>
+                                </VBox>
+                                <VBox spacing="13" prefWidth="330" styleClass="surface-card">
+                                    <children>
+                                        <Label text="Manage selection" styleClass="section-title" />
+                                        <Label fx:id="selectedCategoryInfoLabel" text="Select a category to add a child, rename it or delete it." wrapText="true" styleClass="section-subtitle" />
+                                        <Separator />
+                                        <Label text="Category name" styleClass="muted-text" />
+                                        <TextField fx:id="categoryNameField" promptText="e.g. Mobile Phones" />
+                                        <Button text="＋ Add main category" onAction="#addRootCategory" maxWidth="Infinity" styleClass="primary-action" />
+                                        <Button fx:id="addSubcategoryButton" text="↳ Add subcategory to selected" onAction="#addSubcategory" maxWidth="Infinity" styleClass="outline-button" />
+                                        <Button fx:id="renameCategoryButton" text="✎ Rename selected" onAction="#renameSelectedCategory" maxWidth="Infinity" styleClass="outline-button" />
+                                        <Separator />
+                                        <Label text="Safe deletion" styleClass="section-title" />
+                                        <Label text="A category can be deleted only if no advertisement uses it and it has no child categories." wrapText="true" styleClass="section-subtitle" />
+                                        <Button fx:id="deleteCategoryButton" text="Delete selected category" onAction="#deleteSelectedCategory" maxWidth="Infinity" styleClass="danger-button" />
+                                    </children>
+                                </VBox>
                             </children>
-                        </VBox>
+                        </HBox>
                     </children>
                 </VBox>
 

@@ -4,11 +4,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ff106288-4ee5-4916-84b0-2d67a2b76cb0" name="Changes" comment="Merge branch 'main' of https://github.com/ensiebah/AP-project-&#10;&#10;# Conflicts:&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AdvertisementNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/AlreadyRatedException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CategoryNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/CityNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/ConversationNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/FavoriteNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/MessageNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/RatingNotFoundException.java&#10;#&#9;backend/src/main/java/com/secondhand/backend/exception/UnauthorizedAdvertisementAccessException.java&#10;#&#9;backend/src/main/resources/fxml/login.fxml&#10;#&#9;backend/src/main/resources/import.sql">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/MainMarketController.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/MainMarketController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/network/NetworkClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/network/NetworkClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/main_market.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/main_market.fxml" afterDir="false" />
+    <list default="true" id="f119b51f-4729-4f5f-bbca-b8782832877e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/backend.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/backend.main.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules/com.secondhand.backend.main.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/AdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/CategoryController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/CategoryController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/exception/GlobalExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/repository/AdvertisementRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/repository/AdvertisementRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/CategoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/CategoryService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/impl/CategoryServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/impl/CategoryServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/secondhand/backend/service/impl/CategoryServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/secondhand/backend/service/impl/CategoryServiceImplTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/AdminPanelController.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/AdminPanelController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/admin_panel.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/admin_panel.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,203 +35,43 @@
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
     </projectState>
-    <projectState path="$PROJECT_DIR$/backend">
-      <ProjectState />
-    </projectState>
-  </component>
-  <component name="ExternalProjectsManager">
-    <system id="GRADLE">
-      <state>
-        <task path="$PROJECT_DIR$">
-          <activation />
-        </task>
-        <task path="$PROJECT_DIR$/backend">
-          <activation />
-        </task>
-        <projects_view>
-          <tree_state>
-            <expand>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="backend" type="f1a62948:ProjectNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="backend" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="backend" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="application" type="c8890929:TasksNode$1" />
-              </path>
-              <path>
-                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
-                <item name="backend" type="f1a62948:ProjectNode" />
-                <item name="Tasks" type="e4a08cd1:TasksNode" />
-                <item name="build" type="c8890929:TasksNode$1" />
-              </path>
-            </expand>
-            <select />
-          </tree_state>
-        </projects_view>
-      </state>
-    </system>
-  </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Enum" />
-        <option value="Class" />
-      </list>
-    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;Rian-mk&quot;
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "Rian-mk"
   }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/ensiebah/AP-project-.git&quot;,
-    &quot;accountId&quot;: &quot;2e95d4cd-abff-439d-ad9f-9eddd881b830&quot;
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/ensiebah/AP-project-.git",
+    "accountId": "2e95d4cd-abff-439d-ad9f-9eddd881b830"
   }
-}</component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 5
-}</component>
-  <component name="ProjectId" id="3FhzjXPkX79YEt1IJL0aThldivI" />
-  <component name="ProjectLevelVcsManager">
-    <ConfirmationsSetting value="2" id="Add" />
-  </component>
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="3GuVUfxJmEJ2C8cWAf6kcfl7iKo" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Gradle.Build Ap.executor": "Run",
-    "Gradle.Build secondhand-backend.executor": "Run",
-    "Gradle.D:/java/Ap [clean].executor": "Run",
-    "Gradle.backend [bootRun].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "Shell Script.gradlew.executor": "Run",
-    "Spring Boot.SecondHandBackendApplication.executor": "Run",
     "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Reihaneh/Desktop/Java Projects/Project/AP-project-",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "project.scopes",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected="Gradle.backend [bootRun]">
-    <configuration name="D:/java/Ap [clean]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="clean" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <GradleProfilingDisabled>false</GradleProfilingDisabled>
-      <GradleCoverageDisabled>false</GradleCoverageDisabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="backend [bootRun]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/backend" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="bootRun" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <GradleProfilingDisabled>false</GradleProfilingDisabled>
-      <GradleCoverageDisabled>false</GradleCoverageDisabled>
-      <method v="2" />
-    </configuration>
-    <configuration name="gradlew" type="ShConfigurationType">
-      <option name="SCRIPT_TEXT" value="" />
-      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/gradlew" />
-      <option name="SCRIPT_OPTIONS" value="" />
-      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
-      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
-      <option name="INTERPRETER_PATH" value="/bin/sh" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="EXECUTE_IN_TERMINAL" value="true" />
-      <option name="EXECUTE_SCRIPT_FILE" value="true" />
-      <envs />
-      <method v="2" />
-    </configuration>
-    <configuration name="SecondHandBackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-      <module name="com.secondhand.backend.main" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.secondhand.backend.SecondHandBackendApplication" />
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
-    <list>
-      <item itemvalue="Gradle.backend [bootRun]" />
-      <item itemvalue="Gradle.D:/java/Ap [clean]" />
-      <item itemvalue="Shell Script.gradlew" />
-      <item itemvalue="Spring Boot.SecondHandBackendApplication" />
-    </list>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Gradle.backend [bootRun]" />
-        <item itemvalue="Gradle.D:/java/Ap [clean]" />
-      </list>
-    </recent_temporary>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -226,45 +82,16 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="ff106288-4ee5-4916-84b0-2d67a2b76cb0" name="Changes" comment="" />
-      <created>1782542227355</created>
+      <changelist id="f119b51f-4729-4f5f-bbca-b8782832877e" name="Changes" comment="" />
+      <created>1784821465735</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1782542227355</updated>
-      <workItem from="1782542228672" duration="1209000" />
-      <workItem from="1782543459128" duration="3098000" />
-      <workItem from="1782548043307" duration="2065000" />
-      <workItem from="1782576761925" duration="5957000" />
-      <workItem from="1782634118664" duration="2553000" />
-      <workItem from="1782651612098" duration="6900000" />
-      <workItem from="1782661780868" duration="2034000" />
-      <workItem from="1782893773549" duration="2230000" />
-      <workItem from="1782916798723" duration="1906000" />
-      <workItem from="1783291298511" duration="1492000" />
-      <workItem from="1783292898961" duration="619000" />
-      <workItem from="1783293757012" duration="552000" />
-      <workItem from="1783376784373" duration="719000" />
-      <workItem from="1783556109034" duration="67000" />
-      <workItem from="1784039060842" duration="1866000" />
+      <updated>1784821465735</updated>
+      <workItem from="1784821469367" duration="102000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="my_chat_code" />
-    <option name="LAST_COMMIT_MESSAGE" value="my_chat_code" />
   </component>
 </project>

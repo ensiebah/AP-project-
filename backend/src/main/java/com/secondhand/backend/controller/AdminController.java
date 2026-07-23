@@ -15,6 +15,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -77,10 +81,34 @@ public class AdminController {
         }
     }
 
-    /** Read-only flat list; the client builds the visual root/child tree. */
+    /** Flat list used by the client to build a root/child category tree. */
     @GetMapping("/categories")
     public List<CategoryDto> getAllCategories() {
         return categoryService.getAllCategories();
+    }
+
+    /** Creates a root category or a child of dto.parentId. */
+    @PostMapping("/categories")
+    public CategoryDto createCategory(@RequestBody CategoryDto dto) {
+        if (dto.getParentId() == null) {
+            return categoryService.createCategory(dto.getName());
+        }
+        return categoryService.createSubcategory(dto.getName(), dto.getParentId());
+    }
+
+    @PutMapping("/categories/{id}")
+    public CategoryDto renameCategory(@PathVariable Long id, @RequestBody CategoryDto dto) {
+        return categoryService.updateCategoryName(id, dto.getName());
+    }
+
+    /**
+     * Safe delete: the service rejects categories which still have child
+     * categories or advertisements, avoiding destructive cascades.
+     */
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/advertisements/pending")

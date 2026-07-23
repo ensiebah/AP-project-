@@ -24,6 +24,8 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, Lo
 
     List<Advertisement> findByCategory(Category category);
 
+    boolean existsByCategory(Category category);
+
     List<Advertisement> findByCity(City city);
 
     List<Advertisement> findByTitleContainingIgnoreCase(String title);

@@ -4,6 +4,7 @@ import com.secondhand.backend.dto.CategoryDto;
 import com.secondhand.backend.entity.Category;
 import com.secondhand.backend.exception.CategoryNotFoundException;
 import com.secondhand.backend.repository.CategoryRepository;
+import com.secondhand.backend.repository.AdvertisementRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,6 +23,9 @@ class CategoryServiceImplTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private AdvertisementRepository advertisementRepository;
+
     @InjectMocks
     private CategoryServiceImpl categoryService;
 
@@ -32,7 +36,6 @@ class CategoryServiceImplTest {
         category.setId(1L);
         category.setName("Electronics");
 
-        when(categoryRepository.existsByName("Electronics")).thenReturn(false);
         when(categoryRepository.save(any(Category.class))).thenReturn(category);
 
         CategoryDto result = categoryService.createCategory("Electronics");
@@ -46,8 +49,11 @@ class CategoryServiceImplTest {
     @Test
     void createCategory_WhenAlreadyExists_ShouldThrowException() {
 
-        when(categoryRepository.existsByName("Electronics"))
-                .thenReturn(true);
+        Category existing = new Category();
+        existing.setId(99L);
+        existing.setName("Electronics");
+        when(categoryRepository.findByNameIgnoreCase("Electronics"))
+                .thenReturn(Optional.of(existing));
 
         assertThrows(
                 IllegalArgumentException.class,

@@ -62,6 +62,18 @@ public class MainMarketController {
         }
 
         adListView.setCellFactory(param -> new ListCell<>() {
+            {
+                // ListView-level clicks can be swallowed by labels/HBoxes inside
+                // a custom cell. Handling the double-click on the cell itself
+                // makes opening ad details reliable.
+                setOnMouseClicked(event -> {
+                    if (event.getClickCount() == 2 && getItem() != null) {
+                        openAdDetailsPage(getItem());
+                        event.consume();
+                    }
+                });
+            }
+
             @Override
             protected void updateItem(AdvertisementDto item, boolean empty) {
                 super.updateItem(item, empty);
@@ -98,15 +110,6 @@ public class MainMarketController {
                 UiMotion.installCardMotion(card);
                 setText(null);
                 setGraphic(card);
-            }
-        });
-
-        adListView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                AdvertisementDto selectedDto = adListView.getSelectionModel().getSelectedItem();
-                if (selectedDto != null) {
-                    openAdDetailsPage(selectedDto);
-                }
             }
         });
 
@@ -405,9 +408,14 @@ public class MainMarketController {
             stage.setScene(new Scene(root));
             stage.setTitle("Ad Details - " + dto.getTitle());
             stage.show();
-        } catch (java.io.IOException e) {
+        } catch (Exception e) {
+            // Show a visible error instead of silently failing after a double-click.
             System.err.println("Error opening Ad Details page!");
             e.printStackTrace();
+            new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.ERROR,
+                    "Could not open advertisement details: " + e.getMessage()
+            ).show();
         }
     }
 

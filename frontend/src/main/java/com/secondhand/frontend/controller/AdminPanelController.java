@@ -81,6 +81,11 @@ public class AdminPanelController {
 
     @FXML private TreeView<String> categoriesTreeView;
     @FXML private Label categoryTreeSummaryLabel;
+    @FXML private Label selectedCategoryInfoLabel;
+    @FXML private TextField categoryNameField;
+    @FXML private Button addSubcategoryButton;
+    @FXML private Button renameCategoryButton;
+    @FXML private Button deleteCategoryButton;
 
     @FXML private TextField userSearchField;
     @FXML private Button allUsersButton;
@@ -94,11 +99,13 @@ public class AdminPanelController {
     private final ObservableList<UserDto> allUsers = FXCollections.observableArrayList();
     private String currentUserFilter = "ALL";
     private String currentAdStatus = "PENDING";
+    private final Map<TreeItem<String>, Long> categoryItemIds = new HashMap<>();
 
     @FXML
     public void initialize() {
         setupAdvertisementTable();
         setupUserDirectory();
+        setupCategoryExplorer();
         showOverview();
         loadOverview();
         loadAdvertisements("PENDING");
@@ -158,6 +165,27 @@ public class AdminPanelController {
             }
         });
         userSearchField.textProperty().addListener((obs, oldValue, newValue) -> refreshVisibleUsers());
+    }
+
+    private void setupCategoryExplorer() {
+        categoriesTreeView.getSelectionModel().selectedItemProperty().addListener((obs, oldItem, selectedItem) -> {
+            Long categoryId = categoryItemIds.get(selectedItem);
+            boolean hasSelection = categoryId != null;
+            addSubcategoryButton.setDisable(!hasSelection);
+            renameCategoryButton.setDisable(!hasSelection);
+            deleteCategoryButton.setDisable(!hasSelection);
+
+            if (hasSelection) {
+                selectedCategoryInfoLabel.setText("Selected: " + selectedItem.getValue());
+                categoryNameField.setText(selectedItem.getValue());
+            } else {
+                selectedCategoryInfoLabel.setText("Select a category to add a child, rename it or delete it.");
+                categoryNameField.clear();
+            }
+        });
+        addSubcategoryButton.setDisable(true);
+        renameCategoryButton.setDisable(true);
+        deleteCategoryButton.setDisable(true);
     }
 
     /* ---------- Top navigation ---------- */
@@ -278,12 +306,13 @@ public class AdminPanelController {
         });
     }
 
-    /* ---------- Read-only category explorer ---------- */
+    /* ---------- Category management ---------- */
 
     private void loadCategories() {
         fetchArray("/admin/categories", array -> {
             Map<Long, TreeItem<String>> itemsById = new HashMap<>();
             Map<Long, Long> parentsById = new HashMap<>();
+            Map<TreeItem<String>, Long> builtItemIds = new HashMap<>();
             int rootCount = 0;
 
             for (int i = 0; i < array.length(); i++) {
@@ -292,6 +321,7 @@ public class AdminPanelController {
                 String name = category.optString("name", "Unnamed category");
                 TreeItem<String> item = new TreeItem<>(name);
                 itemsById.put(id, item);
+                builtItemIds.put(item, id);
                 if (!category.isNull("parentId")) {
                     parentsById.put(id, category.getLong("parentId"));
                 } else {
@@ -311,12 +341,95 @@ public class AdminPanelController {
             sortTree(root);
             int finalRootCount = rootCount;
             Platform.runLater(() -> {
+                categoryItemIds.clear();
+                categoryItemIds.putAll(builtItemIds);
                 root.setExpanded(true);
                 categoriesTreeView.setRoot(root);
                 categoriesTreeView.setShowRoot(true);
-                categoryTreeSummaryLabel.setText(array.length() + " total categories across " + finalRootCount + " main groups");
+                categoriesTreeView.getSelectionModel().clearSelection();
+                categoryTreeSummaryLabel.setText(
+                        array.length() + " total categories across " + finalRootCount + " main groups"
+                );
             });
         });
+    }
+
+    @FXML
+    public void addRootCategory() {
+        createCategory(null);
+    }
+
+    @FXML
+    public void addSubcategory() {
+        Long parentId = selectedCategoryId();
+        if (parentId == null) {
+            showCategoryError("Select a parent category first.");
+            return;
+        }
+        createCategory(parentId);
+    }
+
+    private void createCategory(Long parentId) {
+        String name = categoryNameField.getText().trim();
+        if (name.isBlank()) {
+            showCategoryError("Enter a category name first.");
+            return;
+        }
+        JSONObject body = new JSONObject().put("name", name);
+        if (parentId != null) {
+            body.put("parentId", parentId);
+        }
+        sendCategoryRequest("POST", "/admin/categories", body.toString(), this::refreshCategoryData);
+    }
+
+    @FXML
+    public void renameSelectedCategory() {
+        Long categoryId = selectedCategoryId();
+        String name = categoryNameField.getText().trim();
+        if (categoryId == null) {
+            showCategoryError("Select a category to rename.");
+            return;
+        }
+        if (name.isBlank()) {
+            showCategoryError("Enter a new category name first.");
+            return;
+        }
+        sendCategoryRequest(
+                "PUT", "/admin/categories/" + categoryId,
+                new JSONObject().put("name", name).toString(), this::refreshCategoryData
+        );
+    }
+
+    @FXML
+    public void deleteSelectedCategory() {
+        Long categoryId = selectedCategoryId();
+        if (categoryId == null) {
+            showCategoryError("Select a category to delete.");
+            return;
+        }
+        String name = categoriesTreeView.getSelectionModel().getSelectedItem().getValue();
+        Alert confirmation = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Delete '" + name + "'? This is allowed only when it has no subcategories and no advertisements.",
+                javafx.scene.control.ButtonType.YES,
+                javafx.scene.control.ButtonType.NO
+        );
+        confirmation.setHeaderText("Delete category");
+        confirmation.showAndWait().ifPresent(choice -> {
+            if (choice == javafx.scene.control.ButtonType.YES) {
+                sendCategoryRequest("DELETE", "/admin/categories/" + categoryId, null, this::refreshCategoryData);
+            }
+        });
+    }
+
+    private Long selectedCategoryId() {
+        return categoryItemIds.get(categoriesTreeView.getSelectionModel().getSelectedItem());
+    }
+
+    private void refreshCategoryData() {
+        categoryNameField.clear();
+        loadCategories();
+        loadOverview();
     }
 
     private void sortTree(TreeItem<String> item) {
@@ -410,6 +523,35 @@ public class AdminPanelController {
                         System.err.println("Admin API returned HTTP " + response.statusCode());
                     }
                 });
+    }
+
+    private void sendCategoryRequest(String method, String path, String body, Runnable onSuccess) {
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/api" + path))
+                .header("Authorization", "Bearer " + NetworkClient.authToken);
+        if (body != null) {
+            requestBuilder.header("Content-Type", "application/json");
+        }
+        requestBuilder.method(method, body == null
+                ? HttpRequest.BodyPublishers.noBody()
+                : HttpRequest.BodyPublishers.ofString(body));
+
+        httpClient.sendAsync(requestBuilder.build(), HttpResponse.BodyHandlers.ofString())
+                .thenAccept(response -> Platform.runLater(() -> {
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        onSuccess.run();
+                    } else {
+                        showCategoryError(response.body().isBlank()
+                                ? "The category operation could not be completed."
+                                : response.body());
+                    }
+                }));
+    }
+
+    private void showCategoryError(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING, message);
+        alert.setHeaderText("Category management");
+        alert.show();
     }
 
     private void sendPut(String path, Runnable onSuccess) {

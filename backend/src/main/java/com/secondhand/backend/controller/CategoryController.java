@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -49,6 +50,11 @@ public class CategoryController {
     @GetMapping("/{id}")
     public CategoryDto getCategoryById(@PathVariable Long id) {
         return categoryService.getCategoryById(id);
+    }
+
+    @PutMapping("/{id}")
+    public CategoryDto renameCategory(@PathVariable Long id, @RequestBody CategoryDto dto) {
+        return categoryService.updateCategoryName(id, dto.getName());
     }
 
     @DeleteMapping("/{id}")
