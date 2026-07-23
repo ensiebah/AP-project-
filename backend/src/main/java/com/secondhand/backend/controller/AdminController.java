@@ -130,4 +130,17 @@ public class AdminController {
     ) {
         return ResponseEntity.ok(advertisementService.rejectAdvertisement(id, request.getReason()));
     }
+
+    /** Admin can mark a published ad as sold after moderation. */
+    @PutMapping("/advertisements/{id}/sold")
+    public ResponseEntity<AdvertisementDto> markAdvertisementAsSold(@PathVariable Long id) {
+        return ResponseEntity.ok(advertisementService.markAsSold(id));
+    }
+
+    /** Soft delete: the advertisement remains visible only in the Deleted filter. */
+    @DeleteMapping("/advertisements/{id}")
+    public ResponseEntity<Void> deleteAdvertisement(@PathVariable Long id) {
+        advertisementService.deleteAdvertisement(id);
+        return ResponseEntity.noContent().build();
+    }
 }

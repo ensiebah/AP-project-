@@ -19,7 +19,6 @@
                         <Button fx:id="overviewNavButton" text="Overview" onAction="#showOverview" styleClass="nav-button" />
                         <MenuButton fx:id="advertisementsMenuButton" text="Advertisements" styleClass="nav-button">
                             <items>
-                                <MenuItem text="All advertisements" onAction="#showAllAds" />
                                 <MenuItem text="Pending approval" onAction="#showPendingAds" />
                                 <MenuItem text="Published advertisements" onAction="#showActiveAds" />
                                 <MenuItem text="Rejected advertisements" onAction="#showRejectedAds" />
@@ -104,25 +103,11 @@
                                 <Label text="STATUS FILTER" styleClass="pill" />
                             </children>
                         </HBox>
-                        <VBox styleClass="surface-card" VBox.vgrow="ALWAYS">
+                        <VBox spacing="10" styleClass="surface-card" VBox.vgrow="ALWAYS">
                             <children>
-                                <TableView fx:id="advertisementsTable" VBox.vgrow="ALWAYS">
-                                    <columns>
-                                        <TableColumn fx:id="adIdColumn" text="ID" prefWidth="70" />
-                                        <TableColumn fx:id="adTitleColumn" text="Advertisement" prefWidth="280" />
-                                        <TableColumn fx:id="adCategoryColumn" text="Category" prefWidth="190" />
-                                        <TableColumn fx:id="adSellerColumn" text="Seller" prefWidth="145" />
-                                        <TableColumn fx:id="adStatusColumn" text="Status" prefWidth="110" />
-                                        <TableColumn fx:id="adRejectionReasonColumn" text="Rejection feedback" prefWidth="235" />
-                                        <TableColumn fx:id="adPriceColumn" text="Price" prefWidth="105" />
-                                    </columns>
-                                </TableView>
-                                <HBox alignment="CENTER_RIGHT" spacing="9" style="-fx-padding: 14 0 0 0;">
-                                    <children>
-                                        <Button fx:id="rejectAdButton" text="Reject selected" onAction="#rejectSelectedAdvertisement" styleClass="danger-button" />
-                                        <Button fx:id="approveAdButton" text="Approve &amp; publish" onAction="#approveSelectedAdvertisement" styleClass="success-button" />
-                                    </children>
-                                </HBox>
+                                <HBox alignment="CENTER_LEFT"><children><Label text="Status workspace" styleClass="section-title"/><Region HBox.hgrow="ALWAYS"/><Label fx:id="advertisementsSummaryLabel" text="Loading advertisements…" styleClass="pill"/></children></HBox>
+                                <Label text="Choose another status from the Advertisements menu in the top bar. Each card exposes only safe actions for its current lifecycle state." styleClass="section-subtitle" wrapText="true" />
+                                <ListView fx:id="advertisementsListView" VBox.vgrow="ALWAYS" />
                             </children>
                         </VBox>
                     </children>

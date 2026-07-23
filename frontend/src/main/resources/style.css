@@ -287,3 +287,26 @@
     -fx-background-radius: 8;
     -fx-padding: 5 8 5 8;
 }
+
+/* Admin advertisement lifecycle cards. */
+.admin-ad-card {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-border-color: #e4edf7;
+    -fx-border-radius: 15;
+    -fx-padding: 13;
+}
+.admin-ad-image {
+    -fx-background-color: #edf6ff;
+    -fx-background-radius: 12;
+    -fx-border-color: #d9eafb;
+    -fx-border-radius: 12;
+}
+.status-pending, .status-sold {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-padding: 4 8 4 8;
+    -fx-background-radius: 11;
+}
+.status-pending { -fx-background-color: #fff5df; -fx-text-fill: #b36b00; }
+.status-sold { -fx-background-color: #ede9fe; -fx-text-fill: #6d4bc3; }

@@ -15,13 +15,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -69,16 +68,8 @@ public class AdminPanelController {
     @FXML private Label soldAdsLabel;
 
     @FXML private Label advertisementsTitleLabel;
-    @FXML private TableView<AdvertisementDto> advertisementsTable;
-    @FXML private TableColumn<AdvertisementDto, Long> adIdColumn;
-    @FXML private TableColumn<AdvertisementDto, String> adTitleColumn;
-    @FXML private TableColumn<AdvertisementDto, String> adCategoryColumn;
-    @FXML private TableColumn<AdvertisementDto, String> adSellerColumn;
-    @FXML private TableColumn<AdvertisementDto, String> adStatusColumn;
-    @FXML private TableColumn<AdvertisementDto, String> adRejectionReasonColumn;
-    @FXML private TableColumn<AdvertisementDto, Double> adPriceColumn;
-    @FXML private Button approveAdButton;
-    @FXML private Button rejectAdButton;
+    @FXML private Label advertisementsSummaryLabel;
+    @FXML private ListView<AdvertisementDto> advertisementsListView;
 
     @FXML private TreeView<String> categoriesTreeView;
     @FXML private Label categoryTreeSummaryLabel;
@@ -104,7 +95,7 @@ public class AdminPanelController {
 
     @FXML
     public void initialize() {
-        setupAdvertisementTable();
+        setupAdvertisementCards();
         setupUserDirectory();
         setupCategoryExplorer();
         showOverview();
@@ -112,24 +103,112 @@ public class AdminPanelController {
         loadAdvertisements("PENDING");
         loadCategories();
         loadUsers();
+        // Preload pending cards, but land the administrator on the overview.
+        showOverview();
     }
 
-    private void setupAdvertisementTable() {
-        adIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        adTitleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
-        adCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
-        adSellerColumn.setCellValueFactory(new PropertyValueFactory<>("sellerName"));
-        adStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        adRejectionReasonColumn.setCellValueFactory(new PropertyValueFactory<>("rejectionReason"));
-        adPriceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
-        advertisementsTable.setItems(advertisements);
-        advertisementsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldAd, selectedAd) -> {
-            boolean canModerate = selectedAd != null && "PENDING".equalsIgnoreCase(selectedAd.getStatus());
-            approveAdButton.setDisable(!canModerate);
-            rejectAdButton.setDisable(!canModerate);
+    private void setupAdvertisementCards() {
+        advertisementsListView.setItems(advertisements);
+        advertisementsListView.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(AdvertisementDto ad, boolean empty) {
+                super.updateItem(ad, empty);
+                if (empty || ad == null) {
+                    setText(null);
+                    setGraphic(null);
+                    return;
+                }
+
+                ImageView imageView = new ImageView();
+                imageView.setFitWidth(118);
+                imageView.setFitHeight(92);
+                imageView.setPreserveRatio(true);
+                imageView.getStyleClass().add("admin-ad-image");
+                if (ad.getImages() != null && !ad.getImages().isEmpty()) {
+                    try {
+                        imageView.setImage(new Image(
+                                NetworkClient.toAbsoluteImageUrl(ad.getImages().get(0)), true
+                        ));
+                    } catch (Exception ignored) {
+                        // The styled empty preview remains visible if an old image is unavailable.
+                    }
+                }
+
+                Label title = new Label(ad.getTitle());
+                title.getStyleClass().add("ad-title");
+                Label meta = new Label(
+                        "Seller: " + safe(ad.getSellerName(), "Unknown")
+                                + "   •   " + safe(ad.getCategoryName(), "No category")
+                                + "   •   " + safe(ad.getCityName(), "No city")
+                );
+                meta.getStyleClass().add("ad-meta");
+                Label price = new Label(String.format("$%.2f", ad.getPrice()));
+                price.getStyleClass().add("ad-price");
+                Label status = new Label(displayStatus(ad.getStatus()));
+                status.getStyleClass().add(statusStyleClass(ad.getStatus()));
+
+                VBox information = new VBox(6, title, meta, price);
+                if ("REJECTED".equalsIgnoreCase(ad.getStatus())
+                        && ad.getRejectionReason() != null
+                        && !ad.getRejectionReason().isBlank()) {
+                    Label reason = new Label("Rejection feedback: " + ad.getRejectionReason());
+                    reason.setWrapText(true);
+                    reason.getStyleClass().add("rejection-reason");
+                    information.getChildren().add(reason);
+                }
+                HBox.setHgrow(information, Priority.ALWAYS);
+
+                VBox rightSide = new VBox(9, status, createAdActions(ad));
+                rightSide.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+                HBox card = new HBox(15, imageView, information, rightSide);
+                card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                card.getStyleClass().add("admin-ad-card");
+                UiMotion.installCardMotion(card);
+                setText(null);
+                setGraphic(card);
+            }
         });
-        approveAdButton.setDisable(true);
-        rejectAdButton.setDisable(true);
+    }
+
+    private HBox createAdActions(AdvertisementDto ad) {
+        HBox actions = new HBox(7);
+        actions.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+        String status = ad.getStatus() == null ? "" : ad.getStatus().toUpperCase(Locale.ROOT);
+
+        switch (status) {
+            case "PENDING" -> {
+                actions.getChildren().addAll(
+                        actionButton("Approve", "success-button", () -> approveAdvertisement(ad)),
+                        actionButton("Reject", "danger-button", () -> rejectAdvertisement(ad)),
+                        actionButton("Delete", "outline-button", () -> deleteAdvertisement(ad))
+                );
+            }
+            case "ACTIVE" -> actions.getChildren().addAll(
+                    actionButton("Mark sold", "success-button", () -> markAdvertisementSold(ad)),
+                    actionButton("Delete", "danger-button", () -> deleteAdvertisement(ad))
+            );
+            case "REJECTED" -> actions.getChildren().addAll(
+                    actionButton("Approve again", "success-button", () -> approveAdvertisement(ad)),
+                    actionButton("Delete", "danger-button", () -> deleteAdvertisement(ad))
+            );
+            case "SOLD" -> actions.getChildren().add(
+                    actionButton("Delete", "danger-button", () -> deleteAdvertisement(ad))
+            );
+            case "DELETED" -> {
+                Label archived = new Label("Archived — no restore action");
+                archived.getStyleClass().add("ad-meta");
+                actions.getChildren().add(archived);
+            }
+            default -> { }
+        }
+        return actions;
+    }
+
+    private Button actionButton(String text, String styleClass, Runnable action) {
+        Button button = new Button(text);
+        button.getStyleClass().add(styleClass);
+        button.setOnAction(event -> action.run());
+        return button;
     }
 
     private void setupUserDirectory() {
@@ -255,7 +334,6 @@ public class AdminPanelController {
 
     /* ---------- Advertisement moderation ---------- */
 
-    @FXML public void showAllAds() { loadAdvertisements("ALL"); }
     @FXML public void showPendingAds() { loadAdvertisements("PENDING"); }
     @FXML public void showActiveAds() { loadAdvertisements("ACTIVE"); }
     @FXML public void showRejectedAds() { loadAdvertisements("REJECTED"); }
@@ -266,6 +344,7 @@ public class AdminPanelController {
         currentAdStatus = status;
         advertisementsMenuButton.setText("Advertisements · " + displayStatus(status));
         advertisementsTitleLabel.setText(displayStatus(status) + " advertisements");
+        advertisementsSummaryLabel.setText("Loading " + displayStatus(status).toLowerCase(Locale.ROOT) + " advertisements…");
         advertisements.clear();
         showAdvertisements();
 
@@ -282,24 +361,31 @@ public class AdminPanelController {
                 dto.setSellerName(item.optString("sellerName", "Unknown"));
                 dto.setCategoryName(item.optString("categoryName", "Not specified"));
                 dto.setCityName(item.optString("cityName", ""));
+                List<String> imagePaths = new ArrayList<>();
+                JSONArray images = item.optJSONArray("images");
+                if (images != null) {
+                    for (int imageIndex = 0; imageIndex < images.length(); imageIndex++) {
+                        String imagePath = images.optString(imageIndex, "");
+                        if (!imagePath.isBlank()) {
+                            imagePaths.add(imagePath);
+                        }
+                    }
+                }
+                dto.setImages(imagePaths);
                 parsed.add(dto);
             }
-            Platform.runLater(() -> advertisements.setAll(parsed));
+            Platform.runLater(() -> {
+                advertisements.setAll(parsed);
+                advertisementsSummaryLabel.setText(parsed.size() + " " + displayStatus(status).toLowerCase(Locale.ROOT) + " advertisement(s)");
+            });
         });
     }
 
-    @FXML
-    public void approveSelectedAdvertisement() {
-        moderateSelectedAdvertisement("approve");
+    private void approveAdvertisement(AdvertisementDto ad) {
+        sendPut("/admin/advertisements/" + ad.getId() + "/approve", this::refreshAdvertisementData);
     }
 
-    @FXML
-    public void rejectSelectedAdvertisement() {
-        AdvertisementDto selected = advertisementsTable.getSelectionModel().getSelectedItem();
-        if (selected == null || !"PENDING".equalsIgnoreCase(selected.getStatus())) {
-            return;
-        }
-
+    private void rejectAdvertisement(AdvertisementDto ad) {
         javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog();
         dialog.setTitle("Reject advertisement");
         dialog.setHeaderText("Tell the seller why this advertisement was rejected");
@@ -311,25 +397,35 @@ public class AdminPanelController {
             }
             JSONObject body = new JSONObject().put("reason", reason.trim());
             sendJsonPut(
-                    "/admin/advertisements/" + selected.getId() + "/reject",
+                    "/admin/advertisements/" + ad.getId() + "/reject",
                     body.toString(),
-                    () -> {
-                        loadOverview();
-                        loadAdvertisements(currentAdStatus);
-                    }
+                    this::refreshAdvertisementData
             );
         });
     }
 
-    private void moderateSelectedAdvertisement(String action) {
-        AdvertisementDto selected = advertisementsTable.getSelectionModel().getSelectedItem();
-        if (selected == null || !"PENDING".equalsIgnoreCase(selected.getStatus())) {
-            return;
-        }
-        sendPut("/admin/advertisements/" + selected.getId() + "/" + action, () -> {
-            loadOverview();
-            loadAdvertisements(currentAdStatus);
+    private void markAdvertisementSold(AdvertisementDto ad) {
+        sendPut("/admin/advertisements/" + ad.getId() + "/sold", this::refreshAdvertisementData);
+    }
+
+    private void deleteAdvertisement(AdvertisementDto ad) {
+        Alert confirmation = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Move '" + ad.getTitle() + "' to Deleted advertisements?",
+                javafx.scene.control.ButtonType.YES,
+                javafx.scene.control.ButtonType.NO
+        );
+        confirmation.setHeaderText("Delete advertisement");
+        confirmation.showAndWait().ifPresent(choice -> {
+            if (choice == javafx.scene.control.ButtonType.YES) {
+                sendDelete("/admin/advertisements/" + ad.getId(), this::refreshAdvertisementData);
+            }
         });
+    }
+
+    private void refreshAdvertisementData() {
+        loadOverview();
+        loadAdvertisements(currentAdStatus);
     }
 
     /* ---------- Category management ---------- */
@@ -605,6 +701,22 @@ public class AdminPanelController {
         alert.show();
     }
 
+    private void sendDelete(String path, Runnable onSuccess) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/api" + path))
+                .header("Authorization", "Bearer " + NetworkClient.authToken)
+                .DELETE()
+                .build();
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenAccept(response -> Platform.runLater(() -> {
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        onSuccess.run();
+                    } else {
+                        showAdminWarning("The delete action could not be completed.");
+                    }
+                }));
+    }
+
     private void sendPut(String path, Runnable onSuccess) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8080/api" + path))
@@ -627,6 +739,15 @@ public class AdminPanelController {
         NetworkClient.currentUsername = "Guest";
         NetworkClient.currentFullName = "Guest";
         NavigationUtils.navigateTo(overviewNavButton, "/com/secondhand/frontend/view/login.fxml", "Sign in");
+    }
+
+    private String statusStyleClass(String status) {
+        return switch (status == null ? "" : status.toUpperCase(Locale.ROOT)) {
+            case "ACTIVE" -> "status-active";
+            case "REJECTED", "DELETED" -> "status-rejected";
+            case "SOLD" -> "status-sold";
+            default -> "status-pending";
+        };
     }
 
     private String displayStatus(String status) {
