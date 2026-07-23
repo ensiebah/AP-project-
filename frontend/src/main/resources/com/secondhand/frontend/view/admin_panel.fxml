@@ -19,11 +19,12 @@
                         <Button fx:id="overviewNavButton" text="Overview" onAction="#showOverview" styleClass="nav-button" />
                         <MenuButton fx:id="advertisementsMenuButton" text="Advertisements" styleClass="nav-button">
                             <items>
+                                <MenuItem text="All advertisements" onAction="#showAllAds" />
                                 <MenuItem text="Pending approval" onAction="#showPendingAds" />
-                                <MenuItem text="Published advertisements" onAction="#showActiveAds" />
+                                <MenuItem text="Approved advertisements" onAction="#showActiveAds" />
                                 <MenuItem text="Rejected advertisements" onAction="#showRejectedAds" />
-                                <MenuItem text="Sold advertisements" onAction="#showSoldAds" />
-                                <MenuItem text="Removed advertisements" onAction="#showDeletedAds" />
+                                <MenuItem text="Sold out advertisements" onAction="#showSoldAds" />
+                                <MenuItem text="Deleted advertisements" onAction="#showDeletedAds" />
                             </items>
                         </MenuButton>
                         <Button fx:id="categoriesNavButton" text="Categories" onAction="#showCategories" styleClass="nav-button" />

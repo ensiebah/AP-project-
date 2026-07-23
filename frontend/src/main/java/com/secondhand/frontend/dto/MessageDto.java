@@ -10,6 +10,10 @@ public class MessageDto {
 
     private LocalDateTime sentAt;
 
+    private boolean seen;
+
+    private LocalDateTime seenAt;
+
     private Long senderId;
 
     private String senderUsername;
@@ -26,6 +30,14 @@ public class MessageDto {
 
     public LocalDateTime getSentAt() {
         return sentAt;
+    }
+
+    public boolean isSeen() {
+        return seen;
+    }
+
+    public LocalDateTime getSeenAt() {
+        return seenAt;
     }
 
     public Long getSenderId() {

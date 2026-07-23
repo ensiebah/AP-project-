@@ -8,6 +8,7 @@ import javafx.animation.KeyValue;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.ButtonBase;
+import javafx.scene.control.MenuButton;
 import javafx.util.Duration;
 
 /**
@@ -38,7 +39,9 @@ public final class UiMotion {
     }
 
     private static void installNode(Node node) {
-        if (node instanceof ButtonBase) {
+        if (node instanceof MenuButton) {
+            installMenuButtonMotion(node);
+        } else if (node instanceof ButtonBase) {
             installButtonMotion(node);
         } else if (hasInteractiveCardStyle(node)) {
             installCardMotion(node);
@@ -58,6 +61,18 @@ public final class UiMotion {
         }
         node.setOnMouseEntered(event -> animate(node, 1.008, -1.5, HOVER_DURATION));
         node.setOnMouseExited(event -> animate(node, 1.0, 0, HOVER_DURATION));
+    }
+
+    /**
+     * Do not set onMousePressed/onMouseReleased on MenuButton. Those handlers
+     * are used by JavaFX itself to open the dropdown popup.
+     */
+    private static void installMenuButtonMotion(Node menuButton) {
+        if (alreadyInstalled(menuButton)) {
+            return;
+        }
+        menuButton.setOnMouseEntered(event -> animate(menuButton, 1.015, -0.5, HOVER_DURATION));
+        menuButton.setOnMouseExited(event -> animate(menuButton, 1.0, 0, HOVER_DURATION));
     }
 
     private static void installButtonMotion(Node button) {

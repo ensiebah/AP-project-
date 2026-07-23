@@ -20,6 +20,11 @@ public class Message {
 
     private LocalDateTime sentAt = LocalDateTime.now();
 
+    @Column(nullable = false)
+    private boolean seen = false;
+
+    private LocalDateTime seenAt;
+
     @ManyToOne
     @JoinColumn(name="sender_id")
     private User sender;

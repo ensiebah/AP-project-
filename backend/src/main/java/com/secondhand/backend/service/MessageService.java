@@ -13,6 +13,10 @@ public interface MessageService {
     );
 
     List<MessageDto> getConversationMessages(
+            Long viewerId,
             Long conversationId
     );
+
+    /** Marks all messages sent by the other participant as seen. */
+    int markConversationMessagesAsSeen(Long viewerId, Long conversationId);
 }

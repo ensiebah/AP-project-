@@ -334,6 +334,7 @@ public class AdminPanelController {
 
     /* ---------- Advertisement moderation ---------- */
 
+    @FXML public void showAllAds() { loadAdvertisements("ALL"); }
     @FXML public void showPendingAds() { loadAdvertisements("PENDING"); }
     @FXML public void showActiveAds() { loadAdvertisements("ACTIVE"); }
     @FXML public void showRejectedAds() { loadAdvertisements("REJECTED"); }
@@ -754,10 +755,10 @@ public class AdminPanelController {
         return switch (status) {
             case "ALL" -> "All";
             case "PENDING" -> "Pending approval";
-            case "ACTIVE" -> "Published";
+            case "ACTIVE" -> "Approved";
             case "REJECTED" -> "Rejected";
-            case "SOLD" -> "Sold";
-            case "DELETED" -> "Removed";
+            case "SOLD" -> "Sold out";
+            case "DELETED" -> "Deleted";
             default -> status;
         };
     }

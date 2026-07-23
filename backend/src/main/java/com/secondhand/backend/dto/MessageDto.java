@@ -21,6 +21,10 @@ public class MessageDto {
 
     private LocalDateTime sentAt;
 
+    private boolean seen;
+
+    private LocalDateTime seenAt;
+
     private Long senderId;
 
     private String senderUsername;

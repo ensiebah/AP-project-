@@ -5,7 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f119b51f-4729-4f5f-bbca-b8782832877e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/data/secondhand-market.mv.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/data/secondhand-market.mv.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/MessageController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/MessageController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/dto/MessageDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/dto/MessageDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/entity/Message.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/entity/Message.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/MessageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/MessageService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/AdminPanelController.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/AdminPanelController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/ChatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/ChatController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/dto/MessageDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/dto/MessageDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/util/UiMotion.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/util/UiMotion.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/admin_panel.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/admin_panel.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,11 +83,22 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1784821465735</updated>
-      <workItem from="1784821469367" duration="3176000" />
+      <workItem from="1784821469367" duration="5396000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/AdminPanelController.java</url>
+          <line>787</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

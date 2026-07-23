@@ -58,11 +58,35 @@ public class MessageController {
     // دریافت تاریخچه پیام‌های یک گفتگو
     @GetMapping("/conversation/{conversationId}")
     public ResponseEntity<List<MessageDto>> getConversationMessages(
-            @PathVariable Long conversationId
+            @PathVariable Long conversationId,
+            Principal principal
     ) {
         try {
-            List<MessageDto> messages = messageService.getConversationMessages(conversationId);
+            User currentUser = userRepository.findByUserName(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+            List<MessageDto> messages = messageService.getConversationMessages(
+                    currentUser.getId(), conversationId
+            );
             return ResponseEntity.ok(messages);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * The receiver calls this endpoint only after messages have been rendered.
+     * It is the durable source of truth for the sender's double check mark.
+     */
+    @PutMapping("/conversation/{conversationId}/seen")
+    public ResponseEntity<Void> markConversationMessagesAsSeen(
+            @PathVariable Long conversationId,
+            Principal principal
+    ) {
+        try {
+            User currentUser = userRepository.findByUserName(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+            messageService.markConversationMessagesAsSeen(currentUser.getId(), conversationId);
+            return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
