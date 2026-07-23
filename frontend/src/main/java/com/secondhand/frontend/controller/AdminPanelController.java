@@ -15,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -56,6 +57,12 @@ public class AdminPanelController {
     @FXML private Button categoriesNavButton;
     @FXML private Button usersNavButton;
     @FXML private MenuButton advertisementsMenuButton;
+    @FXML private MenuItem allAdsMenuItem;
+    @FXML private MenuItem pendingAdsMenuItem;
+    @FXML private MenuItem activeAdsMenuItem;
+    @FXML private MenuItem rejectedAdsMenuItem;
+    @FXML private MenuItem soldAdsMenuItem;
+    @FXML private MenuItem deletedAdsMenuItem;
 
     @FXML private Label totalAdsLabel;
     @FXML private Label pendingAdsLabel;
@@ -98,6 +105,7 @@ public class AdminPanelController {
         setupAdvertisementCards();
         setupUserDirectory();
         setupCategoryExplorer();
+        setupAdvertisementMenuMotion();
         showOverview();
         loadOverview();
         loadAdvertisements("PENDING");
@@ -105,6 +113,15 @@ public class AdminPanelController {
         loadUsers();
         // Preload pending cards, but land the administrator on the overview.
         showOverview();
+    }
+
+    private void setupAdvertisementMenuMotion() {
+        advertisementsMenuButton.setOnShowing(event ->
+                advertisementsMenuButton.getStyleClass().add("ad-status-menu-open")
+        );
+        advertisementsMenuButton.setOnHidden(event ->
+                advertisementsMenuButton.getStyleClass().remove("ad-status-menu-open")
+        );
     }
 
     private void setupAdvertisementCards() {
@@ -125,13 +142,7 @@ public class AdminPanelController {
                 imageView.setPreserveRatio(true);
                 imageView.getStyleClass().add("admin-ad-image");
                 if (ad.getImages() != null && !ad.getImages().isEmpty()) {
-                    try {
-                        imageView.setImage(new Image(
-                                NetworkClient.toAbsoluteImageUrl(ad.getImages().get(0)), true
-                        ));
-                    } catch (Exception ignored) {
-                        // The styled empty preview remains visible if an old image is unavailable.
-                    }
+                    NetworkClient.loadImageInto(imageView, ad.getImages().get(0));
                 }
 
                 Label title = new Label(ad.getTitle());
@@ -344,6 +355,7 @@ public class AdminPanelController {
     private void loadAdvertisements(String status) {
         currentAdStatus = status;
         advertisementsMenuButton.setText("Advertisements · " + displayStatus(status));
+        updateStatusMenuSelection(status);
         advertisementsTitleLabel.setText(displayStatus(status) + " advertisements");
         advertisementsSummaryLabel.setText("Loading " + displayStatus(status).toLowerCase(Locale.ROOT) + " advertisements…");
         advertisements.clear();
@@ -362,6 +374,7 @@ public class AdminPanelController {
                 dto.setSellerName(item.optString("sellerName", "Unknown"));
                 dto.setCategoryName(item.optString("categoryName", "Not specified"));
                 dto.setCityName(item.optString("cityName", ""));
+                dto.setDescription(item.optString("description", ""));
                 List<String> imagePaths = new ArrayList<>();
                 JSONArray images = item.optJSONArray("images");
                 if (images != null) {
@@ -372,6 +385,9 @@ public class AdminPanelController {
                         }
                     }
                 }
+                if (imagePaths.isEmpty()) {
+                    imagePaths.addAll(extractLegacyImagePaths(dto.getDescription()));
+                }
                 dto.setImages(imagePaths);
                 parsed.add(dto);
             }
@@ -380,6 +396,23 @@ public class AdminPanelController {
                 advertisementsSummaryLabel.setText(parsed.size() + " " + displayStatus(status).toLowerCase(Locale.ROOT) + " advertisement(s)");
             });
         });
+    }
+
+    private List<String> extractLegacyImagePaths(String description) {
+        List<String> paths = new ArrayList<>();
+        if (description == null || !description.contains("[IMG_URL:")) {
+            return paths;
+        }
+        int start = description.indexOf("[IMG_URL:") + 9;
+        int end = description.indexOf("]", start);
+        if (end > start) {
+            for (String path : description.substring(start, end).split(",")) {
+                if (!path.isBlank()) {
+                    paths.add(path.trim());
+                }
+            }
+        }
+        return paths;
     }
 
     private void approveAdvertisement(AdvertisementDto ad) {
@@ -740,6 +773,27 @@ public class AdminPanelController {
         NetworkClient.currentUsername = "Guest";
         NetworkClient.currentFullName = "Guest";
         NavigationUtils.navigateTo(overviewNavButton, "/com/secondhand/frontend/view/login.fxml", "Sign in");
+    }
+
+    private void updateStatusMenuSelection(String status) {
+        List<MenuItem> items = List.of(
+                allAdsMenuItem, pendingAdsMenuItem, activeAdsMenuItem,
+                rejectedAdsMenuItem, soldAdsMenuItem, deletedAdsMenuItem
+        );
+        items.forEach(item -> item.getStyleClass().remove("selected-status-menu"));
+
+        MenuItem selected = switch (status) {
+            case "ALL" -> allAdsMenuItem;
+            case "PENDING" -> pendingAdsMenuItem;
+            case "ACTIVE" -> activeAdsMenuItem;
+            case "REJECTED" -> rejectedAdsMenuItem;
+            case "SOLD" -> soldAdsMenuItem;
+            case "DELETED" -> deletedAdsMenuItem;
+            default -> null;
+        };
+        if (selected != null) {
+            selected.getStyleClass().add("selected-status-menu");
+        }
     }
 
     private String statusStyleClass(String status) {

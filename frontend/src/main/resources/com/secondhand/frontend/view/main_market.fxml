@@ -76,14 +76,18 @@
                     <children>
                         <VBox spacing="2">
                             <Label text="Latest ads" styleClass="section-title" />
-                            <Label text="Double-click an ad to see the full details." styleClass="section-subtitle" />
+                            <Label text="Click a card to see details. Hover cards with multiple photos to preview the gallery." styleClass="section-subtitle" />
                         </VBox>
                         <Region HBox.hgrow="ALWAYS" />
                         <Label text="LOCAL MARKETPLACE" styleClass="pill" />
                     </children>
                 </HBox>
 
-                <ListView fx:id="adListView" styleClass="market-list" VBox.vgrow="ALWAYS" />
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                    <content>
+                        <TilePane fx:id="advertisementsTilePane" prefColumns="3" prefTileWidth="280" hgap="18" vgap="18" styleClass="market-ad-grid" />
+                    </content>
+                </ScrollPane>
             </children>
         </VBox>
     </center>

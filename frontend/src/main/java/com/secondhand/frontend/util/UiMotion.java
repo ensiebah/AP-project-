@@ -6,6 +6,7 @@ import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.Parent;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.MenuButton;
@@ -59,8 +60,10 @@ public final class UiMotion {
         if (alreadyInstalled(node)) {
             return;
         }
-        node.setOnMouseEntered(event -> animate(node, 1.008, -1.5, HOVER_DURATION));
-        node.setOnMouseExited(event -> animate(node, 1.0, 0, HOVER_DURATION));
+        node.addEventHandler(MouseEvent.MOUSE_ENTERED,
+                event -> animate(node, 1.008, -1.5, HOVER_DURATION));
+        node.addEventHandler(MouseEvent.MOUSE_EXITED,
+                event -> animate(node, 1.0, 0, HOVER_DURATION));
     }
 
     /**

@@ -17,14 +17,27 @@
                         <Region HBox.hgrow="ALWAYS" />
                         <Label text="ADMINISTRATOR" styleClass="pill" />
                         <Button fx:id="overviewNavButton" text="Overview" onAction="#showOverview" styleClass="nav-button" />
-                        <MenuButton fx:id="advertisementsMenuButton" text="Advertisements" styleClass="nav-button">
+                        <MenuButton fx:id="advertisementsMenuButton" text="Advertisements" prefWidth="250" styleClass="ad-status-menu">
+                            <graphic><Label text="▦" styleClass="ad-status-menu-icon" /></graphic>
                             <items>
-                                <MenuItem text="All advertisements" onAction="#showAllAds" />
-                                <MenuItem text="Pending approval" onAction="#showPendingAds" />
-                                <MenuItem text="Approved advertisements" onAction="#showActiveAds" />
-                                <MenuItem text="Rejected advertisements" onAction="#showRejectedAds" />
-                                <MenuItem text="Sold out advertisements" onAction="#showSoldAds" />
-                                <MenuItem text="Deleted advertisements" onAction="#showDeletedAds" />
+                                <MenuItem fx:id="allAdsMenuItem" text="All advertisements" onAction="#showAllAds" styleClass="status-all-menu">
+                                    <graphic><Label text="●" styleClass="menu-status-dot dot-all" /></graphic>
+                                </MenuItem>
+                                <MenuItem fx:id="pendingAdsMenuItem" text="Pending approval" onAction="#showPendingAds" styleClass="status-pending-menu">
+                                    <graphic><Label text="●" styleClass="menu-status-dot dot-pending" /></graphic>
+                                </MenuItem>
+                                <MenuItem fx:id="activeAdsMenuItem" text="Approved advertisements" onAction="#showActiveAds" styleClass="status-active-menu">
+                                    <graphic><Label text="●" styleClass="menu-status-dot dot-active" /></graphic>
+                                </MenuItem>
+                                <MenuItem fx:id="rejectedAdsMenuItem" text="Rejected advertisements" onAction="#showRejectedAds" styleClass="status-rejected-menu">
+                                    <graphic><Label text="●" styleClass="menu-status-dot dot-rejected" /></graphic>
+                                </MenuItem>
+                                <MenuItem fx:id="soldAdsMenuItem" text="Sold out advertisements" onAction="#showSoldAds" styleClass="status-sold-menu">
+                                    <graphic><Label text="●" styleClass="menu-status-dot dot-sold" /></graphic>
+                                </MenuItem>
+                                <MenuItem fx:id="deletedAdsMenuItem" text="Deleted advertisements" onAction="#showDeletedAds" styleClass="status-deleted-menu">
+                                    <graphic><Label text="●" styleClass="menu-status-dot dot-deleted" /></graphic>
+                                </MenuItem>
                             </items>
                         </MenuButton>
                         <Button fx:id="categoriesNavButton" text="Categories" onAction="#showCategories" styleClass="nav-button" />

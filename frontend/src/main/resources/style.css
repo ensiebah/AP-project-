@@ -310,3 +310,186 @@
 }
 .status-pending { -fx-background-color: #fff5df; -fx-text-fill: #b36b00; }
 .status-sold { -fx-background-color: #ede9fe; -fx-text-fill: #6d4bc3; }
+
+/* ---------- Live Admin advertisement status dropdown ---------- */
+.ad-status-menu {
+    -fx-background-color: #f7fbff;
+    -fx-border-color: #d8eafb;
+    -fx-border-radius: 13;
+    -fx-background-radius: 13;
+    -fx-padding: 7 12 7 13;
+    -fx-text-fill: #2b659c;
+    -fx-font-weight: 800;
+}
+.ad-status-menu:hover,
+.ad-status-menu-open {
+    -fx-background-color: linear-gradient(to bottom right, #eff9ff, #e1f2ff);
+    -fx-border-color: #8fcaff;
+    -fx-effect: dropshadow(gaussian, rgba(40,135,225,.22), 12, .24, 0, 3);
+}
+.ad-status-menu .arrow-button { -fx-background-color: transparent; -fx-padding: 0 0 0 7; }
+.ad-status-menu .arrow {
+    -fx-background-color: #277fdc;
+    -fx-shape: "M 0 0 L 6 0 L 3 4 Z";
+}
+
+/* MenuButton popup is a ContextMenu in JavaFX. */
+.context-menu {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: #dbeaf8;
+    -fx-padding: 7;
+    -fx-effect: dropshadow(gaussian, rgba(27,81,137,.23), 23, .24, 0, 8);
+}
+.context-menu .menu-item {
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-padding: 10 14 10 10;
+}
+.context-menu .menu-item .label {
+    -fx-text-fill: #385c80;
+    -fx-font-weight: 700;
+    -fx-padding: 0 0 0 5;
+}
+.context-menu .menu-item:focused {
+    -fx-background-color: #eaf6ff;
+}
+.context-menu .menu-item:focused .label {
+    -fx-text-fill: #1678d4;
+}
+.context-menu .menu-item.selected-status-menu {
+    -fx-background-color: linear-gradient(to right, #e1f3ff, #eff9ff);
+    -fx-border-color: #a9d9ff;
+    -fx-border-radius: 10;
+}
+.context-menu .menu-item.selected-status-menu .label {
+    -fx-text-fill: #126fca;
+    -fx-font-weight: 800;
+}
+.menu-status-dot { -fx-font-size: 17; -fx-font-weight: bold; }
+.dot-all { -fx-text-fill: #4aa6ef; }
+.dot-pending { -fx-text-fill: #edae28; }
+.dot-active { -fx-text-fill: #22aa72; }
+.dot-rejected { -fx-text-fill: #dd5967; }
+.dot-sold { -fx-text-fill: #8466d5; }
+.dot-deleted { -fx-text-fill: #9aa9b7; }
+
+/* ---------- Premium status selector in Admin header ---------- */
+.ad-status-menu {
+    -fx-pref-height: 43;
+    -fx-background-insets: 0;
+    -fx-background-color: linear-gradient(to bottom right, #3db7f5, #1879dd);
+    -fx-background-radius: 13;
+    -fx-border-color: transparent;
+    -fx-border-radius: 13;
+    -fx-padding: 0 0 0 13;
+    -fx-effect: dropshadow(gaussian, rgba(24,121,221,.30), 12, .26, 0, 4);
+}
+.ad-status-menu > .label {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-padding: 0 5 0 8;
+}
+.ad-status-menu > .arrow-button {
+    -fx-background-color: rgba(255,255,255,.18);
+    -fx-background-insets: 0;
+    -fx-background-radius: 0 13 13 0;
+    -fx-padding: 0 13 0 13;
+}
+.ad-status-menu > .arrow-button > .arrow {
+    -fx-background-color: white;
+    -fx-shape: "M 0 0 L 8 0 L 4 5 Z";
+}
+.ad-status-menu-icon {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-padding: 0 0 0 1;
+}
+.ad-status-menu:hover {
+    -fx-background-color: linear-gradient(to bottom right, #65cbff, #238cf3);
+    -fx-effect: dropshadow(gaussian, rgba(24,121,221,.42), 16, .30, 0, 5);
+}
+.ad-status-menu:hover > .arrow-button,
+.ad-status-menu-open > .arrow-button {
+    -fx-background-color: rgba(255,255,255,.28);
+}
+.ad-status-menu-open {
+    -fx-background-color: linear-gradient(to bottom right, #54c3ff, #1e82e7);
+    -fx-effect: dropshadow(gaussian, rgba(18,110,210,.44), 18, .31, 0, 6);
+}
+
+/* ---------- Customer marketplace image-card grid ---------- */
+.market-ad-grid {
+    -fx-padding: 4 4 20 4;
+    -fx-pref-columns: 3;
+}
+.market-ad-card {
+    -fx-background-color: white;
+    -fx-background-radius: 17;
+    -fx-border-color: #e1edf8;
+    -fx-border-radius: 17;
+    -fx-padding: 0 0 14 0;
+    -fx-spacing: 10;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(22, 84, 144, .08), 12, .18, 0, 4);
+}
+.market-ad-card:hover {
+    -fx-border-color: #93cfff;
+    -fx-effect: dropshadow(gaussian, rgba(29, 128, 222, .20), 20, .24, 0, 7);
+}
+.market-ad-image-area {
+    -fx-min-height: 180;
+    -fx-pref-height: 180;
+    -fx-background-color: linear-gradient(to bottom right, #edf7ff, #d6eeff);
+    -fx-background-radius: 16 16 0 0;
+    -fx-border-radius: 16 16 0 0;
+    -fx-alignment: CENTER;
+    -fx-overflow: hidden;
+}
+.market-ad-image {
+    -fx-smooth: true;
+}
+.market-ad-placeholder {
+    -fx-text-fill: #4a9de1;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-alignment: CENTER;
+}
+.market-ad-title {
+    -fx-text-fill: #163f70;
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-padding: 0 13 0 13;
+}
+.market-ad-price {
+    -fx-text-fill: #1676d2;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-padding: 0 13 0 13;
+}
+.market-favorite-button {
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-max-width: 36;
+    -fx-max-height: 36;
+    -fx-padding: 0;
+    -fx-background-color: rgba(255,255,255,.94);
+    -fx-background-radius: 18;
+    -fx-text-fill: #e34f65;
+    -fx-font-size: 20px;
+    -fx-font-weight: 800;
+    -fx-effect: dropshadow(gaussian, rgba(20, 62, 108, .18), 8, .20, 0, 2);
+}
+.market-favorite-button:hover {
+    -fx-background-color: #fff1f3;
+    -fx-text-fill: #db3452;
+}
+.market-empty-state {
+    -fx-padding: 36;
+    -fx-text-fill: #7890ad;
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+}

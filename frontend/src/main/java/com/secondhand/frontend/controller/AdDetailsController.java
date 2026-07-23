@@ -280,7 +280,7 @@ public class AdDetailsController {
     private void displayCurrentImage() {
         if (imageList.isEmpty()) return;
         try {
-            adImageView.setImage(new Image(imageList.get(currentImageIndex), true));
+            NetworkClient.loadImageInto(adImageView, imageList.get(currentImageIndex));
         } catch (Exception e) {
             adImageView.setImage(new Image("https://picsum.photos/400/200", true));
         }

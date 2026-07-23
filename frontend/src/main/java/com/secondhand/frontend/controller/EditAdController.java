@@ -255,7 +255,7 @@ public class EditAdController {
 
             ImageView preview = new ImageView();
             try {
-                preview.setImage(new Image(url, true));
+                NetworkClient.loadImageInto(preview, url);
                 preview.setFitWidth(110);
                 preview.setFitHeight(90);
                 preview.setPreserveRatio(true);

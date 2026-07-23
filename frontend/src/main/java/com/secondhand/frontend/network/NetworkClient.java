@@ -2,6 +2,7 @@ package com.secondhand.frontend.network;
 
 import java.net.URI;
 import java.io.File;
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -11,6 +12,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import javafx.application.Platform;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public class NetworkClient {
 
@@ -205,6 +209,54 @@ public class NetworkClient {
             return imagePath;
         }
         return "http://localhost:8080" + (imagePath.startsWith("/") ? imagePath : "/" + imagePath);
+    }
+
+    /**
+     * Loads a server image with the current JWT. This also works if an older
+     * security configuration still protects /api/images/file/**.
+     */
+    public static void loadImageInto(ImageView imageView, String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return;
+        }
+        String resolvedUrl = toAbsoluteImageUrl(imagePath);
+        imageView.getProperties().put("secondhand.image.url", resolvedUrl);
+
+        if (resolvedUrl.startsWith("file:") || resolvedUrl.startsWith("https://")) {
+            try {
+                imageView.setImage(new Image(resolvedUrl, true));
+            } catch (Exception ignored) {
+                imageView.setImage(null);
+            }
+            return;
+        }
+
+        Thread loader = new Thread(() -> {
+            try {
+                HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                        .uri(URI.create(resolvedUrl))
+                        .GET();
+                if (authToken != null) {
+                    requestBuilder.header("Authorization", "Bearer " + authToken);
+                }
+                HttpResponse<byte[]> response = HttpClient.newHttpClient().send(
+                        requestBuilder.build(), HttpResponse.BodyHandlers.ofByteArray()
+                );
+                if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                    Image image = new Image(new ByteArrayInputStream(response.body()));
+                    Platform.runLater(() -> {
+                        Object requestedUrl = imageView.getProperties().get("secondhand.image.url");
+                        if (resolvedUrl.equals(requestedUrl)) {
+                            imageView.setImage(image);
+                        }
+                    });
+                }
+            } catch (Exception ignored) {
+                // The caller keeps its styled placeholder if the image cannot load.
+            }
+        }, "authenticated-image-loader");
+        loader.setDaemon(true);
+        loader.start();
     }
 
     public static String createConversation(Long advertisementId) {

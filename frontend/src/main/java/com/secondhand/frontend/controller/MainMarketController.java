@@ -7,21 +7,25 @@ import com.secondhand.frontend.util.NavigationUtils;
 import com.secondhand.frontend.util.UiTheme;
 import com.secondhand.frontend.util.UiMotion;
 import javafx.application.Platform;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.TilePane;
 import javafx.util.StringConverter;
+import javafx.util.Duration;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -31,6 +35,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MainMarketController {
 
@@ -40,7 +46,7 @@ public class MainMarketController {
     @FXML private ComboBox<IdNamePair> parentCategoryComboBox;
     @FXML private ComboBox<IdNamePair> categoryComboBox;
     @FXML private ComboBox<IdNamePair> cityComboBox;
-    @FXML private ListView<AdvertisementDto> adListView;
+    @FXML private TilePane advertisementsTilePane;
     @FXML private Button btnAdminPanel;
     @FXML private Button profileButton;
     @FXML private MenuButton sortMenuButton;
@@ -50,6 +56,8 @@ public class MainMarketController {
     private String currentSortBy = "date";
     private String currentOrder = "desc";
     private long searchRequestVersion;
+    private final List<AdvertisementDto> currentAdvertisements = new ArrayList<>();
+    private final Set<Long> favoriteAdvertisementIds = ConcurrentHashMap.newKeySet();
 
     @FXML
     public void initialize() {
@@ -61,57 +69,7 @@ public class MainMarketController {
             profileButton.setText("👤 " + NetworkClient.currentUsername);
         }
 
-        adListView.setCellFactory(param -> new ListCell<>() {
-            {
-                // ListView-level clicks can be swallowed by labels/HBoxes inside
-                // a custom cell. Handling the double-click on the cell itself
-                // makes opening ad details reliable.
-                setOnMouseClicked(event -> {
-                    if (event.getClickCount() == 2 && getItem() != null) {
-                        openAdDetailsPage(getItem());
-                        event.consume();
-                    }
-                });
-            }
-
-            @Override
-            protected void updateItem(AdvertisementDto item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setGraphic(null);
-                    return;
-                }
-
-                Label thumbnail = new Label("◈");
-                thumbnail.getStyleClass().add("ad-thumbnail");
-
-                Label title = new Label(item.getTitle());
-                title.getStyleClass().add("ad-title");
-                Label category = new Label("⌂ " + safeText(item.getCategoryName())
-                        + "   •   ◉ " + safeText(item.getCityName()));
-                category.getStyleClass().add("ad-meta");
-                Label hint = new Label("Double-click to view details");
-                hint.getStyleClass().add("ad-meta");
-                VBox details = new VBox(5, title, category, hint);
-                HBox.setHgrow(details, Priority.ALWAYS);
-
-                Label price = new Label(String.format("$%.2f", item.getPrice()));
-                price.getStyleClass().add("ad-price");
-                VBox priceBox = new VBox(7, price, new Label("Active ad"));
-                priceBox.setStyle("-fx-alignment: CENTER_RIGHT;");
-                ((Label) priceBox.getChildren().get(1)).getStyleClass().add("ad-meta");
-
-                Region spacer = new Region();
-                spacer.setMinWidth(8);
-                HBox card = new HBox(14, thumbnail, details, spacer, priceBox);
-                card.getStyleClass().add("ad-card");
-                card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                UiMotion.installCardMotion(card);
-                setText(null);
-                setGraphic(card);
-            }
-        });
+        loadFavoriteAdvertisementIds();
 
         setupComboBoxConverters();
         categoryComboBox.setDisable(true);
@@ -228,7 +186,7 @@ public class MainMarketController {
     }
 
     private void loadActiveAdvertisements() {
-        adListView.getItems().clear();
+        advertisementsTilePane.getChildren().clear();
         String finalUrl = BASE_URL + "/active?sortBy=" + currentSortBy + "&order=" + currentOrder;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(finalUrl))
@@ -241,12 +199,14 @@ public class MainMarketController {
                 .thenAccept(responseBody -> {
                     try {
                         JSONArray jsonArray = new JSONArray(responseBody);
+                        List<AdvertisementDto> loaded = new ArrayList<>();
                         for (int i = 0; i < jsonArray.length(); i++) {
                             AdvertisementDto dto = parseJsonToDto(jsonArray.getJSONObject(i));
                             if (!"SOLD".equalsIgnoreCase(dto.getStatus())) {
-                                Platform.runLater(() -> adListView.getItems().add(dto));
+                                loaded.add(dto);
                             }
                         }
+                        Platform.runLater(() -> renderAdvertisementCards(loaded));
                     } catch (Exception e) {
                         System.err.println("Failed to load active advertisements.");
                     }
@@ -299,15 +259,14 @@ public class MainMarketController {
         Double maxPrice = parsePrice(maxPriceField.getText());
         if ((!minPriceField.getText().isBlank() && minPrice == null)
                 || (!maxPriceField.getText().isBlank() && maxPrice == null)) {
-            adListView.setPlaceholder(new Label("Please enter valid price values."));
+            showCardMessage("Please enter valid price values.");
             return;
         }
 
         // NetworkClient uses a blocking HTTP call. Running it in a daemon
         // thread keeps scrolling, hover effects and buttons responsive.
         long requestVersion = ++searchRequestVersion;
-        adListView.getItems().clear();
-        adListView.setPlaceholder(new Label("Searching advertisements…"));
+        showCardMessage("Searching advertisements…");
 
         Thread searchThread = new Thread(() -> {
             List<AdvertisementDto> results = new ArrayList<>();
@@ -334,14 +293,157 @@ public class MainMarketController {
                 if (requestVersion != searchRequestVersion) {
                     return;
                 }
-                adListView.getItems().setAll(results);
-                adListView.setPlaceholder(new Label(
-                        results.isEmpty() ? "No advertisements found for these filters." : ""
-                ));
+                renderAdvertisementCards(results);
             });
         }, "market-search-thread");
         searchThread.setDaemon(true);
         searchThread.start();
+    }
+
+    private void renderAdvertisementCards(List<AdvertisementDto> advertisements) {
+        // Snapshot first: this method is also called with currentAdvertisements
+        // after favorite state has loaded.
+        List<AdvertisementDto> snapshot = new ArrayList<>(advertisements);
+        currentAdvertisements.clear();
+        currentAdvertisements.addAll(snapshot);
+        advertisementsTilePane.getChildren().clear();
+        if (snapshot.isEmpty()) {
+            showCardMessage("No advertisements found for these filters.");
+            return;
+        }
+        for (AdvertisementDto advertisement : snapshot) {
+            advertisementsTilePane.getChildren().add(createAdvertisementCard(advertisement));
+        }
+    }
+
+    private void showCardMessage(String message) {
+        advertisementsTilePane.getChildren().clear();
+        Label label = new Label(message);
+        label.getStyleClass().add("market-empty-state");
+        advertisementsTilePane.getChildren().add(label);
+    }
+
+    private VBox createAdvertisementCard(AdvertisementDto advertisement) {
+        VBox card = new VBox(10);
+        card.getStyleClass().add("market-ad-card");
+        card.setPrefWidth(280);
+        card.setMinWidth(280);
+        card.setMaxWidth(280);
+
+        StackPane imageArea = new StackPane();
+        imageArea.setPrefHeight(180);
+        imageArea.getStyleClass().add("market-ad-image-area");
+        ImageView imageView = new ImageView();
+        imageView.setFitWidth(278);
+        imageView.setFitHeight(180);
+        imageView.setPreserveRatio(true);
+        imageView.getStyleClass().add("market-ad-image");
+        Label noPhoto = new Label("▧\nNo photo");
+        noPhoto.setWrapText(true);
+        noPhoto.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        noPhoto.getStyleClass().add("market-ad-placeholder");
+
+        List<String> imagePaths = advertisement.getImages() == null
+                ? List.of() : advertisement.getImages();
+        if (!imagePaths.isEmpty()) {
+            NetworkClient.loadImageInto(imageView, imagePaths.get(0));
+            noPhoto.setVisible(false);
+            noPhoto.setManaged(false);
+        }
+
+        Button favoriteButton = new Button(isFavorite(advertisement.getId()) ? "♥" : "♡");
+        favoriteButton.getStyleClass().add("market-favorite-button");
+        favoriteButton.setOnMouseClicked(event -> event.consume());
+        favoriteButton.setOnAction(event -> {
+            toggleFavorite(advertisement, favoriteButton);
+        });
+        StackPane.setAlignment(favoriteButton, javafx.geometry.Pos.TOP_RIGHT);
+        imageArea.getChildren().addAll(imageView, noPhoto, favoriteButton);
+
+        if (imagePaths.size() > 1) {
+            final int[] index = {0};
+            Timeline gallery = new Timeline(new KeyFrame(Duration.seconds(1.25), event -> {
+                index[0] = (index[0] + 1) % imagePaths.size();
+                NetworkClient.loadImageInto(imageView, imagePaths.get(index[0]));
+            }));
+            gallery.setCycleCount(Timeline.INDEFINITE);
+            card.setOnMouseEntered(event -> gallery.play());
+            card.setOnMouseExited(event -> {
+                gallery.stop();
+                index[0] = 0;
+                NetworkClient.loadImageInto(imageView, imagePaths.get(0));
+            });
+        }
+
+        Label title = new Label(advertisement.getTitle());
+        title.setWrapText(true);
+        title.getStyleClass().add("market-ad-title");
+        Label price = new Label(String.format("$%.2f", advertisement.getPrice()));
+        price.getStyleClass().add("market-ad-price");
+        VBox textContent = new VBox(5, title, price);
+        card.getChildren().addAll(imageArea, textContent);
+
+        card.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 1) {
+                openAdDetailsPage(advertisement);
+            }
+        });
+        UiMotion.installCardMotion(card);
+        return card;
+    }
+
+    private void loadFavoriteAdvertisementIds() {
+        Thread loader = new Thread(() -> {
+            String response = NetworkClient.getMyFavorites();
+            if (response == null || response.startsWith("ERROR")) {
+                return;
+            }
+            try {
+                JSONArray favorites = new JSONArray(response);
+                Set<Long> loadedIds = ConcurrentHashMap.newKeySet();
+                for (int i = 0; i < favorites.length(); i++) {
+                    loadedIds.add(favorites.getJSONObject(i).getLong("advertisementId"));
+                }
+                Platform.runLater(() -> {
+                    favoriteAdvertisementIds.clear();
+                    favoriteAdvertisementIds.addAll(loadedIds);
+                    if (!currentAdvertisements.isEmpty()) {
+                        renderAdvertisementCards(currentAdvertisements);
+                    }
+                });
+            } catch (Exception ignored) {
+                // Favorite state is optional; cards remain usable if it cannot load.
+            }
+        }, "favorite-state-loader");
+        loader.setDaemon(true);
+        loader.start();
+    }
+
+    private boolean isFavorite(Long advertisementId) {
+        return advertisementId != null && favoriteAdvertisementIds.contains(advertisementId);
+    }
+
+    private void toggleFavorite(AdvertisementDto advertisement, Button button) {
+        boolean alreadyFavorite = isFavorite(advertisement.getId());
+        button.setDisable(true);
+        Thread action = new Thread(() -> {
+            String response = alreadyFavorite
+                    ? NetworkClient.removeFavorite(advertisement.getId())
+                    : NetworkClient.addFavorite(advertisement.getId());
+            Platform.runLater(() -> {
+                button.setDisable(false);
+                if (response != null && !response.startsWith("ERROR")) {
+                    if (alreadyFavorite) {
+                        favoriteAdvertisementIds.remove(advertisement.getId());
+                    } else {
+                        favoriteAdvertisementIds.add(advertisement.getId());
+                    }
+                    button.setText(isFavorite(advertisement.getId()) ? "♥" : "♡");
+                }
+            });
+        }, "favorite-toggle-thread");
+        action.setDaemon(true);
+        action.start();
     }
 
     private Double parsePrice(String value) {
@@ -423,7 +525,7 @@ public class MainMarketController {
             AdDetailsController detailsController = loader.getController();
             detailsController.setAdData(adItem);
 
-            javafx.stage.Stage stage = (javafx.stage.Stage) adListView.getScene().getWindow();
+            javafx.stage.Stage stage = (javafx.stage.Stage) advertisementsTilePane.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("Ad Details - " + dto.getTitle());
             stage.show();
