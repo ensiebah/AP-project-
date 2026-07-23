@@ -49,7 +49,11 @@ public class EditAdController {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private AdvertisementDto targetDto;
+    // Display URLs may be backend /api/images/file/... URLs or temporary local previews.
     private final List<String> loadedImageUrls = new ArrayList<>();
+    private final List<File> newImageFiles = new ArrayList<>();
+    private final List<String> removedServerImagePaths = new ArrayList<>();
+    private final java.util.Map<String, File> localFileByPreviewUrl = new java.util.HashMap<>();
     private int draggedIndex = -1;
     private boolean selectingExistingParent;
 
@@ -85,14 +89,22 @@ public class EditAdController {
         priceField.setText(String.valueOf(dto.getPrice()));
 
         loadedImageUrls.clear();
-        String rawDesc = dto.getDescription();
-        if (rawDesc != null && rawDesc.contains("[IMG_URL:")) {
+        newImageFiles.clear();
+        removedServerImagePaths.clear();
+        localFileByPreviewUrl.clear();
+
+        String rawDesc = dto.getDescription() == null ? "" : dto.getDescription();
+        // New ads carry server image URLs in dto.images, not hidden description text.
+        if (dto.getImages() != null && !dto.getImages().isEmpty()) {
+            dto.getImages().forEach(path -> loadedImageUrls.add(NetworkClient.toAbsoluteImageUrl(path)));
+            descriptionArea.setText(rawDesc);
+        } else if (rawDesc.contains("[IMG_URL:")) {
+            // Legacy compatibility for ads created before real uploads existed.
             int startIndex = rawDesc.indexOf("[IMG_URL:");
             int endIndex = rawDesc.indexOf("]", startIndex);
             if (endIndex > startIndex) {
                 String allUrls = rawDesc.substring(startIndex + 9, endIndex);
-                String[] splitUrls = allUrls.split(",");
-                for (String url : splitUrls) {
+                for (String url : allUrls.split(",")) {
                     if (!url.isBlank()) {
                         loadedImageUrls.add(url.trim());
                     }
@@ -254,7 +266,16 @@ public class EditAdController {
             Button btnDeleteImg = new Button("Remove ❌");
             btnDeleteImg.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 11px; -fx-cursor: hand;");
             btnDeleteImg.setOnAction(e -> {
-                loadedImageUrls.remove(currentIndex);
+                String removedUrl = loadedImageUrls.remove(currentIndex);
+                File localFile = localFileByPreviewUrl.remove(removedUrl);
+                if (localFile != null) {
+                    newImageFiles.remove(localFile);
+                } else {
+                    String serverPath = toRelativeServerImagePath(removedUrl);
+                    if (serverPath != null) {
+                        removedServerImagePaths.add(serverPath);
+                    }
+                }
                 renderImagesSection();
             });
 
@@ -316,9 +337,11 @@ public class EditAdController {
 
         if (selectedFiles != null && !selectedFiles.isEmpty()) {
             for (File file : selectedFiles) {
-                String url = file.toURI().toString();
-                if (!loadedImageUrls.contains(url)) {
-                    loadedImageUrls.add(url);
+                String previewUrl = file.toURI().toString();
+                if (!localFileByPreviewUrl.containsKey(previewUrl)) {
+                    loadedImageUrls.add(previewUrl);
+                    localFileByPreviewUrl.put(previewUrl, file);
+                    newImageFiles.add(file);
                 }
             }
             renderImagesSection();
@@ -348,26 +371,63 @@ public class EditAdController {
         }
 
         String finalDescription = descriptionArea.getText().trim();
-        if (!loadedImageUrls.isEmpty()) {
-            finalDescription += " [IMG_URL:" + String.join(",", loadedImageUrls) + "]";
-        }
-
         String jsonUpdate = String.format(
                 java.util.Locale.US,
-                "{\"title\":\"%s\",\"description\":\"%s\",\"price\":%.2f,\"categoryId\":%d,\"cityId\":%d}",
-                titleField.getText().trim(),
-                finalDescription,
+                "{\"title\":%s,\"description\":%s,\"price\":%.2f,\"categoryId\":%d,\"cityId\":%d}",
+                JSONObject.quote(titleField.getText().trim()),
+                JSONObject.quote(finalDescription),
                 price,
                 selectedSubcategory.getId(),
                 selectedCity.getId()
         );
 
-        String networkResponse = NetworkClient.updateAdvertisementRaw(targetDto.getId(), jsonUpdate);
-        if (networkResponse != null && !networkResponse.startsWith("ERROR")) {
-            handleCancel();
-        } else {
-            showError("Failed to apply updates onto the database server.");
+        List<File> imagesToUpload = new ArrayList<>(newImageFiles);
+        List<String> pathsToDelete = new ArrayList<>(removedServerImagePaths);
+        Thread updateThread = new Thread(() -> {
+            String networkResponse = NetworkClient.updateAdvertisementRaw(targetDto.getId(), jsonUpdate);
+            int uploadFailures = 0;
+            int deleteFailures = 0;
+            if (networkResponse != null && !networkResponse.startsWith("ERROR")) {
+                for (String imagePath : pathsToDelete) {
+                    String deleteResponse = NetworkClient.deleteAdvertisementImage(targetDto.getId(), imagePath);
+                    if (!"SUCCESS".equals(deleteResponse)) {
+                        deleteFailures++;
+                    }
+                }
+                for (File imageFile : imagesToUpload) {
+                    String uploadResponse = NetworkClient.uploadAdvertisementImage(targetDto.getId(), imageFile);
+                    if (uploadResponse == null || uploadResponse.startsWith("ERROR")) {
+                        uploadFailures++;
+                    }
+                }
+            }
+            int finalUploadFailures = uploadFailures;
+            int finalDeleteFailures = deleteFailures;
+            Platform.runLater(() -> {
+                if (networkResponse != null && !networkResponse.startsWith("ERROR")) {
+                    if (finalUploadFailures > 0 || finalDeleteFailures > 0) {
+                        new Alert(Alert.AlertType.WARNING,
+                                "Advertisement updated, but some image changes could not be saved.").show();
+                    }
+                    handleCancel();
+                } else {
+                    showError("Failed to apply updates onto the database server.");
+                }
+            });
+        }, "edit-ad-request-thread");
+        updateThread.setDaemon(true);
+        updateThread.start();
+    }
+
+    private String toRelativeServerImagePath(String url) {
+        String prefix = "http://localhost:8080";
+        if (url != null && url.startsWith(prefix + "/api/images/file/")) {
+            return url.substring(prefix.length());
         }
+        if (url != null && url.startsWith("/api/images/file/")) {
+            return url;
+        }
+        return null;
     }
 
     private void showError(String message) {

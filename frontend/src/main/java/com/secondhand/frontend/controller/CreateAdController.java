@@ -121,38 +121,52 @@ public class CreateAdController {
         long categoryId = selectedSubcategory.getId();
         long cityId = selectedCity.getId();
 
-        StringBuilder imgUrlsBuilder = new StringBuilder();
-        if (!selectedImageFiles.isEmpty()) {
-            for (int i = 0; i < selectedImageFiles.size(); i++) {
-                imgUrlsBuilder.append(selectedImageFiles.get(i).toURI());
-                if (i < selectedImageFiles.size() - 1) {
-                    imgUrlsBuilder.append(",");
-                }
-            }
-        } else {
-            imgUrlsBuilder.append(getClass().getResource("/com/secondhand/frontend/images/default-ad.png") != null
-                    ? getClass().getResource("/com/secondhand/frontend/images/default-ad.png").toExternalForm()
-                    : "https://picsum.photos/400/200");
-        }
-
-        String integratedDescription = description + " [IMG_URL:" + imgUrlsBuilder + "]";
+        // Images are uploaded as multipart files after the ad is created.
+        // The description remains clean text; no local file:// path is stored in it.
         String jsonRequest = String.format(
                 java.util.Locale.US,
-                "{\"title\":\"%s\",\"description\":\"%s\",\"price\":%.2f,\"categoryId\":%d,\"cityId\":%d}",
-                title, integratedDescription, price, categoryId, cityId
+                "{\"title\":%s,\"description\":%s,\"price\":%.2f,\"categoryId\":%d,\"cityId\":%d}",
+                JSONObject.quote(title), JSONObject.quote(description), price, categoryId, cityId
         );
 
-        // Posting can take time because it performs an HTTP request. Keep the
-        // JavaFX application thread free so the button and page stay responsive.
+        // Posting and multipart uploads run away from the JavaFX thread.
+        // A snapshot avoids any mutation of selectedImageFiles while uploading.
+        List<File> imagesToUpload = new ArrayList<>(selectedImageFiles);
         setPublishing(true);
         Thread publishThread = new Thread(() -> {
             String response = NetworkClient.sendPostRequest("/advertisements/create", jsonRequest);
+            int uploadedImages = 0;
+            int failedImages = 0;
+            boolean created = response != null && !response.startsWith("ERROR");
+
+            if (created) {
+                try {
+                    long advertisementId = new JSONObject(response).getLong("id");
+                    for (File imageFile : imagesToUpload) {
+                        String uploadResponse = NetworkClient.uploadAdvertisementImage(advertisementId, imageFile);
+                        if (uploadResponse != null && !uploadResponse.startsWith("ERROR")) {
+                            uploadedImages++;
+                        } else {
+                            failedImages++;
+                        }
+                    }
+                } catch (Exception uploadException) {
+                    failedImages = imagesToUpload.size();
+                }
+            }
+
+            int finalUploadedImages = uploadedImages;
+            int finalFailedImages = failedImages;
             Platform.runLater(() -> {
                 setPublishing(false);
-                if (response != null && !response.startsWith("ERROR")) {
+                if (created) {
                     handleCancel();
-                    errorLabel.setStyle("-fx-text-fill: #16895d;");
-                    errorLabel.setText("Advertisement published successfully! Awaiting admin approval.");
+                    errorLabel.setStyle(finalFailedImages == 0 ? "-fx-text-fill: #16895d;" : "-fx-text-fill: #d98612;");
+                    String imageMessage = imagesToUpload.isEmpty()
+                            ? "No images selected."
+                            : finalUploadedImages + " image(s) uploaded" + (finalFailedImages > 0
+                                    ? ", " + finalFailedImages + " failed." : ".");
+                    errorLabel.setText("Advertisement published successfully! " + imageMessage + " Awaiting admin approval.");
                 } else {
                     showError("Failed to publish advertisement. Server returned an error.");
                 }

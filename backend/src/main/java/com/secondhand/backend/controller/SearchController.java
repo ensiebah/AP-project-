@@ -1,11 +1,13 @@
 package com.secondhand.backend.controller;
 
 import com.secondhand.backend.dto.AdvertisementDto;
+import com.secondhand.backend.dto.AdvertisementImageDto;
 import com.secondhand.backend.entity.Advertisement;
 import com.secondhand.backend.entity.AdvertisementStatus;
 import com.secondhand.backend.repository.AdvertisementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +34,7 @@ public class SearchController {
      * @return a list of matching advertisements
      */
     // 🟢 متد بهینه و نهایی جستجو همراه با پشتیبانی از فیلترها و مرتب‌سازی دیتابیس
+    @Transactional(readOnly = true)
     @GetMapping("/search")
     public ResponseEntity<List<AdvertisementDto>> searchAds(
             @RequestParam(required = false) String query,
@@ -86,6 +89,16 @@ public class SearchController {
             dto.setCityId(ad.getCity().getId());
             dto.setCityName(ad.getCity().getName());
         }
+        dto.setImages(ad.getImages().stream()
+                .map(image -> image.getImagePath())
+                .toList());
+        dto.setImageDetails(ad.getImages().stream()
+                .map(image -> AdvertisementImageDto.builder()
+                        .id(image.getId())
+                        .imagePath(image.getImagePath())
+                        .advertisementId(ad.getId())
+                        .build())
+                .toList());
         return dto;
     }
 }

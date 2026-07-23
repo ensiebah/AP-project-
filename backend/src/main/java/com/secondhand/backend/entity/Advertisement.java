@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @Getter
 @Setter
@@ -45,7 +46,6 @@ public class Advertisement {
     @JoinColumn(name = "city_id")
     private City city;
 
-    @OneToMany(mappedBy = "advertisement",
-            cascade = CascadeType.ALL)
-    private List<AdvertisementImage> images;
+    @OneToMany(mappedBy = "advertisement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AdvertisementImage> images = new ArrayList<>();
 }

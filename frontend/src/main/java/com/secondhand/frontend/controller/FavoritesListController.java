@@ -99,8 +99,21 @@ public class FavoritesListController {
                                 ? adObj.getLong("sellerId") : null;
                         String sellerName = adObj.optString("sellerName", "Anonymous");
 
-                        // 👈 اصلاح اصلی: ساخت شیء AdItem مستقیماً از طریق Constructor به دلیل final بودن فیلدها
-                        AdItem item = new AdItem(id, title, description, price, city, category, sellerId, sellerName);
+                        java.util.List<String> imagePaths = new java.util.ArrayList<>();
+                        JSONArray images = adObj.optJSONArray("images");
+                        if (images != null) {
+                            for (int imageIndex = 0; imageIndex < images.length(); imageIndex++) {
+                                String imagePath = images.optString(imageIndex, "");
+                                if (!imagePath.isBlank()) {
+                                    imagePaths.add(imagePath);
+                                }
+                            }
+                        }
+
+                        AdItem item = new AdItem(
+                                id, title, description, price, city, category,
+                                sellerId, sellerName, imagePaths
+                        );
 
                         Platform.runLater(() -> favoritesListView.getItems().add(item));
                     }

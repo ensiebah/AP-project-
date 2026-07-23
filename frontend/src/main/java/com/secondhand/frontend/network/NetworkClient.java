@@ -1,6 +1,12 @@
 package com.secondhand.frontend.network;
 
 import java.net.URI;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -134,6 +140,73 @@ public class NetworkClient {
         }
     }
 
+    /**
+     * Sends a real multipart/form-data image upload. The file bytes go to the
+     * backend; no file:// path is ever stored in an advertisement description.
+     */
+    public static String uploadAdvertisementImage(Long advertisementId, File file) {
+        String boundary = "SecondHandBoundary" + UUID.randomUUID().toString().replace("-", "");
+        try {
+            String contentType = Files.probeContentType(file.toPath());
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+            List<byte[]> parts = new ArrayList<>();
+            parts.add(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+            parts.add(("Content-Disposition: form-data; name=\"file\"; filename=\""
+                    + file.getName().replace("\"", "") + "\"\r\n").getBytes(StandardCharsets.UTF_8));
+            parts.add(("Content-Type: " + contentType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+            parts.add(Files.readAllBytes(file.toPath()));
+            parts.add("\r\n".getBytes(StandardCharsets.UTF_8));
+            parts.add(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/images/upload/" + advertisementId))
+                    .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                    .POST(HttpRequest.BodyPublishers.ofByteArrays(parts));
+            if (authToken != null) {
+                requestBuilder.header("Authorization", "Bearer " + authToken);
+            }
+            HttpResponse<String> response = HttpClient.newHttpClient().send(
+                    requestBuilder.build(), HttpResponse.BodyHandlers.ofString()
+            );
+            return response.statusCode() >= 200 && response.statusCode() < 300
+                    ? response.body() : "ERROR|" + response.body();
+        } catch (Exception e) {
+            return "ERROR|Image upload failed: " + e.getMessage();
+        }
+    }
+
+    public static String deleteAdvertisementImage(Long advertisementId, String imagePath) {
+        try {
+            String json = "{\"imagePath\":" + org.json.JSONObject.quote(imagePath) + "}";
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/images/advertisement/" + advertisementId))
+                    .header("Content-Type", "application/json")
+                    .method("DELETE", HttpRequest.BodyPublishers.ofString(json));
+            if (authToken != null) {
+                requestBuilder.header("Authorization", "Bearer " + authToken);
+            }
+            HttpResponse<String> response = HttpClient.newHttpClient().send(
+                    requestBuilder.build(), HttpResponse.BodyHandlers.ofString()
+            );
+            return response.statusCode() == 204 ? "SUCCESS" : "ERROR|" + response.body();
+        } catch (Exception e) {
+            return "ERROR|Image deletion failed: " + e.getMessage();
+        }
+    }
+
+    /** Converts backend paths such as /api/images/file/x.png to a JavaFX URL. */
+    public static String toAbsoluteImageUrl(String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return imagePath;
+        }
+        if (imagePath.startsWith("http://") || imagePath.startsWith("https://") || imagePath.startsWith("file:")) {
+            return imagePath;
+        }
+        return "http://localhost:8080" + (imagePath.startsWith("/") ? imagePath : "/" + imagePath);
+    }
+
     public static String createConversation(Long advertisementId) {
         return sendPostRequest("/conversations/ad/" + advertisementId, null);
     }
@@ -144,6 +217,24 @@ public class NetworkClient {
 
     public static String getConversationMessages(Long conversationId) {
         return sendGetRequest("/messages/conversation/" + conversationId);
+    }
+
+    /** Marks messages visible to the current user as seen by the receiver. */
+    public static String markConversationMessagesAsSeen(Long conversationId) {
+        try {
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/messages/conversation/" + conversationId + "/seen"))
+                    .PUT(HttpRequest.BodyPublishers.noBody());
+            if (authToken != null) {
+                requestBuilder.header("Authorization", "Bearer " + authToken);
+            }
+            HttpResponse<String> response = HttpClient.newHttpClient().send(
+                    requestBuilder.build(), HttpResponse.BodyHandlers.ofString()
+            );
+            return response.statusCode() == 204 ? "SUCCESS" : "ERROR|" + response.body();
+        } catch (Exception e) {
+            return "ERROR|" + e.getMessage();
+        }
     }
 
     public static String getMyChats() {

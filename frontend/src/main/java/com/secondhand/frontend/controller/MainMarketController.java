@@ -384,7 +384,24 @@ public class MainMarketController {
         dto.setCityName(obj.optString("cityName", "Unknown"));
         dto.setCategoryName(obj.optString("categoryName", "Unknown"));
         dto.setStatus(obj.optString("status", "ACTIVE"));
+        dto.setImages(parseImagePaths(obj));
         return dto;
+    }
+
+    private List<String> parseImagePaths(JSONObject obj) {
+        List<String> paths = new ArrayList<>();
+        if (obj.has("images") && !obj.isNull("images")) {
+            JSONArray images = obj.optJSONArray("images");
+            if (images != null) {
+                for (int i = 0; i < images.length(); i++) {
+                    String path = images.optString(i, "");
+                    if (!path.isBlank()) {
+                        paths.add(path);
+                    }
+                }
+            }
+        }
+        return paths;
     }
 
     private void openAdDetailsPage(AdvertisementDto dto) {
@@ -398,7 +415,7 @@ public class MainMarketController {
             AdItem adItem = new AdItem(
                     String.valueOf(dto.getId()), dto.getTitle(), dto.getDescription(),
                     String.valueOf(dto.getPrice()), dto.getCityName(), dto.getCategoryName(),
-                    dto.getSellerId(), dto.getSellerName()
+                    dto.getSellerId(), dto.getSellerName(), dto.getImages()
             );
 
             AdDetailsController detailsController = loader.getController();

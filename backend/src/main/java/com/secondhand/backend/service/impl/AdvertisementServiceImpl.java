@@ -2,6 +2,7 @@ package com.secondhand.backend.service.impl;
 
 import com.secondhand.backend.dto.AdvertisementCreateDto;
 import com.secondhand.backend.dto.AdvertisementDto;
+import com.secondhand.backend.dto.AdvertisementImageDto;
 import com.secondhand.backend.entity.*;
 import com.secondhand.backend.exception.CategoryNotFoundException;
 import com.secondhand.backend.exception.UserNotFoundException;
@@ -339,6 +340,20 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .categoryName(advertisement.getCategory().getFullPath())
                 .cityId(advertisement.getCity().getId())
                 .cityName(advertisement.getCity().getName())
+                .images(advertisement.getImages().stream()
+                        .map(AdvertisementImage::getImagePath)
+                        .toList())
+                .imageDetails(advertisement.getImages().stream()
+                        .map(this::mapImageToDto)
+                        .toList())
+                .build();
+    }
+
+    private AdvertisementImageDto mapImageToDto(AdvertisementImage image) {
+        return AdvertisementImageDto.builder()
+                .id(image.getId())
+                .imagePath(image.getImagePath())
+                .advertisementId(image.getAdvertisement().getId())
                 .build();
     }
 

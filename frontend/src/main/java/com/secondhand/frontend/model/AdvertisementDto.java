@@ -1,5 +1,8 @@
 package com.secondhand.frontend.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AdvertisementDto {
 
     private Long id;
@@ -14,6 +17,7 @@ public class AdvertisementDto {
     private String categoryName;
     private Long cityId;
     private String cityName;
+    private List<String> images = new ArrayList<>();
 
     public AdvertisementDto() {
     }
@@ -53,4 +57,7 @@ public class AdvertisementDto {
 
     public String getCityName() { return cityName; }
     public void setCityName(String cityName) { this.cityName = cityName; }
+
+    public List<String> getImages() { return images; }
+    public void setImages(List<String> images) { this.images = images == null ? new ArrayList<>() : new ArrayList<>(images); }
 }

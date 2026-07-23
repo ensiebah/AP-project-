@@ -72,7 +72,17 @@ public class AdDetailsController {
 
         imageList.clear();
 
-        if (rawDescription.contains("[IMG_URL:")) {
+        // New advertisements receive real server paths from AdvertisementImage.
+        // JavaFX loads those through the backend public image endpoint.
+        for (String imagePath : ad.getImageUrls()) {
+            if (imagePath != null && !imagePath.isBlank()) {
+                imageList.add(NetworkClient.toAbsoluteImageUrl(imagePath));
+            }
+        }
+
+        // Backward compatibility only: old ads may still contain a legacy
+        // [IMG_URL:file://...] marker in description. New ads never write it.
+        if (imageList.isEmpty() && rawDescription.contains("[IMG_URL:")) {
             int start = rawDescription.indexOf("[IMG_URL:") + 9;
             int end = rawDescription.indexOf("]", start);
             if (end > start) {
@@ -85,7 +95,7 @@ public class AdDetailsController {
                 }
                 cleanDescription = rawDescription.substring(0, rawDescription.indexOf("[IMG_URL:")).trim();
             }
-        } else if (rawDescription.contains("http")) {
+        } else if (imageList.isEmpty() && rawDescription.contains("http")) {
             imageList.add(rawDescription.trim());
         }
 

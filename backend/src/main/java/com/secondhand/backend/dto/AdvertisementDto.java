@@ -37,4 +37,6 @@ public class AdvertisementDto {
     private String cityName;
 
     private List<String> images;
+
+    private List<AdvertisementImageDto> imageDetails;
 }

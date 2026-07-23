@@ -50,6 +50,7 @@ public class SecurityConfig {
                                 "/api/users/register",
                                 "/api/users/login",
                                 "/api/lookup/**",
+                                "/api/images/file/**",
                                 "/h2-console/**"
                         ).permitAll()
                         .requestMatchers("/api/admin/**", "/api/users/**").hasRole("ADMIN")

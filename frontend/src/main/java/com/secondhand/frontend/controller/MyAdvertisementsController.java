@@ -49,6 +49,17 @@ public class MyAdvertisementsController {
                     dto.setCityId(json.optLong("cityId", 1L));
                     dto.setStatus(json.optString("status", "PENDING"));
                     dto.setRejectionReason(json.optString("rejectionReason", ""));
+                    java.util.List<String> imagePaths = new java.util.ArrayList<>();
+                    JSONArray images = json.optJSONArray("images");
+                    if (images != null) {
+                        for (int imageIndex = 0; imageIndex < images.length(); imageIndex++) {
+                            String imagePath = images.optString(imageIndex, "");
+                            if (!imagePath.isBlank()) {
+                                imagePaths.add(imagePath);
+                            }
+                        }
+                    }
+                    dto.setImages(imagePaths);
                     myAdsListView.getItems().add(dto);
                 }
             } catch (Exception e) {
