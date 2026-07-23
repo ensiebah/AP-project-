@@ -18,7 +18,7 @@
                         <Button fx:id="btnNextImage" onAction="#handleNextImage" visible="false" text="›" styleClass="icon-button outline-button" StackPane.alignment="CENTER_RIGHT" />
                     </children></StackPane>
                     <VBox spacing="13" styleClass="surface-card" HBox.hgrow="ALWAYS"><children>
-                        <Label text="LISTING" styleClass="page-kicker"/><Label fx:id="titleLabel" text="Advertisement title" wrapText="true" styleClass="page-title"/><Label fx:id="priceLabel" text="$0.00" styleClass="ad-price"/>
+                        <Label text="ADVERTISEMENT" styleClass="page-kicker"/><Label fx:id="titleLabel" text="Advertisement title" wrapText="true" styleClass="page-title"/><Label fx:id="priceLabel" text="0.00" styleClass="ad-price"/>
                         <Separator/>
                         <GridPane hgap="12" vgap="10"><children>
                             <Label text="Category" styleClass="muted-text" GridPane.columnIndex="0" GridPane.rowIndex="0"/><Label fx:id="categoryLabel" styleClass="ad-meta" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
