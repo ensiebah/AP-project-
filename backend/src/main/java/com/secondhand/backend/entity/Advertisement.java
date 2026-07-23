@@ -27,6 +27,10 @@ public class Advertisement {
     private Double price;
     @Enumerated(EnumType.STRING)
     private AdvertisementStatus status;
+
+    @Column(length = 1000)
+    private String rejectionReason;
+
     //each ad has 1 seller , but a seller can have many ads
     @ManyToOne
     @JoinColumn(name = "seller_id")

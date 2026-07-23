@@ -22,7 +22,7 @@ public interface AdvertisementService {
     List<AdvertisementDto> searchAdvertisementsAdvanced(String query, Long categoryId, Long cityId, Double minPrice, Double maxPrice, String sortBy, String order);
 
     AdvertisementDto approveAdvertisement(Long id) ;
-    AdvertisementDto rejectAdvertisement(Long id) ;
+    AdvertisementDto rejectAdvertisement(Long id, String rejectionReason) ;
     AdvertisementDto createAdvertisementByUsername(AdvertisementCreateDto dto,String username);
     List<AdvertisementDto> getAllPendingAdvertisements();
     List<AdvertisementDto> getAllAdvertisements();

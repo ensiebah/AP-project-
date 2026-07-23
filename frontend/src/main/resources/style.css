@@ -257,5 +257,33 @@
 .tree-cell:filled:selected { -fx-background-color: #e7f4ff; -fx-text-fill: #1f7ddb; }
 .separator .line { -fx-border-color: #e6eef7; }
 
+/* ---------- Chat bubbles and persisted read receipts ---------- */
+.message-bubble-mine,
+.message-bubble-other {
+    -fx-padding: 9 12 9 12;
+    -fx-background-radius: 14;
+    -fx-font-size: 13px;
+}
+.message-bubble-mine {
+    -fx-background-color: linear-gradient(to bottom right, #4bbcff, #257de9);
+    -fx-text-fill: white;
+}
+.message-bubble-other {
+    -fx-background-color: #eef5fc;
+    -fx-text-fill: #244565;
+}
+.message-meta { -fx-text-fill: #8297af; -fx-font-size: 10px; }
+.message-sent-tick { -fx-text-fill: #8fa4bb; -fx-font-size: 12px; -fx-font-weight: bold; }
+.message-seen-tick { -fx-text-fill: #1b9bf0; -fx-font-size: 12px; -fx-font-weight: bold; }
+
 /* Layout is safe for the Persian/RTL display option. */
 .rtl-ready { -fx-node-orientation: left-to-right; }
+
+/* Moderator feedback shown to the owner of a rejected advertisement. */
+.rejection-reason {
+    -fx-text-fill: #b54755;
+    -fx-font-size: 11px;
+    -fx-background-color: #fff0f1;
+    -fx-background-radius: 8;
+    -fx-padding: 5 8 5 8;
+}

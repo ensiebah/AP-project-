@@ -227,6 +227,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         Advertisement advertisement = advertisementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Advertisement not found"));
         advertisement.setStatus(AdvertisementStatus.ACTIVE);
+        advertisement.setRejectionReason(null);
         return mapToDto(advertisementRepository.save(advertisement));
     }
 
@@ -253,10 +254,16 @@ public class AdvertisementServiceImpl implements AdvertisementService {
      * @return rejected advertisement
      */
     @Override
-    public AdvertisementDto rejectAdvertisement(Long id) {
+    public AdvertisementDto rejectAdvertisement(Long id, String rejectionReason) {
         Advertisement advertisement = advertisementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Advertisement not found"));
+
+        if (rejectionReason == null || rejectionReason.isBlank()) {
+            throw new IllegalArgumentException("A rejection reason is required");
+        }
+
         advertisement.setStatus(AdvertisementStatus.REJECTED);
+        advertisement.setRejectionReason(rejectionReason.trim());
         return mapToDto(advertisementRepository.save(advertisement));
     }
 
@@ -325,6 +332,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .description(advertisement.getDescription())
                 .price(advertisement.getPrice())
                 .status(advertisement.getStatus())
+                .rejectionReason(advertisement.getRejectionReason())
                 .sellerId(advertisement.getSeller().getId())
                 .sellerName(advertisement.getSeller().getUserName())
                 .categoryId(advertisement.getCategory().getId())

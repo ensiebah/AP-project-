@@ -48,6 +48,7 @@ public class MyAdvertisementsController {
                     dto.setCategoryId(json.optLong("categoryId", 1L));
                     dto.setCityId(json.optLong("cityId", 1L));
                     dto.setStatus(json.optString("status", "PENDING"));
+                    dto.setRejectionReason(json.optString("rejectionReason", ""));
                     myAdsListView.getItems().add(dto);
                 }
             } catch (Exception e) {
@@ -79,6 +80,14 @@ public class MyAdvertisementsController {
                             item.getPrice(), item.getCategoryName(), item.getCityName()));
                     metaLbl.getStyleClass().add("ad-meta");
                     textData.getChildren().addAll(titleLbl, metaLbl);
+                    if ("REJECTED".equalsIgnoreCase(item.getStatus())
+                            && item.getRejectionReason() != null
+                            && !item.getRejectionReason().isBlank()) {
+                        Label reasonLabel = new Label("Admin feedback: " + item.getRejectionReason());
+                        reasonLabel.getStyleClass().add("rejection-reason");
+                        reasonLabel.setWrapText(true);
+                        textData.getChildren().add(reasonLabel);
+                    }
 
                     // ایجاد فاصله انعطاف‌پذیر بین متن و دکمه‌ها
                     Region spacer = new Region();

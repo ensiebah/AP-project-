@@ -75,6 +75,7 @@ public class AdminPanelController {
     @FXML private TableColumn<AdvertisementDto, String> adCategoryColumn;
     @FXML private TableColumn<AdvertisementDto, String> adSellerColumn;
     @FXML private TableColumn<AdvertisementDto, String> adStatusColumn;
+    @FXML private TableColumn<AdvertisementDto, String> adRejectionReasonColumn;
     @FXML private TableColumn<AdvertisementDto, Double> adPriceColumn;
     @FXML private Button approveAdButton;
     @FXML private Button rejectAdButton;
@@ -119,6 +120,7 @@ public class AdminPanelController {
         adCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
         adSellerColumn.setCellValueFactory(new PropertyValueFactory<>("sellerName"));
         adStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        adRejectionReasonColumn.setCellValueFactory(new PropertyValueFactory<>("rejectionReason"));
         adPriceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
         advertisementsTable.setItems(advertisements);
         advertisementsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldAd, selectedAd) -> {
@@ -276,6 +278,7 @@ public class AdminPanelController {
                 dto.setTitle(item.optString("title", "Untitled advertisement"));
                 dto.setPrice(item.optDouble("price", 0));
                 dto.setStatus(item.optString("status", "UNKNOWN"));
+                dto.setRejectionReason(item.optString("rejectionReason", ""));
                 dto.setSellerName(item.optString("sellerName", "Unknown"));
                 dto.setCategoryName(item.optString("categoryName", "Not specified"));
                 dto.setCityName(item.optString("cityName", ""));
@@ -292,7 +295,30 @@ public class AdminPanelController {
 
     @FXML
     public void rejectSelectedAdvertisement() {
-        moderateSelectedAdvertisement("reject");
+        AdvertisementDto selected = advertisementsTable.getSelectionModel().getSelectedItem();
+        if (selected == null || !"PENDING".equalsIgnoreCase(selected.getStatus())) {
+            return;
+        }
+
+        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog();
+        dialog.setTitle("Reject advertisement");
+        dialog.setHeaderText("Tell the seller why this advertisement was rejected");
+        dialog.setContentText("Rejection reason:");
+        dialog.showAndWait().ifPresent(reason -> {
+            if (reason.isBlank()) {
+                showAdminWarning("A rejection reason is required.");
+                return;
+            }
+            JSONObject body = new JSONObject().put("reason", reason.trim());
+            sendJsonPut(
+                    "/admin/advertisements/" + selected.getId() + "/reject",
+                    body.toString(),
+                    () -> {
+                        loadOverview();
+                        loadAdvertisements(currentAdStatus);
+                    }
+            );
+        });
     }
 
     private void moderateSelectedAdvertisement(String action) {
@@ -551,6 +577,31 @@ public class AdminPanelController {
     private void showCategoryError(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING, message);
         alert.setHeaderText("Category management");
+        alert.show();
+    }
+
+    private void sendJsonPut(String path, String jsonBody, Runnable onSuccess) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080/api" + path))
+                .header("Authorization", "Bearer " + NetworkClient.authToken)
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenAccept(response -> Platform.runLater(() -> {
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        onSuccess.run();
+                    } else {
+                        showAdminWarning(response.body().isBlank()
+                                ? "The moderation action could not be completed."
+                                : response.body());
+                    }
+                }));
+    }
+
+    private void showAdminWarning(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING, message);
+        alert.setHeaderText("Advertisement moderation");
         alert.show();
     }
 

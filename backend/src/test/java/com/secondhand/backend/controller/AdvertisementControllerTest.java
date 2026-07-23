@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -90,10 +91,12 @@ class AdvertisementControllerTest {
                 .title("Camera")
                 .build();
 
-        when(advertisementService.rejectAdvertisement(1L))
+        when(advertisementService.rejectAdvertisement(1L, "Image is not clear"))
                 .thenReturn(dto);
 
-        mockMvc.perform(put("/api/advertisements/1/reject"))
+        mockMvc.perform(put("/api/advertisements/1/reject")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":\"Image is not clear\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Camera"));
     }

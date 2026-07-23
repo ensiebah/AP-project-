@@ -2,6 +2,7 @@ package com.secondhand.backend.controller;
 
 import com.secondhand.backend.dto.AdminDashboardSummaryDto;
 import com.secondhand.backend.dto.AdvertisementDto;
+import com.secondhand.backend.dto.AdvertisementRejectRequest;
 import com.secondhand.backend.dto.CategoryDto;
 import com.secondhand.backend.entity.AdvertisementStatus;
 import com.secondhand.backend.entity.User;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -122,7 +124,10 @@ public class AdminController {
     }
 
     @PutMapping("/advertisements/{id}/reject")
-    public ResponseEntity<AdvertisementDto> rejectAdvertisement(@PathVariable Long id) {
-        return ResponseEntity.ok(advertisementService.rejectAdvertisement(id));
+    public ResponseEntity<AdvertisementDto> rejectAdvertisement(
+            @PathVariable Long id,
+            @Valid @RequestBody AdvertisementRejectRequest request
+    ) {
+        return ResponseEntity.ok(advertisementService.rejectAdvertisement(id, request.getReason()));
     }
 }

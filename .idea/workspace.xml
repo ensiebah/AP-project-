@@ -5,8 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f119b51f-4729-4f5f-bbca-b8782832877e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/ad_details.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/ad_details.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/AdminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/AdminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/AdvertisementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/controller/AdvertisementController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/dto/AdvertisementDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/dto/AdvertisementDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/entity/Advertisement.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/entity/Advertisement.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/AdvertisementService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/AdvertisementService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/impl/AdvertisementServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/secondhand/backend/service/impl/AdvertisementServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/secondhand/backend/controller/AdvertisementControllerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/secondhand/backend/controller/AdvertisementControllerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/AdminPanelController.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/AdminPanelController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/MyAdvertisementsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/controller/MyAdvertisementsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/model/AdvertisementDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/java/com/secondhand/frontend/model/AdvertisementDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/admin_panel.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/resources/com/secondhand/frontend/view/admin_panel.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main/resources/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/resources/style.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,7 +84,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1784821465735</updated>
-      <workItem from="1784821469367" duration="2281000" />
+      <workItem from="1784821469367" duration="2822000" />
     </task>
     <servers />
   </component>

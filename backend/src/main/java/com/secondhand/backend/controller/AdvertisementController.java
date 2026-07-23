@@ -2,6 +2,7 @@ package com.secondhand.backend.controller;
 
 import com.secondhand.backend.dto.AdvertisementCreateDto;
 import com.secondhand.backend.dto.AdvertisementDto;
+import com.secondhand.backend.dto.AdvertisementRejectRequest;
 import com.secondhand.backend.service.AdvertisementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -113,8 +114,11 @@ public class AdvertisementController {
     }
 
     @PutMapping("/{id}/reject")
-    public AdvertisementDto rejectAdvertisement(@PathVariable Long id) {
-        return advertisementService.rejectAdvertisement(id);
+    public AdvertisementDto rejectAdvertisement(
+            @PathVariable Long id,
+            @RequestBody AdvertisementRejectRequest request
+    ) {
+        return advertisementService.rejectAdvertisement(id, request.getReason());
     }
 
     @PutMapping("/{id}/sold")

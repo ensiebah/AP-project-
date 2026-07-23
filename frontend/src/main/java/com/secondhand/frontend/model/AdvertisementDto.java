@@ -7,6 +7,7 @@ public class AdvertisementDto {
     private String description;
     private Double price;
     private String status;
+    private String rejectionReason;
     private Long sellerId;
     private String sellerName;
     private Long categoryId;
@@ -31,6 +32,9 @@ public class AdvertisementDto {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
 
     public Long getSellerId() { return sellerId; }
     public void setSellerId(Long sellerId) { this.sellerId = sellerId; }

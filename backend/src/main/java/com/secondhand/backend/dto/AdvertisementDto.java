@@ -22,6 +22,8 @@ public class AdvertisementDto {
 
     private AdvertisementStatus status;
 
+    private String rejectionReason;
+
     private Long sellerId;
 
     private String sellerName;

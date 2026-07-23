@@ -112,7 +112,8 @@
                                         <TableColumn fx:id="adTitleColumn" text="Advertisement" prefWidth="280" />
                                         <TableColumn fx:id="adCategoryColumn" text="Category" prefWidth="190" />
                                         <TableColumn fx:id="adSellerColumn" text="Seller" prefWidth="145" />
-                                        <TableColumn fx:id="adStatusColumn" text="Status" prefWidth="120" />
+                                        <TableColumn fx:id="adStatusColumn" text="Status" prefWidth="110" />
+                                        <TableColumn fx:id="adRejectionReasonColumn" text="Rejection feedback" prefWidth="235" />
                                         <TableColumn fx:id="adPriceColumn" text="Price" prefWidth="105" />
                                     </columns>
                                 </TableView>
