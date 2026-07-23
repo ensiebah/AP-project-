@@ -2,38 +2,45 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.secondhand.frontend.controller.LoginController"
-      spacing="15"
-      alignment="CENTER">
-
-    <padding>
-        <Insets top="30" right="30" bottom="30" left="30"/>
-    </padding>
-
-    <Label text="SecondHand Market"/>
-
-    <TextField
-            fx:id="usernameField"
-            promptText="Username"/>
-
-    <PasswordField
-            fx:id="passwordField"
-            promptText="Password"/>
-
-    <Button
-            text="Login"
-            onAction="#login"
-            styleClass="btn-blue"/>
-
-    <Button
-            text="Register"
-            onAction="#goToRegister"
-            styleClass="btn-green" />
-
-    <Label
-            fx:id="messageLabel"/>
-
-</VBox>
+<StackPane styleClass="login-root" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.secondhand.frontend.controller.LoginController">
+    <children>
+        <Pane style="-fx-background-image: url('/images/login-background.png'); -fx-background-size: cover; -fx-background-position: center; -fx-opacity: .24;" />
+        <HBox maxWidth="940" maxHeight="510" styleClass="login-card">
+            <children>
+                <VBox alignment="CENTER_LEFT" spacing="17" prefWidth="420" style="-fx-padding: 22 46 22 12;">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="S" styleClass="brand-mark" />
+                            <Label text="SECONDHAND" styleClass="page-kicker" />
+                        </HBox>
+                        <Label text="Find value in every story." styleClass="page-title" wrapText="true" />
+                        <Label text="Buy pre-loved things. Sell what you no longer need. Connect with your local community." styleClass="section-subtitle" wrapText="true" />
+                        <Region prefHeight="14" />
+                        <VBox spacing="12" styleClass="content-card" maxWidth="360">
+                            <children>
+                                <Label text="✓  Verified community" styleClass="muted-text" />
+                                <Label text="✓  Smart ad filters" styleClass="muted-text" />
+                                <Label text="✓  Private buyer–seller chat" styleClass="muted-text" />
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+                <Separator orientation="VERTICAL" />
+                <VBox alignment="CENTER" spacing="14" prefWidth="360" style="-fx-padding: 22 8 22 42;">
+                    <children>
+                        <Label text="Welcome back" styleClass="login-title" />
+                        <Label text="Sign in to manage your marketplace." styleClass="login-subtitle" />
+                        <Region prefHeight="5" />
+                        <TextField fx:id="usernameField" promptText="Username" maxWidth="Infinity" styleClass="modern-textfield" />
+                        <PasswordField fx:id="passwordField" promptText="Password" maxWidth="Infinity" styleClass="modern-textfield" />
+                        <Button fx:id="loginButton" text="Sign in" onAction="#login" maxWidth="Infinity" styleClass="primary-button" />
+                        <Button fx:id="registerButton" text="Create a new account" onAction="#goToRegister" maxWidth="Infinity" styleClass="secondary-button" />
+                        <Label fx:id="messageLabel" styleClass="message-label" wrapText="true" />
+                    </children>
+                </VBox>
+            </children>
+        </HBox>
+    </children>
+</StackPane>

@@ -1,17 +1,11 @@
 package com.secondhand.backend.service.impl;
 
 import com.secondhand.backend.dto.CategoryDto;
-
 import com.secondhand.backend.entity.Category;
-
 import com.secondhand.backend.exception.CategoryNotFoundException;
-
 import com.secondhand.backend.repository.CategoryRepository;
-
 import com.secondhand.backend.service.CategoryService;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,95 +19,83 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    /**
-     * Creates a new category.
-     *
-     * @param name category name
-     * @return created category
-     */
+    /** Creates a top-level category. */
     @Override
-    public CategoryDto createCategory(
-            String name
-    ) {
-
+    public CategoryDto createCategory(String name) {
         if (categoryRepository.existsByName(name)) {
-            throw new IllegalArgumentException(
-                    "Category already exists"
-            );
+            throw new IllegalArgumentException("Category already exists");
         }
 
         Category category = new Category();
-
         category.setName(name);
-
-        Category savedCategory =
-                categoryRepository.save(category);
-
-        return mapToDto(savedCategory);
+        return mapToDto(categoryRepository.save(category));
     }
 
-    /**
-     * Retrieves all categories.
-     *
-     * @return list of categories
-     */
+    /** Creates a category below an existing parent category. */
+    @Override
+    public CategoryDto createSubcategory(String name, Long parentId) {
+        if (categoryRepository.existsByName(name)) {
+            throw new IllegalArgumentException("Category already exists");
+        }
+
+        Category parent = categoryRepository.findById(parentId)
+                .orElseThrow(() -> new CategoryNotFoundException("Parent category not found"));
+
+        Category category = new Category();
+        category.setName(name);
+        category.setParent(parent);
+        return mapToDto(categoryRepository.save(category));
+    }
+
     @Override
     public List<CategoryDto> getAllCategories() {
-
-        return categoryRepository.findAll()
-                .stream()
+        return categoryRepository.findAll().stream()
                 .map(this::mapToDto)
                 .toList();
     }
 
-    /**
-     * Retrieves a category by its identifier.
-     *
-     * @param id category identifier
-     * @return category information
-     */
     @Override
-    public CategoryDto getCategoryById(
-            Long id
-    ) {
+    public List<CategoryDto> getRootCategories() {
+        return categoryRepository.findByParentIsNullOrderByNameAsc().stream()
+                .map(this::mapToDto)
+                .toList();
+    }
 
-        Category category =
-                categoryRepository.findById(id)
-                        .orElseThrow(() ->
-                                new CategoryNotFoundException(
-                                        "Category not found"
-                                ));
+    @Override
+    public List<CategoryDto> getChildrenByParentId(Long parentId) {
+        // A 404 is preferable to returning an empty list for an invalid id.
+        if (!categoryRepository.existsById(parentId)) {
+            throw new CategoryNotFoundException("Parent category not found");
+        }
 
+        return categoryRepository.findByParentIdOrderByNameAsc(parentId).stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+    @Override
+    public CategoryDto getCategoryById(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
         return mapToDto(category);
     }
 
-    /**
-     * Deletes a category.
-     *
-     * @param id category identifier
-     */
     @Override
-    public void deleteCategory(
-            Long id
-    ) {
-
-        Category category =
-                categoryRepository.findById(id)
-                        .orElseThrow(() ->
-                                new CategoryNotFoundException(
-                                        "Category not found"
-                                ));
-
+    public void deleteCategory(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
         categoryRepository.delete(category);
     }
 
-    private CategoryDto mapToDto(
-            Category category
-    ) {
+    private CategoryDto mapToDto(Category category) {
+        Category parent = category.getParent();
 
         return CategoryDto.builder()
                 .id(category.getId())
                 .name(category.getName())
+                .parentId(parent == null ? null : parent.getId())
+                .parentName(parent == null ? null : parent.getName())
+                .hasChildren(category.getId() != null && categoryRepository.existsByParentId(category.getId()))
                 .build();
     }
 }

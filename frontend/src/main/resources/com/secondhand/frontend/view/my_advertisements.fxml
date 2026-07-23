@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox prefHeight="600.0" prefWidth="750.0" spacing="15" style="-fx-background-color: #f8f9fa; -fx-padding: 20;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://fxml.com/fxml/1" fx:controller="com.secondhand.frontend.controller.MyAdvertisementsController">
-    <children>
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <children>
-                <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="My Published Advertisements" />
-                <Region HBox.hgrow="ALWAYS" />
-                <Button onAction="#handleBackToMarket" styleClass="btn-back" text="Back to Market" />
-            </children>
-        </HBox>
-        <Separator />
-        <ListView fx:id="myAdsListView" VBox.vgrow="ALWAYS" style="-fx-background-radius: 8;" />
-    </children>
-</VBox>
+<BorderPane prefHeight="680" prefWidth="1020" styleClass="app-shell" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.secondhand.frontend.controller.MyAdvertisementsController">
+    <top>
+        <HBox alignment="CENTER_LEFT" styleClass="app-header"><children><Label text="S" styleClass="brand-mark"/><VBox spacing="1"><Label text="My advertisements" styleClass="brand-title"/><Label text="Manage every advertisement you have created." styleClass="brand-subtitle"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="← Back to market" onAction="#handleBackToMarket" styleClass="outline-button"/></children></HBox>
+    </top>
+    <center>
+        <VBox styleClass="page-content"><children><VBox spacing="5"><Label text="YOUR LISTINGS" styleClass="page-kicker"/><Label text="Keep your marketplace active" styleClass="page-title"/><Label text="Edit, remove or monitor the status of your advertisements." styleClass="section-subtitle"/></VBox><VBox styleClass="surface-card" VBox.vgrow="ALWAYS"><children><ListView fx:id="myAdsListView" VBox.vgrow="ALWAYS"/></children></VBox></children></VBox>
+    </center>
+</BorderPane>

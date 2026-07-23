@@ -3,6 +3,7 @@ package com.secondhand.backend.service.impl;
 import com.secondhand.backend.dto.AdvertisementCreateDto;
 import com.secondhand.backend.dto.AdvertisementDto;
 import com.secondhand.backend.entity.*;
+import com.secondhand.backend.exception.CategoryNotFoundException;
 import com.secondhand.backend.exception.UserNotFoundException;
 import com.secondhand.backend.repository.AdvertisementRepository;
 import com.secondhand.backend.repository.CategoryRepository;
@@ -43,13 +44,8 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         User seller = userRepository.findByUserName(username)
                 .orElseThrow(() -> new UserNotFoundException("User with username " + username + " not found"));
 
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseGet(() -> {
-                    Category newCategory = new Category();
-                    newCategory.setId(dto.getCategoryId());
-                    newCategory.setName("Category " + dto.getCategoryId());
-                    return categoryRepository.save(newCategory);
-                });
+        // An advertisement must be stored in a selectable leaf category, not a broad parent.
+        Category category = getLeafCategory(dto.getCategoryId());
 
         City city = cityRepository.findById(dto.getCityId())
                 .orElseGet(() -> {
@@ -100,8 +96,8 @@ public class AdvertisementServiceImpl implements AdvertisementService {
         Advertisement advertisement = advertisementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Advertisement not found"));
 
-        Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+        // Editing follows the same rule as creation: only a subcategory can be assigned.
+        Category category = getLeafCategory(dto.getCategoryId());
 
         City city = cityRepository.findById(dto.getCityId())
                 .orElseThrow(() -> new RuntimeException("City not found"));
@@ -271,7 +267,21 @@ public class AdvertisementServiceImpl implements AdvertisementService {
      */
     @Override
     public List<AdvertisementDto> getAllPendingAdvertisements() {
-        return advertisementRepository.findByStatus(AdvertisementStatus.PENDING).stream()
+        return getAdvertisementsByStatus(AdvertisementStatus.PENDING);
+    }
+
+    /** Returns all advertisements for the administration workspace. */
+    @Override
+    public List<AdvertisementDto> getAllAdvertisements() {
+        return advertisementRepository.findAll().stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
+    /** Returns advertisements in one explicit lifecycle state. */
+    @Override
+    public List<AdvertisementDto> getAdvertisementsByStatus(AdvertisementStatus status) {
+        return advertisementRepository.findByStatus(status).stream()
                 .map(this::mapToDto)
                 .toList();
     }
@@ -293,6 +303,21 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .toList();
     }
 
+    /**
+     * Broad categories are useful for navigation and search, but an ad must
+     * always belong to a leaf so its displayed path is unambiguous.
+     */
+    private Category getLeafCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException("Category not found"));
+
+        if (categoryRepository.existsByParentId(category.getId())) {
+            throw new IllegalArgumentException("Please select a subcategory for the advertisement");
+        }
+
+        return category;
+    }
+
     private AdvertisementDto mapToDto(Advertisement advertisement) {
         return AdvertisementDto.builder()
                 .id(advertisement.getId())
@@ -303,7 +328,7 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                 .sellerId(advertisement.getSeller().getId())
                 .sellerName(advertisement.getSeller().getUserName())
                 .categoryId(advertisement.getCategory().getId())
-                .categoryName(advertisement.getCategory().getName())
+                .categoryName(advertisement.getCategory().getFullPath())
                 .cityId(advertisement.getCity().getId())
                 .cityName(advertisement.getCity().getName())
                 .build();

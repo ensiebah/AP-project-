@@ -2,86 +2,158 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 
-<VBox spacing="15.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.secondhand.frontend.controller.AdminPanelController"
-      prefWidth="950.0" prefHeight="650.0">
-
-    <padding>
-        <Insets top="15.0" right="15.0" bottom="15.0" left="15.0"/>
-    </padding>
-
-    <HBox alignment="CENTER_LEFT" spacing="10.0">
-        <Label text="System Administration Dashboard" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="btnLogout" text="Logout" onAction="#handleLogout"
-                style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 6px 15px;"/>
-    </HBox>
-
-    <TabPane fx:id="adminTabPane" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
-        <tabs>
-            <Tab text="Manage Advertisements">
-                <VBox spacing="10.0">
-                    <padding>
-                        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-                    </padding>
-                    <HBox spacing="10.0" alignment="CENTER_LEFT">
-                        <Label text="Filter Status:" style="-fx-font-weight: bold;"/>
-                        <Button fx:id="btnShowPending" text="Pending Approval" onAction="#showPendingMode" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                        <Button fx:id="btnShowApproved" text="Approved Ads" onAction="#showApprovedMode" style="-fx-background-color: #bdc3c7; -fx-text-fill: #2c3e50; -fx-font-weight: bold;"/>
-                    </HBox>
-                    <TableView fx:id="pendingTable" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="idColumn" text="ID" prefWidth="60.0" />
-                            <TableColumn fx:id="titleColumn" text="Ad Title" prefWidth="250.0" />
-                            <TableColumn fx:id="priceColumn" text="Price ($)" prefWidth="120.0" />
-                            <TableColumn fx:id="sellerColumn" text="Seller Username" prefWidth="150.0" />
-                        </columns>
-                    </TableView>
-                    <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                        <Button fx:id="btnReject" text="Reject" onAction="#handleReject" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 7px 15px;"/>
-                        <Button fx:id="btnApprove" text="Approve &amp; Publish" onAction="#handleApprove" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 7px 15px;"/>
-                        <Button fx:id="btnDeleteAd" text="Delete Advertisement" onAction="#handleDeleteApprovedAd" visible="false" managed="false" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 7px 15px;"/>
-                    </HBox>
-                </VBox>
-            </Tab>
-
-            <Tab text="User Management">
-                <HBox spacing="15.0">
-                    <padding>
-                        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-                    </padding>
-
-                    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
-                        <Label text="Active Users (Non-Blocked)" style="-fx-font-weight: bold; -fx-text-fill: #27ae60; -fx-font-size: 14px;"/>
-                        <TableView fx:id="activeUsersTable" VBox.vgrow="ALWAYS">
-                            <columns>
-                                <TableColumn fx:id="activeUserIdColumn" text="User ID" prefWidth="80.0" />
-                                <TableColumn fx:id="activeUsernameColumn" text="Username" prefWidth="200.0" />
-                            </columns>
-                        </TableView>
-                        <HBox alignment="CENTER_RIGHT">
-                            <Button text="Block User" onAction="#handleBlockUser" style="-fx-background-color: #d35400; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                        </HBox>
-                    </VBox>
-
-                    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
-                        <Label text="Blocked Users List" style="-fx-font-weight: bold; -fx-text-fill: #c0392b; -fx-font-size: 14px;"/>
-                        <TableView fx:id="blockedUsersTable" VBox.vgrow="ALWAYS">
-                            <columns>
-                                <TableColumn fx:id="blockedUserIdColumn" text="User ID" prefWidth="80.0" />
-                                <TableColumn fx:id="blockedUsernameColumn" text="Username" prefWidth="200.0" />
-                            </columns>
-                        </TableView>
-                        <HBox alignment="CENTER_RIGHT">
-                            <Button text="Unblock User"
-                                    onAction="#handleUnblockUser"
-                                    style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                        </HBox>
-                    </VBox>
+<BorderPane prefWidth="1200" prefHeight="760" styleClass="app-shell" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.secondhand.frontend.controller.AdminPanelController">
+    <top>
+        <VBox>
+            <children>
+                <HBox alignment="CENTER_LEFT" styleClass="app-header">
+                    <children>
+                        <Label text="S" styleClass="brand-mark" />
+                        <VBox spacing="1">
+                            <Label text="SecondHand Admin" styleClass="brand-title" />
+                            <Label text="Marketplace operations workspace" styleClass="brand-subtitle" />
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label text="ADMINISTRATOR" styleClass="pill" />
+                        <Button fx:id="overviewNavButton" text="Overview" onAction="#showOverview" styleClass="nav-button" />
+                        <MenuButton fx:id="advertisementsMenuButton" text="Advertisements" styleClass="nav-button">
+                            <items>
+                                <MenuItem text="All advertisements" onAction="#showAllAds" />
+                                <MenuItem text="Pending approval" onAction="#showPendingAds" />
+                                <MenuItem text="Published advertisements" onAction="#showActiveAds" />
+                                <MenuItem text="Rejected advertisements" onAction="#showRejectedAds" />
+                                <MenuItem text="Sold advertisements" onAction="#showSoldAds" />
+                                <MenuItem text="Removed advertisements" onAction="#showDeletedAds" />
+                            </items>
+                        </MenuButton>
+                        <Button fx:id="categoriesNavButton" text="Categories" onAction="#showCategories" styleClass="nav-button" />
+                        <Button fx:id="usersNavButton" text="Users" onAction="#showUsers" styleClass="nav-button" />
+                        <Button text="Sign out" onAction="#handleLogout" styleClass="danger-button" />
+                    </children>
                 </HBox>
-            </Tab>
-        </tabs>
-    </TabPane>
-</VBox>
+            </children>
+        </VBox>
+    </top>
+    <center>
+        <StackPane fx:id="contentStack" style="-fx-padding: 28 42 36 42;">
+            <children>
+                <!-- Overview is the default landing screen. -->
+                <VBox fx:id="overviewPane" spacing="19">
+                    <children>
+                        <VBox spacing="5">
+                            <Label text="ADMINISTRATION OVERVIEW" styleClass="page-kicker" />
+                            <Label text="Your marketplace at a glance" styleClass="page-title" />
+                            <Label text="Monitor moderation, community size and marketplace data from one place." styleClass="section-subtitle" />
+                        </VBox>
+
+                        <HBox spacing="13">
+                            <children>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="totalAdsLabel" text="–" styleClass="metric-number"/><Label text="Total advertisements" styleClass="metric-label"/></children></VBox>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="pendingAdsLabel" text="–" styleClass="metric-number"/><Label text="Awaiting review" styleClass="metric-label"/></children></VBox>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="activeAdsLabel" text="–" styleClass="metric-number"/><Label text="Published ads" styleClass="metric-label"/></children></VBox>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="totalUsersLabel" text="–" styleClass="metric-number"/><Label text="Registered users" styleClass="metric-label"/></children></VBox>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="13">
+                            <children>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="totalCitiesLabel" text="–" styleClass="metric-number"/><Label text="Available cities" styleClass="metric-label"/></children></VBox>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="totalCategoriesLabel" text="–" styleClass="metric-number"/><Label text="Categories &amp; subcategories" styleClass="metric-label"/></children></VBox>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="rejectedAdsLabel" text="–" styleClass="metric-number"/><Label text="Rejected ads" styleClass="metric-label"/></children></VBox>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="soldAdsLabel" text="–" styleClass="metric-number"/><Label text="Sold ads" styleClass="metric-label"/></children></VBox>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="18" VBox.vgrow="ALWAYS">
+                            <children>
+                                <VBox spacing="11" styleClass="surface-card" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label text="Moderation queue" styleClass="section-title" />
+                                        <Label text="Pending advertisements are waiting for an administrator decision." styleClass="section-subtitle" wrapText="true" />
+                                        <Button text="Review pending advertisements" onAction="#showPendingAds" styleClass="primary-action" />
+                                    </children>
+                                </VBox>
+                                <VBox spacing="11" styleClass="surface-card" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label text="Community safety" styleClass="section-title" />
+                                        <Label fx:id="blockedUsersLabel" text="–" styleClass="metric-number" />
+                                        <Label text="Blocked users. Open Users to search, review and restore accounts." styleClass="section-subtitle" wrapText="true" />
+                                        <Button text="Open user directory" onAction="#showUsers" styleClass="outline-button" />
+                                    </children>
+                                </VBox>
+                                <VBox spacing="11" styleClass="surface-card" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label text="Category structure" styleClass="section-title" />
+                                        <Label text="Browse every main category and its subcategories in one hierarchy." styleClass="section-subtitle" wrapText="true" />
+                                        <Button text="Open category explorer" onAction="#showCategories" styleClass="outline-button" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+
+                <!-- Advertisement status screen -->
+                <VBox fx:id="advertisementsPane" visible="false" managed="false" spacing="16">
+                    <children>
+                        <HBox alignment="CENTER_LEFT">
+                            <children>
+                                <VBox spacing="4"><Label text="ADVERTISEMENT MODERATION" styleClass="page-kicker"/><Label fx:id="advertisementsTitleLabel" text="Pending approval advertisements" styleClass="page-title"/><Label text="Select an advertisement to approve or reject it. The menu in the top bar filters every lifecycle state." styleClass="section-subtitle"/></VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label text="STATUS FILTER" styleClass="pill" />
+                            </children>
+                        </HBox>
+                        <VBox styleClass="surface-card" VBox.vgrow="ALWAYS">
+                            <children>
+                                <TableView fx:id="advertisementsTable" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn fx:id="adIdColumn" text="ID" prefWidth="70" />
+                                        <TableColumn fx:id="adTitleColumn" text="Advertisement" prefWidth="280" />
+                                        <TableColumn fx:id="adCategoryColumn" text="Category" prefWidth="190" />
+                                        <TableColumn fx:id="adSellerColumn" text="Seller" prefWidth="145" />
+                                        <TableColumn fx:id="adStatusColumn" text="Status" prefWidth="120" />
+                                        <TableColumn fx:id="adPriceColumn" text="Price" prefWidth="105" />
+                                    </columns>
+                                </TableView>
+                                <HBox alignment="CENTER_RIGHT" spacing="9" style="-fx-padding: 14 0 0 0;">
+                                    <children>
+                                        <Button fx:id="rejectAdButton" text="Reject selected" onAction="#rejectSelectedAdvertisement" styleClass="danger-button" />
+                                        <Button fx:id="approveAdButton" text="Approve &amp; publish" onAction="#approveSelectedAdvertisement" styleClass="success-button" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <!-- Read-only Category explorer -->
+                <VBox fx:id="categoriesPane" visible="false" managed="false" spacing="16">
+                    <children>
+                        <VBox spacing="5"><Label text="CATEGORY EXPLORER" styleClass="page-kicker"/><Label text="Marketplace category hierarchy" styleClass="page-title"/><Label text="A read-only tree of all main categories and their direct subcategories." styleClass="section-subtitle"/></VBox>
+                        <VBox spacing="12" styleClass="surface-card" VBox.vgrow="ALWAYS">
+                            <children>
+                                <HBox alignment="CENTER_LEFT"><children><Label text="All categories" styleClass="section-title"/><Region HBox.hgrow="ALWAYS"/><Label fx:id="categoryTreeSummaryLabel" text="Loading categories…" styleClass="pill"/></children></HBox>
+                                <TreeView fx:id="categoriesTreeView" VBox.vgrow="ALWAYS" />
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <!-- One standard users directory, not two half-page lists -->
+                <VBox fx:id="usersPane" visible="false" managed="false" spacing="16">
+                    <children>
+                        <VBox spacing="5"><Label text="USER DIRECTORY" styleClass="page-kicker"/><Label text="Community members" styleClass="page-title"/><Label text="Search the complete directory, filter by account status and block or restore an account." styleClass="section-subtitle"/></VBox>
+                        <VBox spacing="13" styleClass="surface-card" VBox.vgrow="ALWAYS">
+                            <children>
+                                <HBox spacing="9" alignment="CENTER_LEFT"><children><TextField fx:id="userSearchField" promptText="Search by name or username…" HBox.hgrow="ALWAYS"/><Button fx:id="allUsersButton" text="All users" onAction="#showAllUsers" styleClass="filter-selected"/><Button fx:id="activeUsersButton" text="Active" onAction="#showActiveUsers" styleClass="outline-button"/><Button fx:id="blockedUsersButton" text="Blocked" onAction="#showBlockedUsers" styleClass="outline-button"/></children></HBox>
+                                <HBox alignment="CENTER_LEFT"><children><Label fx:id="usersListSummaryLabel" text="Loading users…" styleClass="pill"/><Region HBox.hgrow="ALWAYS"/><Label text="Use the action on each card to change account status." styleClass="muted-text"/></children></HBox>
+                                <ListView fx:id="usersListView" VBox.vgrow="ALWAYS" />
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+            </children>
+        </StackPane>
+    </center>
+</BorderPane>

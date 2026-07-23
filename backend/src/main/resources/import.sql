@@ -1,25 +1,15 @@
--- ۱. تزریق شهرهای پیش‌فرض
+-- Default cities. The larger city list is completed by DataInitializer when needed.
 INSERT INTO cities (name) VALUES ('Tehran');
 INSERT INTO cities (name) VALUES ('Shiraz');
 INSERT INTO cities (name) VALUES ('Isfahan');
 INSERT INTO cities (name) VALUES ('Mashhad');
 
--- ۲. تزریق دسته‌بندی‌های پیش‌فرض
-INSERT INTO categories (name) VALUES ('Digital Electronics');
-INSERT INTO categories (name) VALUES ('Home Appliances');
-INSERT INTO categories (name) VALUES ('Vehicles');
-INSERT INTO categories (name) VALUES ('Books & Hobbies');
+-- Categories deliberately are not inserted here. DataInitializer is the one
+-- source of category data and creates the parent/subcategory tree.
 
--- ۳. تزریق کاربران پیش‌فرض برای تست (پسورد رمزنگاری‌شده با BCrypt عبارت «password» است)
--- کاربر اول: ادمین سیستم
+-- Default users for development.
 INSERT INTO users (user_name, pass_word, full_name, role, is_blocked)
 VALUES ('admin', '$2a$10$X5.BvFzLhB7mO4WfVUXzeu1sV4iXN4r9tG3A5sE3hJ1kLmNoPqRSt', 'Project Admin', 'ADMIN', false);
 
--- کاربر دوم: کاربر عادی (خریدار یا فروشنده فرضی)
 INSERT INTO users (user_name, pass_word, full_name, role, is_blocked)
 VALUES ('user1', '$2a$10$X5.BvFzLhB7mO4WfVUXzeu1sV4iXN4r9tG3A5sE3hJ1kLmNoPqRSt', 'Reihaneh', 'USER', false);
-
-
-INSERT INTO categories (id, name) VALUES (1, 'Electronics');
-INSERT INTO cities (id, name) VALUES (1, 'Tehran');
-

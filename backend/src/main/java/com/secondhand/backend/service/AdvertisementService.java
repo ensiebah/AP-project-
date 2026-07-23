@@ -2,6 +2,7 @@ package com.secondhand.backend.service;
 
 import com.secondhand.backend.dto.AdvertisementCreateDto;
 import com.secondhand.backend.dto.AdvertisementDto;
+import com.secondhand.backend.entity.AdvertisementStatus;
 
 import java.util.List;
 
@@ -24,6 +25,8 @@ public interface AdvertisementService {
     AdvertisementDto rejectAdvertisement(Long id) ;
     AdvertisementDto createAdvertisementByUsername(AdvertisementCreateDto dto,String username);
     List<AdvertisementDto> getAllPendingAdvertisements();
+    List<AdvertisementDto> getAllAdvertisements();
+    List<AdvertisementDto> getAdvertisementsByStatus(AdvertisementStatus status);
     List<AdvertisementDto> getAdvertisementsBySellerUsername(String username);
     AdvertisementDto markAsSold(Long id);
 }

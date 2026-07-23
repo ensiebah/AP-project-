@@ -1,88 +1,261 @@
-/* ==========================================================================
-   ۱. استایل پایه و مشترک برای تمام دکمه‌های برنامه (بدون رنگ پس‌زمینه)
-   ========================================================================== */
-.button {
+/* =====================================================================
+   SECONDHAND MARKET — Blue & white marketplace design system
+   The palette follows the existing login screen: sky blue, royal blue,
+   white surfaces and soft navy text.
+   ===================================================================== */
+
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #f4f8fd;
+}
+
+/* ---------- App shell and reusable surfaces ---------- */
+.app-shell {
+    -fx-background-color: linear-gradient(to bottom, #f8fbff 0%, #eef5fc 100%);
+}
+.page-content {
+    -fx-padding: 28 42 36 42;
+    -fx-spacing: 22;
+}
+.surface-card,
+.content-card {
+    -fx-background-color: rgba(255,255,255,0.98);
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: #e6eef8;
+    -fx-effect: dropshadow(gaussian, rgba(25, 72, 122, 0.10), 22, 0.18, 0, 7);
+}
+.surface-card { -fx-padding: 22; }
+.content-card { -fx-padding: 18; }
+
+/* ---------- Header ---------- */
+.app-header {
+    -fx-background-color: rgba(255,255,255,0.98);
+    -fx-padding: 14 40 14 40;
+    -fx-spacing: 18;
+    -fx-border-color: transparent transparent #e6eef8 transparent;
+    -fx-effect: dropshadow(gaussian, rgba(22, 73, 126, 0.06), 14, 0.12, 0, 4);
+}
+.brand-mark {
+    -fx-min-width: 38;
+    -fx-min-height: 38;
+    -fx-alignment: CENTER;
+    -fx-background-color: linear-gradient(to bottom right, #62cbff, #2578e7);
+    -fx-background-radius: 13;
     -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-background-radius: 5px;
-    -fx-padding: 10px 20px;
+    -fx-font-size: 19px;
+    -fx-font-weight: 800;
+    -fx-effect: dropshadow(gaussian, rgba(41,120,231,.32), 10, .25, 0, 4);
+}
+.brand-title { -fx-text-fill: #153a68; -fx-font-size: 20px; -fx-font-weight: 800; }
+.brand-subtitle { -fx-text-fill: #7990ae; -fx-font-size: 11px; }
+
+/* ---------- Typography ---------- */
+.page-kicker { -fx-text-fill: #2d8dfa; -fx-font-size: 12px; -fx-font-weight: 800; }
+.page-title { -fx-text-fill: #173b67; -fx-font-size: 25px; -fx-font-weight: 800; }
+.section-title { -fx-text-fill: #1d426f; -fx-font-size: 17px; -fx-font-weight: 800; }
+.section-subtitle, .muted-text { -fx-text-fill: #7890ad; -fx-font-size: 12px; }
+
+/* ---------- Inputs ---------- */
+.text-field, .password-field, .text-area, .combo-box {
+    -fx-background-color: white;
+    -fx-background-radius: 11;
+    -fx-border-radius: 11;
+    -fx-border-color: #dce8f5;
+    -fx-border-width: 1.2;
+    -fx-text-fill: #213e62;
+    -fx-prompt-text-fill: #98aabe;
+}
+.text-field, .password-field, .combo-box { -fx-pref-height: 42; -fx-padding: 0 12 0 12; }
+.text-area { -fx-padding: 8; }
+.text-field:focused, .password-field:focused, .text-area:focused, .combo-box:focused {
+    -fx-border-color: #48a8fb;
+    -fx-effect: dropshadow(gaussian, rgba(72,168,251,.22), 10, .3, 0, 0);
+}
+.combo-box .list-cell { -fx-text-fill: #264364; }
+.combo-box-popup .list-view { -fx-background-radius: 10; -fx-border-color: #dce8f5; -fx-background-color: white; }
+.combo-box-popup .list-cell:hover { -fx-background-color: #eaf5ff; }
+
+/* ---------- Buttons ---------- */
+.button {
+    -fx-background-radius: 10;
+    -fx-font-weight: 700;
     -fx-cursor: hand;
+    -fx-padding: 9 15 9 15;
+    -fx-text-fill: #305174;
+    -fx-background-color: #eef5fc;
+}
+.button:hover { -fx-background-color: #e1effc; }
+.button:disabled { -fx-opacity: .55; -fx-cursor: default; }
+.primary-button, .primary-action {
+    -fx-background-color: linear-gradient(to bottom right, #4ec1ff, #257de9);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(37,125,233,.27), 12, .25, 0, 5);
+}
+.primary-button:hover, .primary-action:hover { -fx-background-color: linear-gradient(to bottom right, #6dceff, #348bfa); }
+.secondary-button, .outline-button {
+    -fx-background-color: white;
+    -fx-border-color: #bcdcf8;
+    -fx-border-radius: 10;
+    -fx-text-fill: #277ddc;
+}
+.secondary-button:hover, .outline-button:hover { -fx-background-color: #edf7ff; }
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #53718f;
+    -fx-padding: 8 10 8 10;
+}
+.nav-button:hover { -fx-background-color: #edf6ff; -fx-text-fill: #207be0; }
+.nav-selected {
+    -fx-background-color: #e8f4ff;
+    -fx-text-fill: #207be0;
+    -fx-background-radius: 9;
+}
+.profile-button {
+    -fx-background-color: #eff7ff;
+    -fx-text-fill: #1f70ce;
+    -fx-background-radius: 20;
+    -fx-padding: 8 14 8 14;
+}
+.danger-button { -fx-background-color: #fff0f1; -fx-text-fill: #d85362; }
+.danger-button:hover { -fx-background-color: #ffe1e5; }
+.success-button { -fx-background-color: #e6f9f0; -fx-text-fill: #16895d; }
+.success-button:hover { -fx-background-color: #d5f4e6; }
+.icon-button { -fx-min-width: 38; -fx-min-height: 38; -fx-padding: 6; -fx-background-radius: 19; }
+.filter-selected {
+    -fx-background-color: #e8f4ff;
+    -fx-border-color: #94ceff;
+    -fx-border-radius: 10;
+    -fx-text-fill: #207be0;
 }
 
-/* افکت عمومی فشرده شدن سه بعدی برای تمام دکمه‌های برنامه */
-.button:pressed {
-    -fx-scale-x: 0.95;
-    -fx-scale-y: 0.95;
+/* ---------- Marketplace / list cards ---------- */
+.filter-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 17;
+    -fx-padding: 19;
+    -fx-spacing: 12;
+    -fx-border-color: #e5eef8;
+    -fx-border-radius: 17;
 }
+.filter-heading { -fx-text-fill: #1c426e; -fx-font-size: 15px; -fx-font-weight: 800; }
+.pill {
+    -fx-background-color: #eaf5ff;
+    -fx-background-radius: 14;
+    -fx-text-fill: #287bd8;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-padding: 4 9 4 9;
+}
+.list-view { -fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 2; }
+.list-view .list-cell { -fx-background-color: transparent; -fx-padding: 6 1 6 1; }
+.list-view .list-cell:filled:hover { -fx-background-color: transparent; }
+.ad-card, .row-card {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-border-color: #e4edf7;
+    -fx-border-radius: 15;
+    -fx-padding: 14;
+}
+.ad-card:hover, .row-card:hover {
+    -fx-border-color: #a9d7ff;
+    -fx-effect: dropshadow(gaussian, rgba(50,135,230,.13), 13, .2, 0, 4);
+}
+.ad-thumbnail {
+    -fx-min-width: 65;
+    -fx-min-height: 65;
+    -fx-alignment: CENTER;
+    -fx-background-color: linear-gradient(to bottom right, #e9f6ff, #cfeaff);
+    -fx-background-radius: 14;
+    -fx-text-fill: #2a85df;
+    -fx-font-size: 22px;
+}
+.ad-title { -fx-text-fill: #183d69; -fx-font-size: 15px; -fx-font-weight: 800; }
+.ad-meta { -fx-text-fill: #7189a5; -fx-font-size: 11px; }
+.ad-price { -fx-text-fill: #1772d2; -fx-font-size: 15px; -fx-font-weight: 800; }
+.status-active, .status-rejected {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-padding: 3 8 3 8;
+    -fx-background-radius: 11;
+}
+.status-active { -fx-background-color: #e3f8ed; -fx-text-fill: #16895d; }
+.status-rejected { -fx-background-color: #fff0f1; -fx-text-fill: #cf5360; }
 
+/* ---------- Dashboard ---------- */
+.profile-hero {
+    -fx-background-color: linear-gradient(to bottom right, #1d5fae, #3a9de9);
+    -fx-background-radius: 22;
+    -fx-padding: 28;
+    -fx-effect: dropshadow(gaussian, rgba(26,91,166,.28), 20, .24, 0, 8);
+}
+.profile-name { -fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: 800; }
+.profile-handle { -fx-text-fill: #dcedff; -fx-font-size: 13px; }
+.profile-role { -fx-text-fill: #e7f5ff; -fx-font-size: 12px; }
+.avatar-circle {
+    -fx-min-width: 68;
+    -fx-min-height: 68;
+    -fx-alignment: CENTER;
+    -fx-background-color: rgba(255,255,255,.20);
+    -fx-border-color: rgba(255,255,255,.55);
+    -fx-border-width: 1;
+    -fx-border-radius: 34;
+    -fx-background-radius: 34;
+    -fx-text-fill: white;
+    -fx-font-size: 22px;
+    -fx-font-weight: 800;
+}
+.metric-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-color: #e5eef8;
+    -fx-border-radius: 16;
+    -fx-padding: 17;
+    -fx-min-width: 145;
+}
+.metric-number { -fx-text-fill: #1e72ce; -fx-font-size: 24px; -fx-font-weight: 800; }
+.metric-label { -fx-text-fill: #7690ac; -fx-font-size: 11px; }
+.quick-link {
+    -fx-background-color: #f9fcff;
+    -fx-border-color: #e3eef9;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 15;
+    -fx-text-fill: #28527e;
+}
+.quick-link:hover { -fx-background-color: #edf7ff; -fx-border-color: #acd9ff; }
 
-/* ==========================================================================
-   ۲. تعریف کلاس‌های رنگی اختصاصی (همراه با هاور و کلیک هماهنگ)
-   ========================================================================== */
+/* ---------- Authentication ---------- */
+.login-root { -fx-background-color: linear-gradient(to bottom right, #eff8ff, #d4ecff); }
+.login-card {
+    -fx-background-color: rgba(255,255,255,.97);
+    -fx-background-radius: 26;
+    -fx-padding: 38;
+    -fx-effect: dropshadow(gaussian, rgba(24,76,132,.22), 35, .22, 0, 10);
+}
+.login-title { -fx-font-size: 27px; -fx-font-weight: 800; -fx-text-fill: #164b88; }
+.login-subtitle { -fx-font-size: 13px; -fx-text-fill: #7c94b0; }
+.modern-textfield { -fx-pref-height: 45; }
+.message-label { -fx-text-fill: #dc5363; -fx-font-size: 12px; }
 
-/* 🔵 دکمه‌های تم آبی (مثل لاگین یا Apply Filter) */
-.btn-blue {
-    -fx-background-color: #3498db;
+/* ---------- Tables, admin navigation and trees ---------- */
+.table-view {
+    -fx-background-color: white;
+    -fx-background-radius: 14;
+    -fx-border-color: #e2edf8;
+    -fx-border-radius: 14;
 }
-.btn-blue:hover {
-    -fx-background-color: #2980b9; /* تیره شدن ملایم در هاور */
-}
-.btn-blue:pressed {
-    -fx-background-color: #1f618d; /* بسیار تیره در زمان کلیک */
-}
+.table-view .column-header-background { -fx-background-color: #edf6ff; }
+.table-view .column-header { -fx-background-color: transparent; -fx-size: 42; }
+.table-view .column-header .label { -fx-text-fill: #426485; -fx-font-weight: 800; }
+.table-row-cell { -fx-background-color: white; -fx-border-color: transparent transparent #edf2f8 transparent; }
+.table-row-cell:filled:hover { -fx-background-color: #f2f9ff; }
+.tree-view { -fx-background-color: transparent; -fx-border-color: transparent; }
+.tree-cell { -fx-padding: 7 8 7 8; -fx-text-fill: #28496d; }
+.tree-cell:filled:selected { -fx-background-color: #e7f4ff; -fx-text-fill: #1f7ddb; }
+.separator .line { -fx-border-color: #e6eef7; }
 
-/* 🟢 دکمه‌های تم سبز (مثل ثبت‌نام یا Post New Ad) */
-.btn-green {
-    -fx-background-color: #2ecc71;
-}
-.btn-green:hover {
-    -fx-background-color: #27ae60;
-}
-.btn-green:pressed {
-    -fx-background-color: #1e8449;
-}
-
-/* 🔴 دکمه‌های تم قرمز (مثل دیلیت، لاگ‌اوت یا Favorites) */
-.btn-red {
-    -fx-background-color: #e74c3c;
-}
-.btn-red:hover {
-    -fx-background-color: #c0392b;
-}
-.btn-red:pressed {
-    -fx-background-color: #962d22;
-}
-
-/* 🔘 دکمه‌های تم خاکستری (مثل Reset Filters یا انصراف) */
-.btn-gray {
-    -fx-background-color: #95a5a6;
-}
-.btn-gray:hover {
-    -fx-background-color: #7f8c8d;
-}
-.btn-gray:pressed {
-    -fx-background-color: #5f6a6a;
-}
-
-/* ==========================================================================
-   ۳. دکمه بازگشت (خاکستری روشن ملایم) - برای تغییر رنگ، کدهای زیر را ویرایش کنید
-   ========================================================================== */
-
-.btn-back {
-    /* 🟢 ۱. رنگ پس‌زمینه دکمه در حالت عادی */
-    -fx-background-color: #bdc3c7;
-
-    /* 🟢 ۲. رنگ متن دکمه (تیره گذاشتیم تا روی خاکستری روشن خوانا باشد) */
-    -fx-text-fill: #2c3e50;
-}
-
-.btn-back:hover {
-    /* 🟢 ۳. رنگ دکمه وقتی ماوس روی آن می‌رود (کمی تیره‌تر می‌شود) */
-    -fx-background-color: #a6b0b5;
-}
-
-.btn-back:pressed {
-    /* 🟢 ۴. رنگ دکمه در لحظه کلیک شدن */
-    -fx-background-color: #8a959a;
-}
+/* Layout is safe for the Persian/RTL display option. */
+.rtl-ready { -fx-node-orientation: left-to-right; }

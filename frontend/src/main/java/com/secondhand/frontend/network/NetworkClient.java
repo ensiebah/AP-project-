@@ -9,6 +9,8 @@ import java.time.Duration;
 public class NetworkClient {
 
     public static String userRole = "USER"; // Default role: USER
+    public static String currentUsername = "Guest";
+    public static String currentFullName = "Guest";
 
     private static final String BASE_URL = "http://localhost:8080/api";
     // Authentication token populated upon login

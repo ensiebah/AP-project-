@@ -8,7 +8,13 @@ public interface CategoryService {
 
     CategoryDto createCategory(String name);
 
+    CategoryDto createSubcategory(String name, Long parentId);
+
     List<CategoryDto> getAllCategories();
+
+    List<CategoryDto> getRootCategories();
+
+    List<CategoryDto> getChildrenByParentId(Long parentId);
 
     CategoryDto getCategoryById(Long id);
 

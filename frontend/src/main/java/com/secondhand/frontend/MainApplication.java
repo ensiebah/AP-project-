@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import com.secondhand.frontend.util.UiTheme;
 
 public class MainApplication extends Application {
 
@@ -12,11 +13,9 @@ public class MainApplication extends Application {
         FXMLLoader loader =
                 new FXMLLoader(getClass().getResource("/com/secondhand/frontend/view/login.fxml"));
 
-        Scene scene = new Scene(loader.load());
-
-        // 🟢 لود کردن استایل به صورت سراسری روی کل پنجره برنامه
-        String cssPath = getClass().getResource("/style.css").toExternalForm();
-        scene.getStylesheets().add(cssPath);
+        javafx.scene.Parent root = loader.load();
+        UiTheme.decorate(root);
+        Scene scene = new Scene(root);
 
         stage.setTitle("SecondHand Market");
         stage.setScene(scene);

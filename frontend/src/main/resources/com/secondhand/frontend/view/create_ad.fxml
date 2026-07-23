@@ -1,83 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 
-<VBox spacing="15.0" alignment="TOP_CENTER" stylesheets="@/style.css"
-      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.secondhand.frontend.controller.CreateAdController"
-      prefWidth="500.0" prefHeight="650.0">
-
-    <padding>
-        <Insets top="20" right="25" bottom="20" left="25"/>
-    </padding>
-
-    <!-- Header -->
-    <Label text="Submit New Advertisement" textFill="#2c3e50">
-        <font>
-            <Font name="System Bold" size="20.0" />
-        </font>
-    </Label>
-
-    <Separator/>
-
-    <!-- Form Layout -->
-    <GridPane hgap="10.0" vgap="12.0">
-        <columnConstraints>
-            <ColumnConstraints percentWidth="30.0" halignment="LEFT"/>
-            <ColumnConstraints percentWidth="70.0"/>
-        </columnConstraints>
-
-        <!-- Title -->
-        <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField fx:id="titleField" promptText="e.g., iPhone 13 Pro Max" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-
-        <!-- Category -->
-        <Label text="Category:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="categoryComboBox" promptText="Select Category" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-
-        <!-- Price -->
-        <Label text="Price ($):" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="priceField" promptText="e.g., 750.00" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-
-        <!-- City -->
-        <Label text="City:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="cityComboBox" promptText="Select City" maxWidth="Infinity" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-
-        <!-- Description -->
-        <Label text="Description:" GridPane.rowIndex="4" GridPane.columnIndex="0" alignment="TOP_LEFT"/>
-        <TextArea fx:id="descriptionArea" promptText="Describe your item condition, age, etc." prefHeight="100.0" wrapText="true" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-
-        <!-- Image Selection Section -->
-        <Label text="Images:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <HBox spacing="10.0" alignment="CENTER_LEFT" GridPane.rowIndex="5" GridPane.columnIndex="1">
-            <!-- تغییر متن دکمه برای راهنمایی کاربر -->
-            <Button text="📂 Select Image(s)..." onAction="#handleSelectImage" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-cursor: hand;"/>
-            <Label text="(You can select multiple files)" textFill="#7f8c8d">
-                <font>
-                    <Font size="11.0" />
-                </font>
-            </Label>
+<BorderPane prefWidth="920" prefHeight="730" styleClass="app-shell" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.secondhand.frontend.controller.CreateAdController">
+    <top>
+        <HBox alignment="CENTER_LEFT" styleClass="app-header">
+            <children>
+                <Label text="S" styleClass="brand-mark" />
+                <VBox spacing="1"><Label text="Post an advertisement" styleClass="brand-title"/><Label text="Tell buyers why your item is worth discovering." styleClass="brand-subtitle"/></VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <Button text="← Back to market" onAction="#goBackToMarket" styleClass="outline-button" />
+            </children>
         </HBox>
-    </GridPane>
-
-    <!-- Image Preview Box -->
-    <VBox alignment="CENTER" spacing="5.0" style="-fx-border-color: #bdc3c7; -fx-border-dash-array: 4,4; -fx-border-width: 2; -fx-background-color: #fcfcfc;" prefHeight="160.0" maxWidth="Infinity">
-        <ImageView fx:id="imagePreview" fitWidth="220.0" fitHeight="130.0" pickOnBounds="true" preserveRatio="true" />
-    </VBox>
-
-    <!-- Status & Error Label -->
-    <Label fx:id="errorLabel" textFill="RED" wrapText="true" alignment="CENTER" maxWidth="Infinity"/>
-
-    <!-- Action Buttons -->
-    <HBox spacing="15.0" alignment="CENTER">
-        <Button text="❌ Cancel" onAction="#handleCancel" prefWidth="100.0" style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-cursor: hand;"/>
-        <Button text="⬅ Back" onAction="#goBackToMarket" prefWidth="100.0"
-                styleClass="btn-back"/>
-        <Button text="🚀 Publish Ad" onAction="#handleSaveAdvertisement" prefWidth="140.0" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"/>
-    </HBox>
-
-</VBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent;">
+            <content>
+                <VBox styleClass="page-content" prefWidth="840">
+                    <children>
+                        <VBox styleClass="surface-card" spacing="18">
+                            <children>
+                                <VBox spacing="4"><Label text="LIST SOMETHING GREAT" styleClass="page-kicker"/><Label text="Create your advertisement" styleClass="page-title"/><Label text="Complete the key information so the right buyers can find it." styleClass="section-subtitle"/></VBox>
+                                <GridPane hgap="14" vgap="13">
+                                    <columnConstraints><ColumnConstraints percentWidth="50"/><ColumnConstraints percentWidth="50"/></columnConstraints>
+                                    <children>
+                                        <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="0"><Label text="Title" styleClass="muted-text"/><TextField fx:id="titleField" promptText="e.g. iPhone 13 Pro Max"/></VBox>
+                                        <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="0"><Label text="Price" styleClass="muted-text"/><TextField fx:id="priceField" promptText="e.g. 750.00"/></VBox>
+                                        <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="1"><Label text="Category" styleClass="muted-text"/><ComboBox fx:id="parentCategoryComboBox" promptText="Choose a broad category" maxWidth="Infinity"/></VBox>
+                                        <VBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="1"><Label text="Subcategory" styleClass="muted-text"/><ComboBox fx:id="categoryComboBox" promptText="Choose a subcategory" maxWidth="Infinity"/></VBox>
+                                        <VBox spacing="6" GridPane.columnIndex="0" GridPane.rowIndex="2"><Label text="City" styleClass="muted-text"/><ComboBox fx:id="cityComboBox" promptText="Choose your city" maxWidth="Infinity"/></VBox>
+                                        <VBox spacing="6" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3"><Label text="Description" styleClass="muted-text"/><TextArea fx:id="descriptionArea" prefHeight="115" promptText="Describe condition, age, specifications and anything a buyer should know." wrapText="true"/></VBox>
+                                    </children>
+                                </GridPane>
+                                <Separator />
+                                <HBox spacing="18" alignment="CENTER_LEFT">
+                                    <children>
+                                        <VBox spacing="5" HBox.hgrow="ALWAYS"><Label text="Photos" styleClass="section-title"/><Label text="A clear photo improves your advertisement. You can select multiple images." styleClass="section-subtitle"/><Button text="⌑  Select image(s)" onAction="#handleSelectImage" styleClass="outline-button"/></VBox>
+                                        <VBox alignment="CENTER" prefWidth="190" prefHeight="115" style="-fx-background-color: #f4f9ff; -fx-background-radius: 14; -fx-border-color: #d9eafa; -fx-border-radius: 14; -fx-border-style: segments(4, 4);"><children><ImageView fx:id="imagePreview" fitWidth="170" fitHeight="100" preserveRatio="true"/></children></VBox>
+                                    </children>
+                                </HBox>
+                                <Label fx:id="errorLabel" styleClass="message-label" wrapText="true" />
+                                <HBox alignment="CENTER_RIGHT" spacing="10"><children><Button text="Clear form" onAction="#handleCancel" styleClass="outline-button"/><Button fx:id="publishButton" text="Publish advertisement" onAction="#handleSaveAdvertisement" styleClass="primary-action"/></children></HBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

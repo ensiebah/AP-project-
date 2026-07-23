@@ -80,7 +80,7 @@ public class SearchController {
         }
         if (ad.getCategory() != null) {
             dto.setCategoryId(ad.getCategory().getId());
-            dto.setCategoryName(ad.getCategory().getName());
+            dto.setCategoryName(ad.getCategory().getFullPath());
         }
         if (ad.getCity() != null) {
             dto.setCityId(ad.getCity().getId());

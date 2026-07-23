@@ -4,7 +4,11 @@ import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.util.NavigationUtils;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
@@ -23,90 +27,86 @@ import java.util.List;
 
 /**
  * Controller responsible for creating new advertisements.
- * <p>
- * It manages user input, image selection, category and city loading,
- * validation of advertisement data, and submission to the backend.
- *
- * @author Ensie
- * @version 1.0
+ * A user first selects a broad category and then a required subcategory.
  */
 public class CreateAdController {
 
     @FXML private TextField titleField;
+    @FXML private ComboBox<IdNamePair> parentCategoryComboBox;
     @FXML private ComboBox<IdNamePair> categoryComboBox;
     @FXML private TextField priceField;
     @FXML private ComboBox<IdNamePair> cityComboBox;
     @FXML private TextArea descriptionArea;
     @FXML private Label errorLabel;
     @FXML private ImageView imagePreview;
+    @FXML private Button publishButton;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    // لیست نگهداری عکس‌ها
-    private List<File> selectedImageFiles = new ArrayList<>();
+    private final List<File> selectedImageFiles = new ArrayList<>();
 
-    /**
-     * Initializes the controller by configuring UI components
-     * and loading available categories and cities from the server.
-     */
     @FXML
     public void initialize() {
         setupComboBoxConverters();
+        categoryComboBox.setDisable(true);
+
+        parentCategoryComboBox.valueProperty().addListener((observable, oldValue, selectedParent) -> {
+            categoryComboBox.getItems().clear();
+            categoryComboBox.setValue(null);
+            categoryComboBox.setDisable(selectedParent == null);
+
+            if (selectedParent != null) {
+                fetchDropdownData(
+                        "/api/lookup/categories/" + selectedParent.getId() + "/children",
+                        categoryComboBox
+                );
+            }
+        });
 
         Platform.runLater(() -> {
             fetchDropdownData("/api/lookup/cities", cityComboBox);
-            fetchDropdownData("/api/lookup/categories", categoryComboBox);
+            // This endpoint now returns only broad/root categories.
+            fetchDropdownData("/api/lookup/categories", parentCategoryComboBox);
         });
     }
 
-    /**
-     * Opens a file chooser allowing the user to select one or more images
-     * for the advertisement and displays the latest selected image as preview.
-     */
     @FXML
     public void handleSelectImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Product Images");
-
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg", "*.gif")
         );
 
         Stage stage = (Stage) titleField.getScene().getWindow();
-        // قابلیت انتخاب چند عکس به صورت همزمان با کلید Ctrl/Shift
         List<File> files = fileChooser.showOpenMultipleDialog(stage);
 
         if (files != null && !files.isEmpty()) {
-            // 🟢 اصلاح اصلی: بجای جایگزین کردن، عکس‌های جدید را به لیست قبلی اضافه می‌کنیم
             for (File file : files) {
-                if (!this.selectedImageFiles.contains(file)) {
-                    this.selectedImageFiles.add(file);
+                if (!selectedImageFiles.contains(file)) {
+                    selectedImageFiles.add(file);
                 }
             }
 
-            // نمایش آخرین عکس انتخاب شده در پیش‌نمایش فرم
             Image img = new Image(files.get(files.size() - 1).toURI().toString());
             imagePreview.setImage(img);
 
             errorLabel.setStyle("-fx-text-fill: #2ecc71;");
-            errorLabel.setText("Total " + this.selectedImageFiles.size() + " images selected.");
+            errorLabel.setText("Total " + selectedImageFiles.size() + " images selected.");
         }
     }
 
-    /**
-     * Validates advertisement data, prepares the request payload,
-     * and submits the new advertisement to the backend server.
-     */
     @FXML
     public void handleSaveAdvertisement() {
         String title = titleField.getText().trim();
-        IdNamePair selectedCategory = categoryComboBox.getValue();
+        IdNamePair selectedSubcategory = categoryComboBox.getValue();
         IdNamePair selectedCity = cityComboBox.getValue();
         String priceText = priceField.getText().trim();
         String description = descriptionArea.getText().trim();
 
-        if (title.isBlank() || selectedCategory == null || selectedCity == null || priceText.isBlank() || description.isBlank()) {
-            errorLabel.setStyle("-fx-text-fill: red;");
-            errorLabel.setText("Please fill in all fields and select options from menus.");
+        // A root category is intentionally not enough for an advertisement.
+        if (title.isBlank() || selectedSubcategory == null || selectedCity == null
+                || priceText.isBlank() || description.isBlank()) {
+            showError("Please fill in all fields and select a category and a subcategory.");
             return;
         }
 
@@ -114,53 +114,58 @@ public class CreateAdController {
         try {
             price = Double.parseDouble(priceText);
         } catch (NumberFormatException e) {
-            errorLabel.setStyle("-fx-text-fill: red;");
-            errorLabel.setText("Price must be a valid number.");
+            showError("Price must be a valid number.");
             return;
         }
 
-        long categoryId = selectedCategory.getId();
+        long categoryId = selectedSubcategory.getId();
         long cityId = selectedCity.getId();
 
-        // چسباندن آدرس تمام عکس‌ها با کاما (,) به یکدیگر
         StringBuilder imgUrlsBuilder = new StringBuilder();
         if (!selectedImageFiles.isEmpty()) {
             for (int i = 0; i < selectedImageFiles.size(); i++) {
-                imgUrlsBuilder.append(selectedImageFiles.get(i).toURI().toString());
+                imgUrlsBuilder.append(selectedImageFiles.get(i).toURI());
                 if (i < selectedImageFiles.size() - 1) {
                     imgUrlsBuilder.append(",");
                 }
             }
         } else {
-            imgUrlsBuilder.append(getClass().getResource("/com/secondhand/frontend/images/default-ad.png") != null ?
-                    getClass().getResource("/com/secondhand/frontend/images/default-ad.png").toExternalForm() :
-                    "https://picsum.photos/400/200");
+            imgUrlsBuilder.append(getClass().getResource("/com/secondhand/frontend/images/default-ad.png") != null
+                    ? getClass().getResource("/com/secondhand/frontend/images/default-ad.png").toExternalForm()
+                    : "https://picsum.photos/400/200");
         }
 
-        String integratedDescription = description + " [IMG_URL:" + imgUrlsBuilder.toString() + "]";
-
+        String integratedDescription = description + " [IMG_URL:" + imgUrlsBuilder + "]";
         String jsonRequest = String.format(
                 java.util.Locale.US,
                 "{\"title\":\"%s\",\"description\":\"%s\",\"price\":%.2f,\"categoryId\":%d,\"cityId\":%d}",
                 title, integratedDescription, price, categoryId, cityId
         );
 
-        String response = NetworkClient.sendPostRequest("/advertisements/create", jsonRequest);
+        // Posting can take time because it performs an HTTP request. Keep the
+        // JavaFX application thread free so the button and page stay responsive.
+        setPublishing(true);
+        Thread publishThread = new Thread(() -> {
+            String response = NetworkClient.sendPostRequest("/advertisements/create", jsonRequest);
+            Platform.runLater(() -> {
+                setPublishing(false);
+                if (response != null && !response.startsWith("ERROR")) {
+                    handleCancel();
+                    errorLabel.setStyle("-fx-text-fill: #16895d;");
+                    errorLabel.setText("Advertisement published successfully! Awaiting admin approval.");
+                } else {
+                    showError("Failed to publish advertisement. Server returned an error.");
+                }
+            });
+        }, "create-ad-request-thread");
+        publishThread.setDaemon(true);
+        publishThread.start();
+    }
 
-        if (response != null && !response.startsWith("ERROR")) {
-            errorLabel.setStyle("-fx-text-fill: #27ae60;");
-            errorLabel.setText("Advertisement published successfully! Awaiting admin approval.");
-
-            titleField.clear();
-            priceField.clear();
-            descriptionArea.clear();
-            categoryComboBox.setValue(null);
-            cityComboBox.setValue(null);
-            imagePreview.setImage(null);
-            selectedImageFiles.clear();
-        } else {
-            errorLabel.setStyle("-fx-text-fill: red;");
-            errorLabel.setText("Failed to publish advertisement. Server returned an error.");
+    private void setPublishing(boolean publishing) {
+        if (publishButton != null) {
+            publishButton.setDisable(publishing);
+            publishButton.setText(publishing ? "Publishing…" : "Publish advertisement");
         }
     }
 
@@ -169,13 +174,6 @@ public class CreateAdController {
         NavigationUtils.navigateTo(titleField, "/com/secondhand/frontend/view/main_market.fxml", "SecondHand Market");
     }
 
-    /**
-     * Retrieves lookup data from the backend and populates the specified
-     * ComboBox with identifier-name pairs.
-     *
-     * @param endpoint backend lookup endpoint
-     * @param comboBox target ComboBox to populate
-     */
     private void fetchDropdownData(String endpoint, ComboBox<IdNamePair> comboBox) {
         String token = NetworkClient.authToken != null ? NetworkClient.authToken : "";
         HttpRequest request = HttpRequest.newBuilder()
@@ -185,20 +183,38 @@ public class CreateAdController {
                 .build();
 
         httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::body)
-                .thenAccept(responseBody -> {
+                .thenAccept(response -> {
+                    if (response.statusCode() != 200) {
+                        Platform.runLater(() -> showError(
+                                "Could not load categories/cities (HTTP " + response.statusCode()
+                                        + "). Make sure the backend is running."
+                        ));
+                        return;
+                    }
+
                     try {
-                        JSONArray array = new JSONArray(responseBody);
+                        JSONArray array = new JSONArray(response.body());
                         Platform.runLater(() -> {
                             comboBox.getItems().clear();
                             for (int i = 0; i < array.length(); i++) {
                                 JSONObject obj = array.getJSONObject(i);
                                 comboBox.getItems().add(new IdNamePair(obj.getLong("id"), obj.getString("name")));
                             }
+
+                            if (array.isEmpty() && endpoint.contains("/categories")) {
+                                showError("No categories were returned by the backend. Restart the backend once.");
+                            }
                         });
                     } catch (Exception e) {
+                        Platform.runLater(() -> showError("Could not read category data from the backend."));
                         System.err.println("Failed to parse dynamic dropdown data from: " + endpoint);
                     }
+                })
+                .exceptionally(error -> {
+                    Platform.runLater(() -> showError(
+                            "Could not connect to backend on http://localhost:8080. Start backend first."
+                    ));
+                    return null;
                 });
     }
 
@@ -214,8 +230,14 @@ public class CreateAdController {
                 return null;
             }
         };
+        parentCategoryComboBox.setConverter(converter);
         categoryComboBox.setConverter(converter);
         cityComboBox.setConverter(converter);
+    }
+
+    private void showError(String message) {
+        errorLabel.setStyle("-fx-text-fill: red;");
+        errorLabel.setText(message);
     }
 
     public static class IdNamePair {
@@ -227,8 +249,18 @@ public class CreateAdController {
             this.name = name;
         }
 
-        public long getId() { return id; }
-        public String getName() { return name; }
+        public long getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     @FXML
@@ -236,7 +268,10 @@ public class CreateAdController {
         titleField.clear();
         priceField.clear();
         descriptionArea.clear();
+        parentCategoryComboBox.getSelectionModel().clearSelection();
         categoryComboBox.getSelectionModel().clearSelection();
+        categoryComboBox.getItems().clear();
+        categoryComboBox.setDisable(true);
         cityComboBox.getSelectionModel().clearSelection();
         imagePreview.setImage(null);
         selectedImageFiles.clear();

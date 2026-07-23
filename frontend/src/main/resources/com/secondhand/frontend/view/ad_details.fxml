@@ -1,103 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.*?>
 
-<VBox prefHeight="740.0" prefWidth="500.0" spacing="12" style="-fx-background-color: #f8f9fa; -fx-padding: 15;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://fxml.com/fxml/1" fx:controller="com.secondhand.frontend.controller.AdDetailsController">
-    <children>
-
-        <StackPane fx:id="imageContainer" style="-fx-background-color: #eee; -fx-min-height: 220; -fx-max-height: 220; -fx-border-color: #ddd; -fx-background-radius: 8; -fx-border-radius: 8;">
-            <children>
-                <ImageView fx:id="adImageView" fitHeight="200" fitWidth="460" preserveRatio="true" />
-
-                <Button fx:id="btnPrevImage" mnemonicParsing="false" onAction="#handlePrevImage" visible="false" text="&lt;"
-                        style="-fx-background-color: rgba(0,0,0,0.3); -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-cursor: hand; -fx-pref-width: 40; -fx-pref-height: 60; -fx-background-radius: 0 5 5 0;"
-                        StackPane.alignment="CENTER_LEFT" />
-
-                <Button fx:id="btnNextImage" mnemonicParsing="false" onAction="#handleNextImage" visible="false" text="&gt;"
-                        style="-fx-background-color: rgba(0,0,0,0.3); -fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold; -fx-cursor: hand; -fx-pref-width: 40; -fx-pref-height: 60; -fx-background-radius: 5 0 0 5;"
-                        StackPane.alignment="CENTER_RIGHT" />
-            </children>
-        </StackPane>
-
-        <Label fx:id="titleLabel" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="Ad Title" />
-        <Separator />
-
-        <GridPane hgap="15" vgap="8">
-            <columnConstraints>
-                <ColumnConstraints minWidth="90" />
-                <ColumnConstraints minWidth="200" />
-            </columnConstraints>
-            <children>
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d;" text="Price: " GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                <Label fx:id="priceLabel" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2ecc71;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d;" text="City: " GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                <Label fx:id="cityLabel" style="-fx-text-fill: #34495e;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d;" text="Category:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <Label fx:id="categoryLabel" style="-fx-text-fill: #34495e;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d;" text="Seller Info:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                <VBox spacing="1" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                    <children>
-                        <Label fx:id="sellerLabel" style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="Seller: Loading..." />
-                        <Label fx:id="ratingLabel" style="-fx-text-fill: #f1c40f; -fx-font-weight: bold;" text="Rating: 0.0 / 5.0" />
-                    </children>
-                </VBox>
-            </children>
-        </GridPane>
-
-        <Separator />
-
-        <Label style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="Description: " />
-        <TextArea fx:id="descriptionArea" editable="false" style="-fx-pref-height: 60; -fx-background-radius: 6;" wrapText="true" />
-
-        <Separator />
-
-        <Label style="-fx-font-weight: bold; -fx-text-fill: #2c3e50;" text="Product Q and A / Public Comments:" />
-        <HBox spacing="8">
-            <children>
-                <TextField fx:id="newCommentField" promptText="Ask a question about this item..." HBox.hgrow="ALWAYS" style="-fx-pref-height: 32;" />
-                <Button onAction="#handleSendProductComment" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Send" />
-            </children>
-        </HBox>
-
-        <HBox spacing="5" style="-fx-padding: 5 0 0 0;">
-            <children>
-                <Button fx:id="btnTabProductComments" onAction="#switchTabToProductComments" style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Product Comments" />
-                <Button fx:id="btnTabSellerRatings" onAction="#switchTabToSellerRatings" style="-fx-background-color: #bdc3c7; -fx-text-fill: #333; -fx-font-weight: bold; -fx-cursor: hand;" text="Seller Ratings" />
-            </children>
-        </HBox>
-
-        <ListView fx:id="commentsListView" prefHeight="110.0" style="-fx-background-radius: 0 0 6 6;" />
-
-        <Separator />
-
-        <HBox alignment="CENTER_RIGHT" spacing="10">
-            <children>
-                <Button fx:id="btnEdit" onAction="#handleEditAd" visible="false" managed="false" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Edit" />
-                <Button fx:id="btnDelete" onAction="#handleDeleteAd" visible="false" managed="false" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Delete" />
-                <Button fx:id="btnMarkAsSold" onAction="#handleMarkAsSold" visible="false" managed="false" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Change to Sold" />
-
-                <Button fx:id="btnFavorite" onAction="#handleToggleFavorite" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Save Ad" />
-                <Button fx:id="btnRateSeller" onAction="#handleRateSeller" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Rate Seller" />
-                <Button fx:id="btnChatWithSeller" onAction="#handleChatWithSeller" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Chat" />
-                <Button onAction="#handleBack" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Back" />
-            </children>
-        </HBox>
-
-    </children>
-</VBox>
+<BorderPane prefHeight="760" prefWidth="1080" styleClass="app-shell" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.secondhand.frontend.controller.AdDetailsController">
+    <top>
+        <HBox alignment="CENTER_LEFT" styleClass="app-header"><children><Label text="S" styleClass="brand-mark"/><VBox spacing="1"><Label text="Advertisement details" styleClass="brand-title"/><Label text="Everything you need before making an offer." styleClass="brand-subtitle"/></VBox><Region HBox.hgrow="ALWAYS"/><Button text="← Back" onAction="#handleBack" styleClass="outline-button"/></children></HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent;"><content>
+            <VBox styleClass="page-content" prefWidth="1000"><children>
+                <HBox spacing="20"><children>
+                    <StackPane fx:id="imageContainer" prefWidth="475" prefHeight="335" style="-fx-background-color: #eaf4ff; -fx-background-radius: 18; -fx-border-color: #d7e8f9; -fx-border-radius: 18;"><children>
+                        <ImageView fx:id="adImageView" fitHeight="310" fitWidth="450" preserveRatio="true" />
+                        <Button fx:id="btnPrevImage" onAction="#handlePrevImage" visible="false" text="‹" styleClass="icon-button outline-button" StackPane.alignment="CENTER_LEFT" />
+                        <Button fx:id="btnNextImage" onAction="#handleNextImage" visible="false" text="›" styleClass="icon-button outline-button" StackPane.alignment="CENTER_RIGHT" />
+                    </children></StackPane>
+                    <VBox spacing="13" styleClass="surface-card" HBox.hgrow="ALWAYS"><children>
+                        <Label text="LISTING" styleClass="page-kicker"/><Label fx:id="titleLabel" text="Advertisement title" wrapText="true" styleClass="page-title"/><Label fx:id="priceLabel" text="$0.00" styleClass="ad-price"/>
+                        <Separator/>
+                        <GridPane hgap="12" vgap="10"><children>
+                            <Label text="Category" styleClass="muted-text" GridPane.columnIndex="0" GridPane.rowIndex="0"/><Label fx:id="categoryLabel" styleClass="ad-meta" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                            <Label text="City" styleClass="muted-text" GridPane.columnIndex="0" GridPane.rowIndex="1"/><Label fx:id="cityLabel" styleClass="ad-meta" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            <Label text="Seller" styleClass="muted-text" GridPane.columnIndex="0" GridPane.rowIndex="2"/><VBox spacing="3" GridPane.columnIndex="1" GridPane.rowIndex="2"><children><Label fx:id="sellerLabel" styleClass="ad-meta"/><Label fx:id="ratingLabel" text="Rating: 0.0 / 5.0" styleClass="ad-meta"/></children></VBox>
+                        </children></GridPane>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <HBox spacing="8"><children><Button fx:id="btnFavorite" text="♡ Save" onAction="#handleToggleFavorite" styleClass="outline-button"/><Button fx:id="btnChatWithSeller" text="Message seller" onAction="#handleChatWithSeller" styleClass="primary-action"/></children></HBox>
+                        <HBox spacing="8"><children><Button fx:id="btnRateSeller" text="Rate seller" onAction="#handleRateSeller" styleClass="outline-button"/><Button fx:id="btnEdit" text="Edit" onAction="#handleEditAd" visible="false" managed="false" styleClass="outline-button"/><Button fx:id="btnMarkAsSold" text="Mark sold" onAction="#handleMarkAsSold" visible="false" managed="false" styleClass="success-button"/><Button fx:id="btnDelete" text="Delete" onAction="#handleDeleteAd" visible="false" managed="false" styleClass="danger-button"/></children></HBox>
+                    </children></VBox>
+                </children></HBox>
+                <HBox spacing="20"><children>
+                    <VBox spacing="10" styleClass="surface-card" HBox.hgrow="ALWAYS"><children><Label text="Description" styleClass="section-title"/><TextArea fx:id="descriptionArea" editable="false" prefHeight="105" wrapText="true"/></children></VBox>
+                    <VBox spacing="9" styleClass="surface-card" HBox.hgrow="ALWAYS"><children><Label text="Ask the seller" styleClass="section-title"/><HBox spacing="8"><children><TextField fx:id="newCommentField" promptText="Ask a question about this item…" HBox.hgrow="ALWAYS"/><Button text="Send" onAction="#handleSendProductComment" styleClass="primary-action"/></children></HBox><HBox spacing="7"><children><Button fx:id="btnTabProductComments" text="Questions" onAction="#switchTabToProductComments" styleClass="outline-button"/><Button fx:id="btnTabSellerRatings" text="Seller ratings" onAction="#switchTabToSellerRatings" styleClass="outline-button"/></children></HBox><ListView fx:id="commentsListView" prefHeight="100"/></children></VBox>
+                </children></HBox>
+            </children></VBox>
+        </content></ScrollPane>
+    </center>
+</BorderPane>

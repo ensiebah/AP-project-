@@ -37,8 +37,7 @@ public class NavigationUtils {
             FXMLLoader loader = new FXMLLoader(NavigationUtils.class.getResource(fxmlPath));
             Parent root = loader.load();
 
-            String cssPath = NavigationUtils.class.getResource("/style.css").toExternalForm();
-            root.getStylesheets().add(cssPath);
+            UiTheme.decorate(root);
 
             if (stage.getScene() != null) {
                 stage.getScene().setRoot(root);
@@ -74,8 +73,7 @@ public class NavigationUtils {
             stage.setTitle("Chat Room - " + conversation.getAdvertisementTitle());
 
             // 🟢 اضافه کردن استایل CSS به ریشه پنجره چت
-            String cssPath = NavigationUtils.class.getResource("/style.css").toExternalForm();
-            root.getStylesheets().add(cssPath);
+            UiTheme.decorate(root);
 
             Scene scene = new Scene(root);
             stage.setScene(scene);

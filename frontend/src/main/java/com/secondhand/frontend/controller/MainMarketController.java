@@ -4,11 +4,23 @@ import com.secondhand.frontend.model.AdItem;
 import com.secondhand.frontend.model.AdvertisementDto;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.util.NavigationUtils;
+import com.secondhand.frontend.util.UiTheme;
+import com.secondhand.frontend.util.UiMotion;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.Region; // 🟢 رفع خطای نبودن کلاس Region
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,32 +29,36 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainMarketController {
 
     @FXML private TextField searchField;
     @FXML private TextField minPriceField;
     @FXML private TextField maxPriceField;
+    @FXML private ComboBox<IdNamePair> parentCategoryComboBox;
     @FXML private ComboBox<IdNamePair> categoryComboBox;
     @FXML private ComboBox<IdNamePair> cityComboBox;
     @FXML private ListView<AdvertisementDto> adListView;
     @FXML private Button btnAdminPanel;
-
-    // 🟢 اضافه شدن کنترلر دکمه کشویی مرتب‌سازی جدید
+    @FXML private Button profileButton;
     @FXML private MenuButton sortMenuButton;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final String BASE_URL = "http://localhost:8080/api/advertisements";
-
-    // 🟢 ذخیره وضعیت‌های فعلی مرتب‌سازی (مقادیر پیش‌فرض بر اساس تاریخ ثبت نزولی)
+    private static final String BASE_URL = "http://localhost:8080/api/advertisements";
     private String currentSortBy = "date";
     private String currentOrder = "desc";
+    private long searchRequestVersion;
 
     @FXML
     public void initialize() {
         if (btnAdminPanel != null) {
             btnAdminPanel.setVisible(false);
             btnAdminPanel.setDisable(true);
+        }
+        if (profileButton != null) {
+            profileButton.setText("👤 " + NetworkClient.currentUsername);
         }
 
         adListView.setCellFactory(param -> new ListCell<>() {
@@ -51,9 +67,37 @@ public class MainMarketController {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
-                } else {
-                    setText(String.format("%s - $%.2f [City: %s]", item.getTitle(), item.getPrice(), item.getCityName()));
+                    setGraphic(null);
+                    return;
                 }
+
+                Label thumbnail = new Label("◈");
+                thumbnail.getStyleClass().add("ad-thumbnail");
+
+                Label title = new Label(item.getTitle());
+                title.getStyleClass().add("ad-title");
+                Label category = new Label("⌂ " + safeText(item.getCategoryName())
+                        + "   •   ◉ " + safeText(item.getCityName()));
+                category.getStyleClass().add("ad-meta");
+                Label hint = new Label("Double-click to view details");
+                hint.getStyleClass().add("ad-meta");
+                VBox details = new VBox(5, title, category, hint);
+                HBox.setHgrow(details, Priority.ALWAYS);
+
+                Label price = new Label(String.format("$%.2f", item.getPrice()));
+                price.getStyleClass().add("ad-price");
+                VBox priceBox = new VBox(7, price, new Label("Active ad"));
+                priceBox.setStyle("-fx-alignment: CENTER_RIGHT;");
+                ((Label) priceBox.getChildren().get(1)).getStyleClass().add("ad-meta");
+
+                Region spacer = new Region();
+                spacer.setMinWidth(8);
+                HBox card = new HBox(14, thumbnail, details, spacer, priceBox);
+                card.getStyleClass().add("ad-card");
+                card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                UiMotion.installCardMotion(card);
+                setText(null);
+                setGraphic(card);
             }
         });
 
@@ -67,59 +111,72 @@ public class MainMarketController {
         });
 
         setupComboBoxConverters();
+        categoryComboBox.setDisable(true);
+        parentCategoryComboBox.valueProperty().addListener((observable, oldValue, selectedParent) -> {
+            categoryComboBox.getItems().clear();
+            categoryComboBox.setValue(null);
+            categoryComboBox.setDisable(selectedParent == null);
+            if (selectedParent != null) {
+                fetchDropdownData(
+                        "/api/lookup/categories/" + selectedParent.getId() + "/children",
+                        categoryComboBox
+                );
+            }
+        });
 
-        // 🟢 راه‌اندازی گزینه‌های داخل منوی مرتب‌سازی
         setupSortMenuOptions();
-
         Platform.runLater(() -> {
             loadActiveAdvertisements();
-            fetchDropdownData("/api/lookup/categories", categoryComboBox);
+            // Root endpoint = broad categories only.
+            fetchDropdownData("/api/lookup/categories", parentCategoryComboBox);
             fetchDropdownData("/api/lookup/cities", cityComboBox);
         });
 
         configureNavigationBasedOnRole(NetworkClient.userRole);
     }
 
-    /**
-     * 🟢 متد جدید برای تنظیم منوها و رویدادهای تغییر مرتب‌سازی
-     */
+    private String safeText(String value) {
+        return value == null || value.isBlank() ? "Not specified" : value;
+    }
+
     private void setupSortMenuOptions() {
-        if (sortMenuButton == null) return;
+        if (sortMenuButton == null) {
+            return;
+        }
 
         sortMenuButton.getItems().clear();
-
         MenuItem dateItem = new MenuItem("📅 Date (Newest)");
         dateItem.setOnAction(e -> applyNewSorting("date", "desc", "Sort by: Date (Newest)"));
-
         MenuItem priceLowItem = new MenuItem("💰 Price: Low to High");
         priceLowItem.setOnAction(e -> applyNewSorting("price", "asc", "Sort by: Price: Low to High"));
-
         MenuItem priceHighItem = new MenuItem("📈 Price: High to Low");
         priceHighItem.setOnAction(e -> applyNewSorting("price", "desc", "Sort by: Price: High to Low"));
-
         MenuItem ratingItem = new MenuItem("⭐ Seller Rating");
         ratingItem.setOnAction(e -> applyNewSorting("rating", "desc", "Sort by: Seller Rating"));
 
         sortMenuButton.getItems().addAll(dateItem, priceLowItem, priceHighItem, ratingItem);
-        // ست کردن متن دکمه بر روی حالت پیش‌فرض
         sortMenuButton.setText("Sort by: Date (Newest)");
     }
 
-    /**
-     * 🟢 اعمال متد تغییر نوع مرتب‌سازی و بازخوانی مجدد لیست داده‌ها
-     */
     private void applyNewSorting(String sortBy, String order, String buttonText) {
-        this.currentSortBy = sortBy;
-        this.currentOrder = order;
-        this.sortMenuButton.setText(buttonText);
+        currentSortBy = sortBy;
+        currentOrder = order;
+        sortMenuButton.setText(buttonText);
 
-        // اگر کادر سرچ یا فیلترها پر باشند از هندلر سرچ استفاده کن در غیر این صورت لیست پیش‌فرض اکتیو را لود کن
-        if (!searchField.getText().isBlank() || categoryComboBox.getValue() != null ||
-                cityComboBox.getValue() != null || !minPriceField.getText().isBlank() || !maxPriceField.getText().isBlank()) {
+        if (hasActiveFilters()) {
             handleSearch();
         } else {
             loadActiveAdvertisements();
         }
+    }
+
+    private boolean hasActiveFilters() {
+        return !searchField.getText().isBlank()
+                || parentCategoryComboBox.getValue() != null
+                || categoryComboBox.getValue() != null
+                || cityComboBox.getValue() != null
+                || !minPriceField.getText().isBlank()
+                || !maxPriceField.getText().isBlank();
     }
 
     private void setupComboBoxConverters() {
@@ -128,11 +185,13 @@ public class MainMarketController {
             public String toString(IdNamePair object) {
                 return object == null ? "" : object.getName();
             }
+
             @Override
             public IdNamePair fromString(String string) {
                 return null;
             }
         };
+        parentCategoryComboBox.setConverter(converter);
         categoryComboBox.setConverter(converter);
         cityComboBox.setConverter(converter);
     }
@@ -166,7 +225,6 @@ public class MainMarketController {
     private void loadActiveAdvertisements() {
         adListView.getItems().clear();
         String finalUrl = BASE_URL + "/active?sortBy=" + currentSortBy + "&order=" + currentOrder;
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(finalUrl))
                 .header("Authorization", "Bearer " + NetworkClient.authToken)
@@ -179,15 +237,10 @@ public class MainMarketController {
                     try {
                         JSONArray jsonArray = new JSONArray(responseBody);
                         for (int i = 0; i < jsonArray.length(); i++) {
-                            JSONObject obj = jsonArray.getJSONObject(i);
-                            AdvertisementDto dto = parseJsonToDto(obj);
-
-                            // 🟢 فیلتر کردن بر اساس شیء پارس شده‌ی معتبر
-                            if ("SOLD".equalsIgnoreCase(dto.getStatus())) {
-                                continue;
+                            AdvertisementDto dto = parseJsonToDto(jsonArray.getJSONObject(i));
+                            if (!"SOLD".equalsIgnoreCase(dto.getStatus())) {
+                                Platform.runLater(() -> adListView.getItems().add(dto));
                             }
-
-                            Platform.runLater(() -> adListView.getItems().add(dto));
                         }
                     } catch (Exception e) {
                         System.err.println("Failed to load active advertisements.");
@@ -196,59 +249,122 @@ public class MainMarketController {
     }
 
     @FXML
-    public void handleSearch() {
-        String query = searchField.getText().trim();
-        IdNamePair selectedCategory = categoryComboBox.getValue();
-        Long categoryId = selectedCategory != null ? selectedCategory.getId() : null;
-        IdNamePair selectedCity = cityComboBox.getValue();
-        Long cityId = selectedCity != null ? selectedCity.getId() : null;
+    public void quickFilterDigital() {
+        selectQuickCategory("Digital");
+    }
 
-        Double minPrice = null;
-        Double maxPrice = null;
-        try {
-            if (!minPriceField.getText().isBlank()) minPrice = Double.parseDouble(minPriceField.getText().trim());
-            if (!maxPriceField.getText().isBlank()) maxPrice = Double.parseDouble(maxPriceField.getText().trim());
-        } catch (NumberFormatException e) {
-            System.err.println("Invalid format for price range filters.");
-        }
+    @FXML
+    public void quickFilterHome() {
+        selectQuickCategory("Home & Kitchen");
+    }
 
-        String response = NetworkClient.searchAdvertisement(query, categoryId, cityId, minPrice, maxPrice, currentSortBy, currentOrder);
+    @FXML
+    public void quickFilterVehicles() {
+        selectQuickCategory("Vehicles");
+    }
 
-        adListView.getItems().clear();
-        if (response != null && !response.startsWith("ERROR")) {
-            try {
-                JSONArray jsonArray = new JSONArray(response);
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject obj = jsonArray.getJSONObject(i);
-                    AdvertisementDto dto = parseJsonToDto(obj);
+    @FXML
+    public void quickFilterEntertainment() {
+        selectQuickCategory("Entertainment");
+    }
 
-                    // 🟢 فیلتر کردن آگهی فروخته شده در نتایج سرچ و فیلترها
-                    if ("SOLD".equalsIgnoreCase(dto.getStatus())) {
-                        continue;
-                    }
-
-                    Platform.runLater(() -> adListView.getItems().add(dto));
-                }
-            } catch (Exception e) {
-                System.err.println("Error parsing search response.");
-            }
+    private void selectQuickCategory(String categoryName) {
+        IdNamePair category = parentCategoryComboBox.getItems().stream()
+                .filter(item -> categoryName.equals(item.getName()))
+                .findFirst()
+                .orElse(null);
+        if (category != null) {
+            parentCategoryComboBox.setValue(category);
+            handleSearch();
         }
     }
+
+    @FXML
+    public void handleSearch() {
+        String query = searchField.getText().trim();
+        // A selected subcategory has priority. With only a root selected, the
+        // backend returns ads belonging to every direct child of that root.
+        IdNamePair selectedCategory = categoryComboBox.getValue() != null
+                ? categoryComboBox.getValue() : parentCategoryComboBox.getValue();
+        Long categoryId = selectedCategory == null ? null : selectedCategory.getId();
+        IdNamePair selectedCity = cityComboBox.getValue();
+        Long cityId = selectedCity == null ? null : selectedCity.getId();
+
+        Double minPrice = parsePrice(minPriceField.getText());
+        Double maxPrice = parsePrice(maxPriceField.getText());
+        if ((!minPriceField.getText().isBlank() && minPrice == null)
+                || (!maxPriceField.getText().isBlank() && maxPrice == null)) {
+            adListView.setPlaceholder(new Label("Please enter valid price values."));
+            return;
+        }
+
+        // NetworkClient uses a blocking HTTP call. Running it in a daemon
+        // thread keeps scrolling, hover effects and buttons responsive.
+        long requestVersion = ++searchRequestVersion;
+        adListView.getItems().clear();
+        adListView.setPlaceholder(new Label("Searching advertisements…"));
+
+        Thread searchThread = new Thread(() -> {
+            List<AdvertisementDto> results = new ArrayList<>();
+            String response = NetworkClient.searchAdvertisement(
+                    query, categoryId, cityId, minPrice, maxPrice, currentSortBy, currentOrder
+            );
+
+            if (response != null && !response.startsWith("ERROR")) {
+                try {
+                    JSONArray jsonArray = new JSONArray(response);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        AdvertisementDto dto = parseJsonToDto(jsonArray.getJSONObject(i));
+                        if (!"SOLD".equalsIgnoreCase(dto.getStatus())) {
+                            results.add(dto);
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error parsing search response.");
+                }
+            }
+
+            Platform.runLater(() -> {
+                // Ignore a slow, older search if the user already searched again.
+                if (requestVersion != searchRequestVersion) {
+                    return;
+                }
+                adListView.getItems().setAll(results);
+                adListView.setPlaceholder(new Label(
+                        results.isEmpty() ? "No advertisements found for these filters." : ""
+                ));
+            });
+        }, "market-search-thread");
+        searchThread.setDaemon(true);
+        searchThread.start();
+    }
+
+    private Double parsePrice(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     @FXML
     public void handleResetFilters() {
         searchField.clear();
         minPriceField.clear();
         maxPriceField.clear();
+        parentCategoryComboBox.setValue(null);
+        categoryComboBox.getItems().clear();
         categoryComboBox.setValue(null);
+        categoryComboBox.setDisable(true);
         cityComboBox.setValue(null);
-
-        // 🟢 ریست کردن وضعیت مرتب‌سازی به حالت اولیه زمان تایید
-        this.currentSortBy = "date";
-        this.currentOrder = "desc";
+        currentSortBy = "date";
+        currentOrder = "desc";
         if (sortMenuButton != null) {
             sortMenuButton.setText("Sort by: Date (Newest)");
         }
-
         loadActiveAdvertisements();
     }
 
@@ -260,12 +376,11 @@ public class MainMarketController {
         dto.setDescription(obj.optString("description", "No description available."));
         dto.setSellerId(obj.optLong("sellerId", 1L));
         dto.setSellerName(obj.optString("sellerName", "Unknown"));
+        dto.setCategoryId(obj.has("categoryId") ? obj.optLong("categoryId") : null);
+        dto.setCityId(obj.has("cityId") ? obj.optLong("cityId") : null);
         dto.setCityName(obj.optString("cityName", "Unknown"));
         dto.setCategoryName(obj.optString("categoryName", "Unknown"));
-
-        // 🟢 اضافه کردن این خط بسیار حیاتی است: خواندن وضعیت آگهی از جی‌سون سرور
         dto.setStatus(obj.optString("status", "ACTIVE"));
-
         return dto;
     }
 
@@ -275,16 +390,12 @@ public class MainMarketController {
                     getClass().getResource("/com/secondhand/frontend/view/ad_details.fxml")
             );
             javafx.scene.Parent root = loader.load();
+            UiTheme.decorate(root);
 
             AdItem adItem = new AdItem(
-                    String.valueOf(dto.getId()),
-                    dto.getTitle(),
-                    dto.getDescription(),
-                    String.valueOf(dto.getPrice()),
-                    dto.getCityName(),
-                    dto.getCategoryName(),
-                    dto.getSellerId(),
-                    dto.getSellerName()
+                    String.valueOf(dto.getId()), dto.getTitle(), dto.getDescription(),
+                    String.valueOf(dto.getPrice()), dto.getCityName(), dto.getCategoryName(),
+                    dto.getSellerId(), dto.getSellerName()
             );
 
             AdDetailsController detailsController = loader.getController();
@@ -301,13 +412,42 @@ public class MainMarketController {
     }
 
     @FXML
+    public void switchToEnglish() {
+        UiTheme.setPersian(false);
+        UiTheme.applyLanguage((javafx.scene.Parent) searchField.getScene().getRoot());
+    }
+
+    @FXML
+    public void switchToPersian() {
+        UiTheme.setPersian(true);
+        UiTheme.applyLanguage((javafx.scene.Parent) searchField.getScene().getRoot());
+    }
+
+    @FXML
+    public void goToDashboard() {
+        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/user_dashboard.fxml", "My Dashboard");
+    }
+
+    @FXML
     public void goToMyAdvertisements() {
         NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/my_advertisements.fxml", "My Advertisements Dashboard");
     }
 
-    @FXML public void goToCreatAd() { NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/create_ad.fxml", "Post a New Advertisement"); }
-    @FXML public void handleLogout() { NetworkClient.authToken = null; NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/login.fxml", "Login"); }
-    @FXML private void handleNavigateToAdmin() { NavigationUtils.navigateTo(btnAdminPanel, "/com/secondhand/frontend/view/admin_panel.fxml", "Admin Dashboard"); }
+    @FXML
+    public void goToCreatAd() {
+        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/create_ad.fxml", "Post a New Advertisement");
+    }
+
+    @FXML
+    public void handleLogout() {
+        NetworkClient.authToken = null;
+        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/login.fxml", "Login");
+    }
+
+    @FXML
+    private void handleNavigateToAdmin() {
+        NavigationUtils.navigateTo(btnAdminPanel, "/com/secondhand/frontend/view/admin_panel.fxml", "Admin Dashboard");
+    }
 
     public void configureNavigationBasedOnRole(String userRole) {
         if (btnAdminPanel != null) {
@@ -315,6 +455,16 @@ public class MainMarketController {
             btnAdminPanel.setVisible(isAdmin);
             btnAdminPanel.setDisable(!isAdmin);
         }
+    }
+
+    @FXML
+    public void goToInbox() {
+        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/inbox.fxml", "My Inbox");
+    }
+
+    @FXML
+    public void goToFavorites() {
+        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/favorites_list.fxml", "My Favorites");
     }
 
     public static class IdNamePair {
@@ -326,17 +476,17 @@ public class MainMarketController {
             this.name = name;
         }
 
-        public long getId() { return id; }
-        public String getName() { return name; }
-    }
+        public long getId() {
+            return id;
+        }
 
-    @FXML
-    public void goToInbox() {
-        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/inbox.fxml", "My Inbox");
-    }
+        public String getName() {
+            return name;
+        }
 
-    @FXML
-    public void goToFavorites() {
-        NavigationUtils.navigateTo(searchField, "/com/secondhand/frontend/view/favorites_list.fxml", "My Favorites");
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }

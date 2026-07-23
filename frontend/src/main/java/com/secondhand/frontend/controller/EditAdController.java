@@ -3,8 +3,14 @@ package com.secondhand.frontend.controller;
 import com.secondhand.frontend.model.AdvertisementDto;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.util.NavigationUtils;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
@@ -14,39 +20,64 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.File;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Controller responsible for editing existing advertisements.
- * <p>
- * It allows users to modify advertisement information, manage
- * attached images, reorder images using drag and drop, and
- * submit updates to the backend server.
- *
- * @author Ensie
- * @version 1.0
+ * It preserves the image-management behavior and adds the same category
+ * hierarchy used by the create-ad form.
  */
 public class EditAdController {
 
     @FXML private TextField titleField;
     @FXML private TextField priceField;
     @FXML private TextArea descriptionArea;
+    @FXML private ComboBox<IdNamePair> parentCategoryComboBox;
+    @FXML private ComboBox<IdNamePair> categoryComboBox;
+    @FXML private ComboBox<IdNamePair> cityComboBox;
     @FXML private HBox imagesContainer;
 
+    private final HttpClient httpClient = HttpClient.newHttpClient();
     private AdvertisementDto targetDto;
-    // 🟢 اصلاح اصلی: استفاده از لیست برای مدیریت چندین تصویر
     private final List<String> loadedImageUrls = new ArrayList<>();
-
-    // متغیر کمکی برای ردیابی ایندکس آیتم در حال درگ
     private int draggedIndex = -1;
+    private boolean selectingExistingParent;
+
+    @FXML
+    public void initialize() {
+        setupComboBoxConverters();
+        categoryComboBox.setDisable(true);
+
+        parentCategoryComboBox.valueProperty().addListener((observable, oldValue, selectedParent) -> {
+            if (selectingExistingParent) {
+                return;
+            }
+
+            categoryComboBox.getItems().clear();
+            categoryComboBox.setValue(null);
+            categoryComboBox.setDisable(selectedParent == null);
+            if (selectedParent != null) {
+                loadSubcategories(selectedParent.getId(), null);
+            }
+        });
+
+        fetchDropdownData("/api/lookup/categories", parentCategoryComboBox, this::selectExistingCategory);
+        fetchDropdownData("/api/lookup/cities", cityComboBox, this::selectExistingCity);
+    }
 
     /**
-     * Loads the selected advertisement into the editing form
-     * and extracts all associated image URLs.
-     *
-     * @param dto advertisement to edit
+     * Loads the selected advertisement into the editing form and selects its
+     * current parent and child category once lookup data is available.
      */
     public void setAdvertisementData(AdvertisementDto dto) {
         this.targetDto = dto;
@@ -55,13 +86,11 @@ public class EditAdController {
 
         loadedImageUrls.clear();
         String rawDesc = dto.getDescription();
-
         if (rawDesc != null && rawDesc.contains("[IMG_URL:")) {
             int startIndex = rawDesc.indexOf("[IMG_URL:");
             int endIndex = rawDesc.indexOf("]", startIndex);
             if (endIndex > startIndex) {
                 String allUrls = rawDesc.substring(startIndex + 9, endIndex);
-                // جداسازی تصاویر بر اساس کاما
                 String[] splitUrls = allUrls.split(",");
                 for (String url : splitUrls) {
                     if (!url.isBlank()) {
@@ -74,11 +103,129 @@ public class EditAdController {
             descriptionArea.setText(rawDesc);
         }
         renderImagesSection();
+
+        // initialize() may have already finished before this method is called.
+        selectExistingCategory();
+        selectExistingCity();
     }
 
     /**
-     * Renders or flushes the horizontal image tray node containing attached media files alongside dedicated clear operations.
+     * The ad DTO contains the leaf id. This request obtains parentId so the
+     * form can first select the parent and then load its child list.
      */
+    private void selectExistingCategory() {
+        if (targetDto == null || targetDto.getCategoryId() == null
+                || parentCategoryComboBox.getItems().isEmpty()) {
+            return;
+        }
+
+        HttpRequest request = authenticatedGet("/api/lookup/categories/" + targetDto.getCategoryId());
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenAccept(responseBody -> {
+                    try {
+                        JSONObject category = new JSONObject(responseBody);
+                        Long parentId = category.isNull("parentId")
+                                ? null : category.getLong("parentId");
+
+                        Platform.runLater(() -> {
+                            // If an old advertisement points to a root category, keep it
+                            // visible but require the user to choose a subcategory before saving.
+                            long rootId = parentId == null ? targetDto.getCategoryId() : parentId;
+                            IdNamePair parent = findById(parentCategoryComboBox, rootId);
+                            if (parent == null) {
+                                return;
+                            }
+
+                            selectingExistingParent = true;
+                            parentCategoryComboBox.setValue(parent);
+                            selectingExistingParent = false;
+                            loadSubcategories(parent.getId(), parentId == null ? null : targetDto.getCategoryId());
+                        });
+                    } catch (Exception e) {
+                        System.err.println("Could not load the current category hierarchy.");
+                    }
+                });
+    }
+
+    private void selectExistingCity() {
+        if (targetDto == null || targetDto.getCityId() == null || cityComboBox.getItems().isEmpty()) {
+            return;
+        }
+        cityComboBox.setValue(findById(cityComboBox, targetDto.getCityId()));
+    }
+
+    private void loadSubcategories(long parentId, Long selectedChildId) {
+        categoryComboBox.getItems().clear();
+        categoryComboBox.setValue(null);
+        categoryComboBox.setDisable(true);
+
+        fetchDropdownData(
+                "/api/lookup/categories/" + parentId + "/children",
+                categoryComboBox,
+                () -> {
+                    categoryComboBox.setDisable(false);
+                    if (selectedChildId != null) {
+                        categoryComboBox.setValue(findById(categoryComboBox, selectedChildId));
+                    }
+                }
+        );
+    }
+
+    private void fetchDropdownData(String endpoint, ComboBox<IdNamePair> comboBox, Runnable afterLoad) {
+        HttpRequest request = authenticatedGet(endpoint);
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenAccept(responseBody -> {
+                    try {
+                        JSONArray array = new JSONArray(responseBody);
+                        Platform.runLater(() -> {
+                            comboBox.getItems().clear();
+                            for (int i = 0; i < array.length(); i++) {
+                                JSONObject obj = array.getJSONObject(i);
+                                comboBox.getItems().add(new IdNamePair(obj.getLong("id"), obj.getString("name")));
+                            }
+                            afterLoad.run();
+                        });
+                    } catch (Exception e) {
+                        System.err.println("Failed to parse lookup data from: " + endpoint);
+                    }
+                });
+    }
+
+    private HttpRequest authenticatedGet(String endpoint) {
+        String token = NetworkClient.authToken != null ? NetworkClient.authToken : "";
+        return HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8080" + endpoint))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
+    }
+
+    private void setupComboBoxConverters() {
+        StringConverter<IdNamePair> converter = new StringConverter<>() {
+            @Override
+            public String toString(IdNamePair item) {
+                return item == null ? "" : item.getName();
+            }
+
+            @Override
+            public IdNamePair fromString(String string) {
+                return null;
+            }
+        };
+        parentCategoryComboBox.setConverter(converter);
+        categoryComboBox.setConverter(converter);
+        cityComboBox.setConverter(converter);
+    }
+
+    private IdNamePair findById(ComboBox<IdNamePair> comboBox, long id) {
+        return comboBox.getItems().stream()
+                .filter(item -> item.getId() == id)
+                .findFirst()
+                .orElse(null);
+    }
+
     private void renderImagesSection() {
         imagesContainer.getChildren().clear();
         if (loadedImageUrls.isEmpty()) {
@@ -86,7 +233,6 @@ public class EditAdController {
             return;
         }
 
-        // رندر کردن هر تصویر به همراه منطق درگ و دراپ و دکمه حذف
         for (int i = 0; i < loadedImageUrls.size(); i++) {
             final int currentIndex = i;
             String url = loadedImageUrls.get(i);
@@ -108,43 +254,27 @@ public class EditAdController {
             Button btnDeleteImg = new Button("Remove ❌");
             btnDeleteImg.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 11px; -fx-cursor: hand;");
             btnDeleteImg.setOnAction(e -> {
-                // حذف تصویر مشخص بر اساس ایندکس آن
                 loadedImageUrls.remove(currentIndex);
                 renderImagesSection();
             });
 
             singleImageWrapper.getChildren().addAll(preview, btnDeleteImg);
-
-            // 🟢 پیاده‌سازی منطق هوشمند Drag & Drop برای تغییر ترتیب عکس‌ها
             setupDragAndDropHandlers(singleImageWrapper, currentIndex);
-
             imagesContainer.getChildren().add(singleImageWrapper);
         }
     }
 
-    /**
-     * Configures drag-and-drop support for reordering
-     * advertisement images.
-     *
-     * @param wrapper image container
-     * @param index image position
-     */
     private void setupDragAndDropHandlers(VBox wrapper, final int index) {
-        // ۱. شروع عملیات درگ کردن
         wrapper.setOnDragDetected(event -> {
             draggedIndex = index;
             Dragboard db = wrapper.startDragAndDrop(TransferMode.MOVE);
             ClipboardContent content = new ClipboardContent();
-            // ارسال متن فرضی برای پر شدن درگ‌بورد سیستم
             content.putString(String.valueOf(index));
             db.setContent(content);
-
-            // افکت بصری: نیمه شفاف کردن آیتم در حال حرکت
             wrapper.setOpacity(0.5);
             event.consume();
         });
 
-        // ۲. ورود آیتم درگ شده به حریم یک باکس دیگر
         wrapper.setOnDragOver(event -> {
             if (event.getGestureSource() != wrapper && event.getDragboard().hasString()) {
                 event.acceptTransferModes(TransferMode.MOVE);
@@ -152,12 +282,10 @@ public class EditAdController {
             event.consume();
         });
 
-        // ۳. رها کردن (Drop) آیتم روی باکس مقصد
         wrapper.setOnDragDropped(event -> {
             Dragboard db = event.getDragboard();
             boolean success = false;
             if (db.hasString() && draggedIndex != -1) {
-                // جابجایی جایگاه آیتم‌ها در لیست اصلی
                 String targetUrl = loadedImageUrls.remove(draggedIndex);
                 loadedImageUrls.add(index, targetUrl);
                 success = true;
@@ -165,13 +293,11 @@ public class EditAdController {
             event.setDropCompleted(success);
             event.consume();
 
-            // بازسازی بخش تصاویر با ترتیب جدید
             if (success) {
                 renderImagesSection();
             }
         });
 
-        // ۴. پایان عملیات درگ (چه موفق چه ناموفق)
         wrapper.setOnDragDone(event -> {
             wrapper.setOpacity(1.0);
             draggedIndex = -1;
@@ -179,17 +305,12 @@ public class EditAdController {
         });
     }
 
-    /**
-     * Opens a file chooser and appends one or more new images
-     * to the current advertisement.
-     */
     @FXML
     public void handleAddNewPicture() {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Upload New Image Asset(s)");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg"));
 
-        // 🟢 تغییر به showOpenMultipleDialog برای امکان افزودن چندین عکس جدید همزمان
         Stage stage = (Stage) titleField.getScene().getWindow();
         List<File> selectedFiles = chooser.showOpenMultipleDialog(stage);
 
@@ -204,24 +325,31 @@ public class EditAdController {
         }
     }
 
-    /**
-     * Collects the edited advertisement data, rebuilds the image
-     * metadata, and submits the updated advertisement to the backend.
-     */
     @FXML
     public void handleUpdateAdvertisement() {
-        String finalDescription = descriptionArea.getText().trim();
+        if (targetDto == null) {
+            showError("No advertisement was selected for editing.");
+            return;
+        }
 
-        // 🟢 بازسازی استرینگ متصل با کاما از لیست تصاویر برای ارسال به سرور
+        IdNamePair selectedSubcategory = categoryComboBox.getValue();
+        IdNamePair selectedCity = cityComboBox.getValue();
+        if (selectedSubcategory == null || selectedCity == null) {
+            showError("Please select both a category and a subcategory.");
+            return;
+        }
+
+        double price;
+        try {
+            price = Double.parseDouble(priceField.getText().trim());
+        } catch (NumberFormatException e) {
+            showError("Price must be a valid number.");
+            return;
+        }
+
+        String finalDescription = descriptionArea.getText().trim();
         if (!loadedImageUrls.isEmpty()) {
-            StringBuilder imgUrlsBuilder = new StringBuilder();
-            for (int i = 0; i < loadedImageUrls.size(); i++) {
-                imgUrlsBuilder.append(loadedImageUrls.get(i));
-                if (i < loadedImageUrls.size() - 1) {
-                    imgUrlsBuilder.append(",");
-                }
-            }
-            finalDescription += " [IMG_URL:" + imgUrlsBuilder.toString() + "]";
+            finalDescription += " [IMG_URL:" + String.join(",", loadedImageUrls) + "]";
         }
 
         String jsonUpdate = String.format(
@@ -229,21 +357,48 @@ public class EditAdController {
                 "{\"title\":\"%s\",\"description\":\"%s\",\"price\":%.2f,\"categoryId\":%d,\"cityId\":%d}",
                 titleField.getText().trim(),
                 finalDescription,
-                Double.parseDouble(priceField.getText().trim()),
-                targetDto.getCategoryId() != null ? targetDto.getCategoryId() : 1L,
-                targetDto.getCityId() != null ? targetDto.getCityId() : 1L
+                price,
+                selectedSubcategory.getId(),
+                selectedCity.getId()
         );
 
         String networkResponse = NetworkClient.updateAdvertisementRaw(targetDto.getId(), jsonUpdate);
         if (networkResponse != null && !networkResponse.startsWith("ERROR")) {
             handleCancel();
         } else {
-            new Alert(Alert.AlertType.ERROR, "Failed to apply updates onto the database server.").show();
+            showError("Failed to apply updates onto the database server.");
         }
+    }
+
+    private void showError(String message) {
+        new Alert(Alert.AlertType.ERROR, message).show();
     }
 
     @FXML
     public void handleCancel() {
         NavigationUtils.navigateTo(titleField, "/com/secondhand/frontend/view/my_advertisements.fxml", "My Advertisements Dashboard");
+    }
+
+    public static class IdNamePair {
+        private final long id;
+        private final String name;
+
+        public IdNamePair(long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public long getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }

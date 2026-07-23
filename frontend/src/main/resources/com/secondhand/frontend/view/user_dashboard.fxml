@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane prefHeight="720.0" prefWidth="1100.0" styleClass="app-shell" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.secondhand.frontend.controller.UserDashboardController">
+    <top>
+        <HBox alignment="CENTER_LEFT" styleClass="app-header">
+            <children>
+                <Label text="S" styleClass="brand-mark" />
+                <VBox spacing="1">
+                    <Label text="SecondHand Market" styleClass="brand-title" />
+                    <Label text="Your marketplace workspace" styleClass="brand-subtitle" />
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <MenuButton text="EN / FA" styleClass="nav-button"><items><MenuItem text="English" onAction="#switchToEnglish"/><MenuItem text="فارسی" onAction="#switchToPersian"/></items></MenuButton>
+                <Button text="← Back to market" onAction="#goToMarket" styleClass="outline-button" />
+                <Button text="Sign out" onAction="#logout" styleClass="danger-button" />
+            </children>
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent;">
+            <content>
+                <VBox styleClass="page-content" prefWidth="1040.0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="20" styleClass="profile-hero">
+                            <children>
+                                <Label fx:id="avatarLabel" styleClass="avatar-circle" text="U" />
+                                <VBox spacing="5">
+                                    <Label fx:id="fullNameLabel" styleClass="profile-name" text="Your name" />
+                                    <Label fx:id="usernameLabel" styleClass="profile-handle" text="@username" />
+                                    <Label fx:id="roleLabel" styleClass="profile-role" text="Marketplace member" />
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Button text="+ Post new ad" onAction="#goToCreateAd" styleClass="secondary-button" />
+                            </children>
+                        </HBox>
+
+                        <VBox spacing="7">
+                            <Label text="YOUR OVERVIEW" styleClass="page-kicker" />
+                            <Label text="Everything in one place" styleClass="page-title" />
+                            <Label text="Track ads, saved items and conversations from your personal dashboard." styleClass="section-subtitle" />
+                        </VBox>
+
+                        <HBox spacing="14">
+                            <children>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="totalAdsLabel" text="0" styleClass="metric-number"/><Label text="Total ads" styleClass="metric-label"/></children></VBox>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="activeAdsLabel" text="0" styleClass="metric-number"/><Label text="Active ads" styleClass="metric-label"/></children></VBox>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="favoritesLabel" text="0" styleClass="metric-number"/><Label text="Saved ads" styleClass="metric-label"/></children></VBox>
+                                <VBox styleClass="metric-card" HBox.hgrow="ALWAYS"><children><Label fx:id="conversationsLabel" text="0" styleClass="metric-number"/><Label text="Conversations" styleClass="metric-label"/></children></VBox>
+                            </children>
+                        </HBox>
+
+                        <HBox spacing="18">
+                            <children>
+                                <VBox spacing="12" styleClass="surface-card" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label text="Quick actions" styleClass="section-title" />
+                                        <Label text="Continue where you left off." styleClass="section-subtitle" />
+                                        <Button text="▣   Manage my advertisements" onAction="#goToMyAds" maxWidth="Infinity" styleClass="quick-link" />
+                                        <Button text="♡   Saved advertisements" onAction="#goToFavorites" maxWidth="Infinity" styleClass="quick-link" />
+                                        <Button text="✉   Messages and offers" onAction="#goToMessages" maxWidth="Infinity" styleClass="quick-link" />
+                                        <Button text="＋   Post an advertisement" onAction="#goToCreateAd" maxWidth="Infinity" styleClass="quick-link" />
+                                    </children>
+                                </VBox>
+                                <VBox spacing="12" styleClass="surface-card" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <Label text="Recent activity" styleClass="section-title" />
+                                        <Label text="A live summary based on your account data." styleClass="section-subtitle" />
+                                        <ListView fx:id="activityListView" prefHeight="215" styleClass="activity-list" VBox.vgrow="ALWAYS" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

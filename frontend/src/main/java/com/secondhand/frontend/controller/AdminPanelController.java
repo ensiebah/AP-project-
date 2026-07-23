@@ -4,384 +4,472 @@ import com.secondhand.frontend.model.AdvertisementDto;
 import com.secondhand.frontend.model.UserDto;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.util.NavigationUtils;
+import com.secondhand.frontend.util.UiMotion;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TreeItem;
+import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * Controller responsible for the administration panel of the marketplace.
- * <p>
- * It allows administrators to manage advertisements, review pending listings,
- * approve or reject advertisements, delete approved advertisements, and
- * manage user accounts by blocking or unblocking users.
- *
- * @author Ensie
- * @version 1.0
+ * Professional administrator workspace with an overview, status-based ad
+ * moderation, a read-only category tree and one searchable user directory.
  */
 public class AdminPanelController {
 
-    // --- بخش مربوط به آگهی‌ها ---
-    @FXML private TableView<AdvertisementDto> pendingTable;
-    @FXML private TableColumn<AdvertisementDto, Long> idColumn;
-    @FXML private TableColumn<AdvertisementDto, String> titleColumn;
-    @FXML private TableColumn<AdvertisementDto, Double> priceColumn;
-    @FXML private TableColumn<AdvertisementDto, String> sellerColumn;
+    @FXML private StackPane contentStack;
+    @FXML private VBox overviewPane;
+    @FXML private VBox advertisementsPane;
+    @FXML private VBox categoriesPane;
+    @FXML private VBox usersPane;
 
-    @FXML private Button btnApprove;
-    @FXML private Button btnReject;
-    @FXML private Button btnDeleteAd;
-    @FXML private Button btnShowPending;
-    @FXML private Button btnShowApproved;
-    @FXML private Button btnLogout;
+    @FXML private Button overviewNavButton;
+    @FXML private Button categoriesNavButton;
+    @FXML private Button usersNavButton;
+    @FXML private MenuButton advertisementsMenuButton;
 
-    // --- 🟢 بخش کاربران (این المان‌ها جا افتاده بودند و باعث خطا می‌شدند) ---
-    @FXML private TableView<UserDto> activeUsersTable;
-    @FXML private TableColumn<UserDto, Long> activeUserIdColumn;
-    @FXML private TableColumn<UserDto, String> activeUsernameColumn;
+    @FXML private Label totalAdsLabel;
+    @FXML private Label pendingAdsLabel;
+    @FXML private Label activeAdsLabel;
+    @FXML private Label totalUsersLabel;
+    @FXML private Label blockedUsersLabel;
+    @FXML private Label totalCitiesLabel;
+    @FXML private Label totalCategoriesLabel;
+    @FXML private Label rejectedAdsLabel;
+    @FXML private Label soldAdsLabel;
 
-    @FXML private TableView<UserDto> blockedUsersTable;
-    @FXML private TableColumn<UserDto, Long> blockedUserIdColumn;
-    @FXML private TableColumn<UserDto, String> blockedUsernameColumn;
+    @FXML private Label advertisementsTitleLabel;
+    @FXML private TableView<AdvertisementDto> advertisementsTable;
+    @FXML private TableColumn<AdvertisementDto, Long> adIdColumn;
+    @FXML private TableColumn<AdvertisementDto, String> adTitleColumn;
+    @FXML private TableColumn<AdvertisementDto, String> adCategoryColumn;
+    @FXML private TableColumn<AdvertisementDto, String> adSellerColumn;
+    @FXML private TableColumn<AdvertisementDto, String> adStatusColumn;
+    @FXML private TableColumn<AdvertisementDto, Double> adPriceColumn;
+    @FXML private Button approveAdButton;
+    @FXML private Button rejectAdButton;
+
+    @FXML private TreeView<String> categoriesTreeView;
+    @FXML private Label categoryTreeSummaryLabel;
+
+    @FXML private TextField userSearchField;
+    @FXML private Button allUsersButton;
+    @FXML private Button activeUsersButton;
+    @FXML private Button blockedUsersButton;
+    @FXML private Label usersListSummaryLabel;
+    @FXML private ListView<UserDto> usersListView;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final ObservableList<AdvertisementDto> adList = FXCollections.observableArrayList();
+    private final ObservableList<AdvertisementDto> advertisements = FXCollections.observableArrayList();
+    private final ObservableList<UserDto> allUsers = FXCollections.observableArrayList();
+    private String currentUserFilter = "ALL";
+    private String currentAdStatus = "PENDING";
 
-    // 🟢 لیست‌های جا افتاده برای مدیریت ساختار داده کاربران
-    private final ObservableList<UserDto> activeUsersList = FXCollections.observableArrayList();
-    private final ObservableList<UserDto> blockedUsersList = FXCollections.observableArrayList();
-
-    private final String BASE_URL = "http://localhost:8080/api/advertisements";
-    private final String USERS_URL = "http://localhost:8080/api/users"; // 🟢 این آدرس تعریف نشده بود
-
-    private boolean isApprovedMode = false;
-
-    /**
-     * Initializes the administration panel by configuring table columns,
-     * loading advertisements and users, and registering UI event handlers.
-     */
     @FXML
     public void initialize() {
-        // ۱. مقداردهی جداول آگهی‌ها
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
-        priceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
-        sellerColumn.setCellValueFactory(new PropertyValueFactory<>("sellerName"));
-        pendingTable.setItems(adList);
+        setupAdvertisementTable();
+        setupUserDirectory();
+        showOverview();
+        loadOverview();
+        loadAdvertisements("PENDING");
+        loadCategories();
+        loadUsers();
+    }
 
-        // ۲. 🟢 مقداردهی جداول کاربران (اضافه شد برای مپ شدن درست ستون‌ها)
-        activeUserIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        activeUsernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
-        activeUsersTable.setItems(activeUsersList);
+    private void setupAdvertisementTable() {
+        adIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        adTitleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+        adCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("categoryName"));
+        adSellerColumn.setCellValueFactory(new PropertyValueFactory<>("sellerName"));
+        adStatusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        adPriceColumn.setCellValueFactory(new PropertyValueFactory<>("price"));
+        advertisementsTable.setItems(advertisements);
+        advertisementsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldAd, selectedAd) -> {
+            boolean canModerate = selectedAd != null && "PENDING".equalsIgnoreCase(selectedAd.getStatus());
+            approveAdButton.setDisable(!canModerate);
+            rejectAdButton.setDisable(!canModerate);
+        });
+        approveAdButton.setDisable(true);
+        rejectAdButton.setDisable(true);
+    }
 
-        blockedUserIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        blockedUsernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
-        blockedUsersTable.setItems(blockedUsersList);
-
-        // ۳. دبل کلیک آگهی‌ها
-        pendingTable.setRowFactory(tv -> {
-            TableRow<AdvertisementDto> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2 && (!row.isEmpty())) {
-                    AdvertisementDto rowData = row.getItem();
-                    showAdDetailsAlert(rowData);
+    private void setupUserDirectory() {
+        usersListView.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(UserDto user, boolean empty) {
+                super.updateItem(user, empty);
+                if (empty || user == null) {
+                    setText(null);
+                    setGraphic(null);
+                    return;
                 }
+
+                Label avatar = new Label(initials(user.getFullName(), user.getUsername()));
+                avatar.getStyleClass().add("ad-thumbnail");
+                Label name = new Label(displayName(user));
+                name.getStyleClass().add("ad-title");
+                Label metadata = new Label("@" + user.getUsername() + "  •  " + safe(user.getRole(), "USER"));
+                metadata.getStyleClass().add("ad-meta");
+                Label state = new Label(user.isBlocked() ? "Blocked" : "Active");
+                state.getStyleClass().add(user.isBlocked() ? "status-rejected" : "status-active");
+                VBox details = new VBox(4, name, metadata, state);
+                HBox.setHgrow(details, Priority.ALWAYS);
+
+                Button action = new Button(user.isBlocked() ? "Unblock" : "Block");
+                action.getStyleClass().add(user.isBlocked() ? "success-button" : "danger-button");
+                action.setOnAction(event -> updateUserBlockState(user, !user.isBlocked()));
+
+                HBox card = new HBox(13, avatar, details, action);
+                card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                card.getStyleClass().add("row-card");
+                UiMotion.installCardMotion(card);
+                setText(null);
+                setGraphic(card);
+            }
+        });
+        userSearchField.textProperty().addListener((obs, oldValue, newValue) -> refreshVisibleUsers());
+    }
+
+    /* ---------- Top navigation ---------- */
+
+    @FXML
+    public void showOverview() {
+        switchPane(overviewPane);
+        markNav(overviewNavButton);
+    }
+
+    @FXML
+    public void showAdvertisements() {
+        switchPane(advertisementsPane);
+        advertisementsMenuButton.setText("Advertisements · " + displayStatus(currentAdStatus));
+        markNav(null);
+    }
+
+    @FXML
+    public void showCategories() {
+        switchPane(categoriesPane);
+        markNav(categoriesNavButton);
+    }
+
+    @FXML
+    public void showUsers() {
+        switchPane(usersPane);
+        markNav(usersNavButton);
+    }
+
+    private void switchPane(VBox target) {
+        overviewPane.setVisible(target == overviewPane);
+        overviewPane.setManaged(target == overviewPane);
+        advertisementsPane.setVisible(target == advertisementsPane);
+        advertisementsPane.setManaged(target == advertisementsPane);
+        categoriesPane.setVisible(target == categoriesPane);
+        categoriesPane.setManaged(target == categoriesPane);
+        usersPane.setVisible(target == usersPane);
+        usersPane.setManaged(target == usersPane);
+    }
+
+    private void markNav(Button selected) {
+        for (Button button : List.of(overviewNavButton, categoriesNavButton, usersNavButton)) {
+            button.getStyleClass().remove("nav-selected");
+        }
+        if (selected != null) {
+            selected.getStyleClass().add("nav-selected");
+        }
+    }
+
+    /* ---------- Overview ---------- */
+
+    private void loadOverview() {
+        fetchJson("/admin/dashboard/summary", object -> Platform.runLater(() -> {
+            totalAdsLabel.setText(String.valueOf(object.optLong("totalAdvertisements")));
+            pendingAdsLabel.setText(String.valueOf(object.optLong("pendingAdvertisements")));
+            activeAdsLabel.setText(String.valueOf(object.optLong("activeAdvertisements")));
+            totalUsersLabel.setText(String.valueOf(object.optLong("totalUsers")));
+            blockedUsersLabel.setText(String.valueOf(object.optLong("blockedUsers")));
+            totalCitiesLabel.setText(String.valueOf(object.optLong("totalCities")));
+            totalCategoriesLabel.setText(String.valueOf(object.optLong("totalCategories")));
+            rejectedAdsLabel.setText(String.valueOf(object.optLong("rejectedAdvertisements")));
+            soldAdsLabel.setText(String.valueOf(object.optLong("soldAdvertisements")));
+        }));
+    }
+
+    /* ---------- Advertisement moderation ---------- */
+
+    @FXML public void showAllAds() { loadAdvertisements("ALL"); }
+    @FXML public void showPendingAds() { loadAdvertisements("PENDING"); }
+    @FXML public void showActiveAds() { loadAdvertisements("ACTIVE"); }
+    @FXML public void showRejectedAds() { loadAdvertisements("REJECTED"); }
+    @FXML public void showSoldAds() { loadAdvertisements("SOLD"); }
+    @FXML public void showDeletedAds() { loadAdvertisements("DELETED"); }
+
+    private void loadAdvertisements(String status) {
+        currentAdStatus = status;
+        advertisementsMenuButton.setText("Advertisements · " + displayStatus(status));
+        advertisementsTitleLabel.setText(displayStatus(status) + " advertisements");
+        advertisements.clear();
+        showAdvertisements();
+
+        fetchArray("/admin/advertisements?status=" + status, array -> {
+            List<AdvertisementDto> parsed = new ArrayList<>();
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject item = array.getJSONObject(i);
+                AdvertisementDto dto = new AdvertisementDto();
+                dto.setId(item.getLong("id"));
+                dto.setTitle(item.optString("title", "Untitled advertisement"));
+                dto.setPrice(item.optDouble("price", 0));
+                dto.setStatus(item.optString("status", "UNKNOWN"));
+                dto.setSellerName(item.optString("sellerName", "Unknown"));
+                dto.setCategoryName(item.optString("categoryName", "Not specified"));
+                dto.setCityName(item.optString("cityName", ""));
+                parsed.add(dto);
+            }
+            Platform.runLater(() -> advertisements.setAll(parsed));
+        });
+    }
+
+    @FXML
+    public void approveSelectedAdvertisement() {
+        moderateSelectedAdvertisement("approve");
+    }
+
+    @FXML
+    public void rejectSelectedAdvertisement() {
+        moderateSelectedAdvertisement("reject");
+    }
+
+    private void moderateSelectedAdvertisement(String action) {
+        AdvertisementDto selected = advertisementsTable.getSelectionModel().getSelectedItem();
+        if (selected == null || !"PENDING".equalsIgnoreCase(selected.getStatus())) {
+            return;
+        }
+        sendPut("/admin/advertisements/" + selected.getId() + "/" + action, () -> {
+            loadOverview();
+            loadAdvertisements(currentAdStatus);
+        });
+    }
+
+    /* ---------- Read-only category explorer ---------- */
+
+    private void loadCategories() {
+        fetchArray("/admin/categories", array -> {
+            Map<Long, TreeItem<String>> itemsById = new HashMap<>();
+            Map<Long, Long> parentsById = new HashMap<>();
+            int rootCount = 0;
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject category = array.getJSONObject(i);
+                long id = category.getLong("id");
+                String name = category.optString("name", "Unnamed category");
+                TreeItem<String> item = new TreeItem<>(name);
+                itemsById.put(id, item);
+                if (!category.isNull("parentId")) {
+                    parentsById.put(id, category.getLong("parentId"));
+                } else {
+                    rootCount++;
+                }
+            }
+
+            TreeItem<String> root = new TreeItem<>("All categories");
+            for (Map.Entry<Long, TreeItem<String>> entry : itemsById.entrySet()) {
+                Long parentId = parentsById.get(entry.getKey());
+                if (parentId == null || !itemsById.containsKey(parentId)) {
+                    root.getChildren().add(entry.getValue());
+                } else {
+                    itemsById.get(parentId).getChildren().add(entry.getValue());
+                }
+            }
+            sortTree(root);
+            int finalRootCount = rootCount;
+            Platform.runLater(() -> {
+                root.setExpanded(true);
+                categoriesTreeView.setRoot(root);
+                categoriesTreeView.setShowRoot(true);
+                categoryTreeSummaryLabel.setText(array.length() + " total categories across " + finalRootCount + " main groups");
             });
-            return row;
-        });
-
-        // بارگذاری اطلاعات اولیه از سرور بک‌اند به صورت موازی و امن
-        Platform.runLater(() -> {
-            loadPendingAdvertisements();
-            loadAllUsersFromServer(); // 🟢 متد لود کردن کاربران سیستم
         });
     }
 
-    // --- متدهای آگهی‌ها ---
-    private void loadPendingAdvertisements() {
-        if (NetworkClient.authToken == null) return;
-        fetchAdsFromServer(BASE_URL + "/pending");
+    private void sortTree(TreeItem<String> item) {
+        item.getChildren().sort(Comparator.comparing(TreeItem::getValue, String.CASE_INSENSITIVE_ORDER));
+        item.getChildren().forEach(this::sortTree);
     }
 
-    private void loadApprovedAdvertisements() {
-        if (NetworkClient.authToken == null) return;
-        fetchAdsFromServer(BASE_URL + "/active");
+    /* ---------- One searchable user directory ---------- */
+
+    @FXML public void showAllUsers() { currentUserFilter = "ALL"; refreshVisibleUsers(); markUserFilter(allUsersButton); }
+    @FXML public void showActiveUsers() { currentUserFilter = "ACTIVE"; refreshVisibleUsers(); markUserFilter(activeUsersButton); }
+    @FXML public void showBlockedUsers() { currentUserFilter = "BLOCKED"; refreshVisibleUsers(); markUserFilter(blockedUsersButton); }
+
+    private void loadUsers() {
+        fetchArray("/users", array -> {
+            List<UserDto> parsed = new ArrayList<>();
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject item = array.getJSONObject(i);
+                UserDto user = new UserDto();
+                user.setId(item.getLong("id"));
+                user.setFullName(item.optString("fullName", ""));
+                user.setUsername(item.optString("username", "unknown"));
+                user.setEmail(item.optString("email", ""));
+                user.setPhone(item.optString("phone", ""));
+                user.setRole(item.optString("role", "USER"));
+                user.setBlocked(item.optBoolean("blocked", item.optBoolean("isBlocked", false)));
+                parsed.add(user);
+            }
+            Platform.runLater(() -> {
+                allUsers.setAll(parsed);
+                refreshVisibleUsers();
+            });
+        });
     }
 
-    /**
-     * Retrieves advertisements from the specified backend endpoint
-     * and updates the advertisement table.
-     *
-     * @param url backend endpoint used to retrieve advertisements
-     */
-    private void fetchAdsFromServer(String url) {
-        adList.clear();
+    private void refreshVisibleUsers() {
+        String search = userSearchField == null ? "" : userSearchField.getText().trim().toLowerCase(Locale.ROOT);
+        List<UserDto> visible = allUsers.stream()
+                .filter(user -> "ALL".equals(currentUserFilter)
+                        || ("ACTIVE".equals(currentUserFilter) && !user.isBlocked())
+                        || ("BLOCKED".equals(currentUserFilter) && user.isBlocked()))
+                .filter(user -> search.isBlank()
+                        || displayName(user).toLowerCase(Locale.ROOT).contains(search)
+                        || user.getUsername().toLowerCase(Locale.ROOT).contains(search))
+                .collect(Collectors.toList());
+        usersListView.getItems().setAll(visible);
+        usersListSummaryLabel.setText(visible.size() + " user" + (visible.size() == 1 ? "" : "s") + " shown");
+    }
+
+    private void markUserFilter(Button selected) {
+        for (Button button : List.of(allUsersButton, activeUsersButton, blockedUsersButton)) {
+            button.getStyleClass().remove("filter-selected");
+        }
+        selected.getStyleClass().add("filter-selected");
+    }
+
+    private void updateUserBlockState(UserDto user, boolean block) {
+        String action = block ? "block" : "unblock";
+        sendPut("/users/admin/users/" + user.getId() + "/" + action, () -> {
+            user.setBlocked(block);
+            refreshVisibleUsers();
+            loadOverview();
+        });
+    }
+
+    /* ---------- HTTP helpers ---------- */
+
+    private void fetchJson(String path, java.util.function.Consumer<JSONObject> onSuccess) {
+        fetch(path, body -> onSuccess.accept(new JSONObject(body)));
+    }
+
+    private void fetchArray(String path, java.util.function.Consumer<JSONArray> onSuccess) {
+        fetch(path, body -> onSuccess.accept(new JSONArray(body)));
+    }
+
+    private void fetch(String path, java.util.function.Consumer<String> onSuccess) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
+                .uri(URI.create("http://localhost:8080/api" + path))
                 .header("Authorization", "Bearer " + NetworkClient.authToken)
                 .GET()
                 .build();
-
         httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::body)
-                .thenAccept(responseBody -> {
-                    try {
-                        JSONArray jsonArray = new JSONArray(responseBody);
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            JSONObject obj = jsonArray.getJSONObject(i);
-                            AdvertisementDto dto = new AdvertisementDto();
-                            dto.setId(obj.getLong("id"));
-                            dto.setTitle(obj.getString("title"));
-                            dto.setPrice(obj.getDouble("price"));
-                            dto.setSellerName(obj.optString("sellerName", "Unknown"));
-                            dto.setDescription(obj.optString("description", "No description provided."));
-                            dto.setCategoryName(obj.optString("categoryName", "N/A"));
-                            dto.setCityName(obj.optString("cityName", "Unknown"));
-
-                            Platform.runLater(() -> adList.add(dto));
+                .thenAccept(response -> {
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        try {
+                            onSuccess.accept(response.body());
+                        } catch (Exception exception) {
+                            System.err.println("Could not parse admin data: " + exception.getMessage());
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } else {
+                        System.err.println("Admin API returned HTTP " + response.statusCode());
                     }
                 });
     }
 
-    @FXML
-    public void showPendingMode() {
-        isApprovedMode = false;
-        btnShowPending.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
-        btnShowApproved.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: #2c3e50; -fx-font-weight: bold;");
-
-        btnApprove.setVisible(true);  btnApprove.setManaged(true);
-        btnReject.setVisible(true);   btnReject.setManaged(true);
-        btnDeleteAd.setVisible(false); btnDeleteAd.setManaged(false);
-
-        loadPendingAdvertisements();
-    }
-
-    @FXML
-    public void showApprovedMode() {
-        isApprovedMode = true;
-        btnShowApproved.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold;");
-        btnShowPending.setStyle("-fx-background-color: #bdc3c7; -fx-text-fill: #2c3e50; -fx-font-weight: bold;");
-
-        btnApprove.setVisible(false); btnApprove.setManaged(false);
-        btnReject.setVisible(false);  btnReject.setManaged(false);
-        btnDeleteAd.setVisible(true);  btnDeleteAd.setManaged(true);
-
-        loadApprovedAdvertisements();
-    }
-
-    /**
-     * Approves the selected pending advertisement and removes it
-     * from the pending advertisements list after a successful response.
-     */
-    @FXML
-    private void handleApprove() {
-        AdvertisementDto selectedAd = pendingTable.getSelectionModel().getSelectedItem();
-        if (selectedAd == null) return;
-
+    private void sendPut(String path, Runnable onSuccess) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/" + selectedAd.getId() + "/approve"))
+                .uri(URI.create("http://localhost:8080/api" + path))
                 .header("Authorization", "Bearer " + NetworkClient.authToken)
                 .PUT(HttpRequest.BodyPublishers.noBody())
                 .build();
-
         httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenAccept(response -> {
-                    if (response.statusCode() == 200) {
-                        Platform.runLater(() -> adList.remove(selectedAd));
+                .thenAccept(response -> Platform.runLater(() -> {
+                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                        onSuccess.run();
+                    } else {
+                        new Alert(Alert.AlertType.ERROR, "The admin action could not be completed.").show();
                     }
-                });
-    }
-
-    /**
-     * Rejects the selected pending advertisement and updates the table
-     * after the operation completes successfully.
-     */
-    @FXML
-    private void handleReject() {
-        AdvertisementDto selectedAd = pendingTable.getSelectionModel().getSelectedItem();
-        if (selectedAd == null) return;
-
-        String rejectUrl = BASE_URL + "/" + selectedAd.getId() + "/reject";
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(rejectUrl))
-                .header("Authorization", "Bearer " + NetworkClient.authToken)
-                .PUT(HttpRequest.BodyPublishers.noBody())
-                .build();
-
-        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenAccept(response -> {
-                    if (response.statusCode() == 200) {
-                        Platform.runLater(() -> adList.remove(selectedAd));
-                    }
-                });
-    }
-
-    /**
-     * Permanently deletes the selected approved advertisement
-     * from the marketplace.
-     */
-    @FXML
-    private void handleDeleteApprovedAd() {
-        AdvertisementDto selectedAd = pendingTable.getSelectionModel().getSelectedItem();
-        if (selectedAd == null) return;
-
-        String deleteUrl = BASE_URL + "/" + selectedAd.getId();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(deleteUrl))
-                .header("Authorization", "Bearer " + NetworkClient.authToken)
-                .DELETE()
-                .build();
-
-        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenAccept(response -> {
-                    if (response.statusCode() == 200 || response.statusCode() == 204) {
-                        Platform.runLater(() -> adList.remove(selectedAd));
-                    }
-                });
-    }
-
-    private void showAdDetailsAlert(AdvertisementDto ad) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Advertisement Full Details");
-        alert.setHeaderText("Viewing Ad ID: " + ad.getId() + " [" + ad.getCityName() + "]");
-
-        alert.setContentText(
-                "Title: " + ad.getTitle() + "\n" +
-                        "Category: " + ad.getCategoryName() + "\n" +
-                        "Price: $" + ad.getPrice() + "\n" +
-                        "Seller: " + ad.getSellerName() + "\n" +
-                        "-----------------------------------------\n" +
-                        "Description:\n" + ad.getDescription()
-        );
-        alert.showAndWait();
+                }));
     }
 
     @FXML
-    private void handleLogout() {
+    public void handleLogout() {
         NetworkClient.authToken = null;
-        NetworkClient.userRole = null;
-
-        NavigationUtils.navigateTo(
-                btnLogout,
-                "/com/secondhand/frontend/view/login.fxml",
-                "SecondHand Market - Login"
-        );
+        NetworkClient.currentUsername = "Guest";
+        NetworkClient.currentFullName = "Guest";
+        NavigationUtils.navigateTo(overviewNavButton, "/com/secondhand/frontend/view/login.fxml", "Sign in");
     }
 
-    /**
-     * Retrieves all non-administrator users from the backend and
-     * separates them into active and blocked user lists.
-     */
-    // --- 🟢 متدهای پیاده‌سازی سرویس هماهنگ مدیریت کاربران با سرور ---
-    private void loadAllUsersFromServer() {
-        if (NetworkClient.authToken == null) return;
-
-        activeUsersList.clear();
-        blockedUsersList.clear();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(USERS_URL))
-                .header("Authorization", "Bearer " + NetworkClient.authToken)
-                .GET()
-                .build();
-
-        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(HttpResponse::body)
-                .thenAccept(responseBody -> {
-                    try {
-                        JSONArray jsonArray = new JSONArray(responseBody);
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            JSONObject obj = jsonArray.getJSONObject(i);
-
-                            if("ADMIN".equals(obj.optString("role"))) continue;
-
-                            UserDto user = new UserDto();
-                            user.setId(obj.getLong("id"));
-                            user.setUsername(obj.getString("username"));
-                            user.setBlocked(obj.getBoolean("blocked"));
-
-                            Platform.runLater(() -> {
-                                if (user.isBlocked()) {
-                                    blockedUsersList.add(user);
-                                } else {
-                                    activeUsersList.add(user);
-                                }
-                            });
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
+    private String displayStatus(String status) {
+        return switch (status) {
+            case "ALL" -> "All";
+            case "PENDING" -> "Pending approval";
+            case "ACTIVE" -> "Published";
+            case "REJECTED" -> "Rejected";
+            case "SOLD" -> "Sold";
+            case "DELETED" -> "Removed";
+            default -> status;
+        };
     }
 
-    /**
-     * Blocks the selected active user and moves the account
-     * to the blocked users table.
-     */
-    @FXML
-    private void handleBlockUser() {
-        UserDto selectedUser = activeUsersTable.getSelectionModel().getSelectedItem();
-        if (selectedUser == null) return;
-
-        String url = USERS_URL + "/admin/users/" + selectedUser.getId() + "/block";
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Authorization", "Bearer " + NetworkClient.authToken)
-                .PUT(HttpRequest.BodyPublishers.noBody())
-                .build();
-
-        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenAccept(response -> {
-                    if (response.statusCode() == 200) {
-                        Platform.runLater(() -> {
-                            activeUsersList.remove(selectedUser);
-                            selectedUser.setBlocked(true);
-                            blockedUsersList.add(selectedUser);
-                        });
-                    }
-                });
+    private String displayName(UserDto user) {
+        return safe(user.getFullName(), user.getUsername());
     }
 
-    /**
-     * Restores the selected blocked user and returns the account
-     * to the active users table.
-     */
-    @FXML
-    private void handleUnblockUser() {
-        UserDto selectedUser = blockedUsersTable.getSelectionModel().getSelectedItem();
-        if (selectedUser == null) return;
+    private String initials(String fullName, String username) {
+        String source = safe(fullName, username).trim();
+        if (source.isEmpty()) {
+            return "U";
+        }
+        StringBuilder initials = new StringBuilder();
+        for (String part : source.split("\\s+")) {
+            if (!part.isBlank()) {
+                initials.append(Character.toUpperCase(part.charAt(0)));
+            }
+            if (initials.length() == 2) {
+                break;
+            }
+        }
+        return initials.toString();
+    }
 
-        String url = USERS_URL + "/admin/users/" + selectedUser.getId() + "/unblock";
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .header("Authorization", "Bearer " + NetworkClient.authToken)
-                .PUT(HttpRequest.BodyPublishers.noBody())
-                .build();
-
-        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenAccept(response -> {
-                    if (response.statusCode() == 200) {
-                        Platform.runLater(() -> {
-                            blockedUsersList.remove(selectedUser);
-                            selectedUser.setBlocked(false);
-                            activeUsersList.add(selectedUser);
-                        });
-                    }
-                });
+    private String safe(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
     }
 }

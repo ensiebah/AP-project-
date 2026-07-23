@@ -3,7 +3,13 @@ package com.secondhand.backend.controller;
 import com.secondhand.backend.dto.CategoryDto;
 import com.secondhand.backend.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -11,50 +17,42 @@ import java.util.List;
 @RequestMapping("/categories")
 @RequiredArgsConstructor
 public class CategoryController {
-    private final CategoryService categoryService ;
+
+    private final CategoryService categoryService;
+
     /**
-     * Creates a new category.
-     *
-     * @param dto the category information
-     * @return the created category
+     * Creates a root category when parentId is null, otherwise a subcategory.
      */
     @PostMapping
-    public CategoryDto creatCategory(
-            @RequestBody CategoryDto dto
-    ){
-        return categoryService.createCategory(
-                dto.getName()
-        );
+    public CategoryDto createCategory(@RequestBody CategoryDto dto) {
+        if (dto.getParentId() == null) {
+            return categoryService.createCategory(dto.getName());
+        }
+        return categoryService.createSubcategory(dto.getName(), dto.getParentId());
     }
-    /**
-     * Retrieves all available categories.
-     *
-     * @return a list of categories
-     */
+
     @GetMapping
-    public List<CategoryDto> getAllCategories(){
-        return categoryService.getAllCategories() ;
+    public List<CategoryDto> getAllCategories() {
+        return categoryService.getAllCategories();
     }
 
-    /**
-     * Retrieves a category by its unique identifier.
-     *
-     * @param id the category ID
-     * @return the requested category
-     */
+    @GetMapping("/roots")
+    public List<CategoryDto> getRootCategories() {
+        return categoryService.getRootCategories();
+    }
+
+    @GetMapping("/{id}/children")
+    public List<CategoryDto> getChildren(@PathVariable Long id) {
+        return categoryService.getChildrenByParentId(id);
+    }
+
     @GetMapping("/{id}")
-    public CategoryDto getCategoryById(@PathVariable Long id){
-        return categoryService.getCategoryById(id) ;
+    public CategoryDto getCategoryById(@PathVariable Long id) {
+        return categoryService.getCategoryById(id);
     }
 
-    /**
-     * Deletes a category by its unique identifier.
-     *
-     * @param id the category ID
-     */
     @DeleteMapping("/{id}")
-    public void deleteCategory(@PathVariable Long id){
+    public void deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
     }
-
 }

@@ -45,8 +45,14 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // ۲. اضافه شدن مسیر فرانت‌اَند شما (/api/handle) به لیست مسیرهای کاملاً آزاد
-                        .requestMatchers("/api/handle", "/api/users/register", "/api/users/login", "/h2-console/**").permitAll()
-                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/api/handle",
+                                "/api/users/register",
+                                "/api/users/login",
+                                "/api/lookup/**",
+                                "/h2-console/**"
+                        ).permitAll()
+                        .requestMatchers("/api/admin/**", "/api/users/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -18,58 +17,66 @@ public class DataInitializer implements CommandLineRunner {
     private final CityRepository cityRepository;
     private final CategoryRepository categoryRepository;
 
-    /**
-     * Executes automatically when the application starts and initializes
-     * the required reference data in the database.
-     *
-     * @param args application startup arguments
-     * @throws Exception if an initialization error occurs
-     */
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         seedCategories();
         seedCities();
     }
 
     /**
-     * Inserts the default advertisement categories into the database
-     * if the category table is empty or contains only initial records.
+     * Seeds a two-level category tree only when the database has no categories.
+     * Existing data is never deleted at start-up because it may already be used
+     * by advertisements.
      */
     private void seedCategories() {
-        if (categoryRepository.count() <= 2) {
-            categoryRepository.deleteAll();
+        if (categoryRepository.count() > 0) {
+            return;
+        }
 
-            List<String> categories = Arrays.asList(
-                    "Digital & Electronics",
-                    "Vehicles & Spares",
-                    "Real Estate",
-                    "Home & Kitchen",
-                    "Apparel & Fashion",
-                    "Books & Hobbies",
-                    "Sports & Leisure",
-                    "Toys & Games",
-                    "Tools & Industrial",
-                    "Services & Jobs"
-            );
+        addCategoryWithChildren("Digital", List.of(
+                "Mobile Phones", "Laptops & Tablets", "TV & Audio", "Accessories"
+        ));
+        addCategoryWithChildren("Home & Kitchen", List.of(
+                "Furniture", "Home Appliances", "Decoration & Lighting", "Kitchen"
+        ));
+        addCategoryWithChildren("Vehicles", List.of(
+                "Cars", "Motorcycles", "Vehicle Parts"
+        ));
+        addCategoryWithChildren("Real Estate", List.of(
+                "Residential", "Commercial"
+        ));
+        addCategoryWithChildren("Fashion", List.of(
+                "Women's Clothing", "Men's Clothing", "Shoes & Bags"
+        ));
+        addCategoryWithChildren("Entertainment", List.of(
+                "Books", "Music", "Games & Consoles", "Sports & Leisure"
+        ));
+        addCategoryWithChildren("Tools & Industrial", List.of(
+                "Tools", "Industrial Equipment"
+        ));
+        addCategoryWithChildren("Services & Jobs", List.of(
+                "Services", "Jobs"
+        ));
+    }
 
-            for (String catName : categories) {
-                Category category = new Category();
-                category.setName(catName);
-                categoryRepository.save(category);
-            }
+    private void addCategoryWithChildren(String parentName, List<String> childNames) {
+        Category parent = new Category();
+        parent.setName(parentName);
+        Category savedParent = categoryRepository.save(parent);
 
+        for (String childName : childNames) {
+            Category child = new Category();
+            child.setName(childName);
+            child.setParent(savedParent);
+            categoryRepository.save(child);
         }
     }
 
-    /**
-     * Inserts the default list of cities into the database
-     * if the city table is empty or contains only initial records.
-     */
     private void seedCities() {
         if (cityRepository.count() <= 2) {
             cityRepository.deleteAll();
 
-            List<String> cities = Arrays.asList(
+            List<String> cities = List.of(
                     "Tehran", "Mashhad", "Isfahan", "Karaj", "Shiraz", "Tabriz", "Qom", "Ahvaz",
                     "Kermanshah", "Urmia", "Rasht", "Zahedan", "Hamadan", "Kerman", "Yazd", "Ardabil",
                     "Bandar Abbas", "Arak", "Zanjan", "Sanandaj", "Qazvin", "Khorramabad", "Gorgan",
@@ -81,7 +88,6 @@ public class DataInitializer implements CommandLineRunner {
                 city.setName(cityName);
                 cityRepository.save(city);
             }
-
         }
     }
 }

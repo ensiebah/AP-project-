@@ -3,6 +3,8 @@ package com.secondhand.frontend.controller;
 import com.secondhand.frontend.model.AdvertisementDto;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.util.NavigationUtils;
+import com.secondhand.frontend.util.UiTheme;
+import com.secondhand.frontend.util.UiMotion;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -64,15 +66,18 @@ public class MyAdvertisementsController {
                 } else {
                     HBox rowContainer = new HBox(15);
                     rowContainer.setAlignment(Pos.CENTER_LEFT);
+                    rowContainer.getStyleClass().add("row-card");
+                    UiMotion.installCardMotion(rowContainer);
 
                     // بخش اطلاعات متنی آگهی
                     VBox textData = new VBox(4);
                     Label titleLbl = new Label("Title: " + item.getTitle());
-                    titleLbl.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+                    titleLbl.getStyleClass().add("ad-title");
 
                     // اطلاعات جزیی آگهی (حذف وضعیت از این قسمت متنی چون قرار است دکمه شود)
-                    Label metaLbl = new Label(String.format("Price: $%.2f | City: %s", item.getPrice(), item.getCityName()));
-                    metaLbl.setStyle("-fx-text-fill: #555;");
+                    Label metaLbl = new Label(String.format("Price: $%.2f | Category: %s | City: %s",
+                            item.getPrice(), item.getCategoryName(), item.getCityName()));
+                    metaLbl.getStyleClass().add("ad-meta");
                     textData.getChildren().addAll(titleLbl, metaLbl);
 
                     // ایجاد فاصله انعطاف‌پذیر بین متن و دکمه‌ها
@@ -134,6 +139,7 @@ public class MyAdvertisementsController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/secondhand/frontend/view/edit_ad.fxml"));
             Parent root = loader.load();
+            UiTheme.decorate(root);
             EditAdController controller = loader.getController();
             controller.setAdvertisementData(dto);
 

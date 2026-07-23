@@ -6,11 +6,17 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import com.secondhand.frontend.model.AdItem;
 import com.secondhand.frontend.network.NetworkClient;
 import com.secondhand.frontend.util.NavigationUtils;
+import com.secondhand.frontend.util.UiTheme;
+import com.secondhand.frontend.util.UiMotion;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -27,8 +33,24 @@ public class FavoritesListController {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
                     setText(null);
+                    setGraphic(null);
                 } else {
-                    setText(item.getTitle() + "  |  Price: $" + item.getPrice() + "  |  City: " + item.getCity());
+                    Label thumbnail = new Label("♡");
+                    thumbnail.getStyleClass().add("ad-thumbnail");
+                    Label title = new Label(item.getTitle());
+                    title.getStyleClass().add("ad-title");
+                    Label meta = new Label(item.getCategory() + "   •   " + item.getCity());
+                    meta.getStyleClass().add("ad-meta");
+                    VBox details = new VBox(5, title, meta);
+                    HBox.setHgrow(details, Priority.ALWAYS);
+                    Label price = new Label("$" + item.getPrice());
+                    price.getStyleClass().add("ad-price");
+                    HBox card = new HBox(14, thumbnail, details, price);
+                    card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                    card.getStyleClass().add("ad-card");
+                    UiMotion.installCardMotion(card);
+                    setText(null);
+                    setGraphic(card);
                 }
             }
         });
@@ -69,23 +91,13 @@ public class FavoritesListController {
                         String description = adObj.optString("description", "");
                         String price = String.valueOf(adObj.getDouble("price"));
 
-                        String city = "Unknown";
-                        if (adObj.has("city") && !adObj.isNull("city")) {
-                            city = adObj.getJSONObject("city").optString("cityName", "Unknown");
-                        }
-
-                        String category = "Unknown";
-                        if (adObj.has("category") && !adObj.isNull("category")) {
-                            category = adObj.getJSONObject("category").optString("categoryName", "Unknown");
-                        }
-
-                        Long sellerId = null;
-                        String sellerName = "Anonymous";
-                        if (adObj.has("seller") && !adObj.isNull("seller")) {
-                            JSONObject seller = adObj.getJSONObject("seller");
-                            sellerId = seller.getLong("id");
-                            sellerName = seller.getString("userName");
-                        }
+                        // getAdDetailsRaw returns AdvertisementDto, whose fields are
+                        // flat (cityName/categoryName), not nested city/category objects.
+                        String city = adObj.optString("cityName", "Unknown");
+                        String category = adObj.optString("categoryName", "Unknown");
+                        Long sellerId = adObj.has("sellerId") && !adObj.isNull("sellerId")
+                                ? adObj.getLong("sellerId") : null;
+                        String sellerName = adObj.optString("sellerName", "Anonymous");
 
                         // 👈 اصلاح اصلی: ساخت شیء AdItem مستقیماً از طریق Constructor به دلیل final بودن فیلدها
                         AdItem item = new AdItem(id, title, description, price, city, category, sellerId, sellerName);
@@ -105,6 +117,7 @@ public class FavoritesListController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/secondhand/frontend/view/ad_details.fxml"));
             Parent root = loader.load();
+            UiTheme.decorate(root);
 
             AdDetailsController controller = loader.getController();
             controller.setAdData(ad);

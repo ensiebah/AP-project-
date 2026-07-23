@@ -14,10 +14,11 @@ import java.util.List;
 
 public interface AdvertisementRepository extends JpaRepository<Advertisement, Long> {
 
-    // 🟢 پیدا کردن آگهی‌های فعال به همراه قابلیت مرتب‌سازی پویا از طریق پارامتر Sort اسپرینگ دیتا
     List<Advertisement> findByStatus(AdvertisementStatus status, Sort sort);
 
     List<Advertisement> findByStatus(AdvertisementStatus status);
+
+    long countByStatus(AdvertisementStatus status);
 
     List<Advertisement> findBySeller(User seller);
 
@@ -31,12 +32,16 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, Lo
 
     List<Advertisement> findBySellerAndStatusNotOrderByIdDesc(User seller, AdvertisementStatus status);
 
-    // 🟢 کوئری فیلتر پیشرفته به همراه پیاده‌سازی منطق محاسباتی امتیاز میانگین فروشنده و مرتب‌سازی کاملاً داینامیک در دیتابیس
+    /**
+     * If categoryId is a root category, a.category.parent.id matches all of
+     * its subcategory ads. If it is a leaf category, a.category.id matches
+     * only that subcategory's ads.
+     */
     @Query("SELECT a FROM Advertisement a " +
             "LEFT JOIN Rating r ON r.seller.id = a.seller.id " +
             "WHERE a.status = :status AND " +
             "(:query IS NULL OR LOWER(a.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(a.description) LIKE LOWER(CONCAT('%', :query, '%'))) AND " +
-            "(:categoryId IS NULL OR a.category.id = :categoryId) AND " +
+            "(:categoryId IS NULL OR a.category.id = :categoryId OR a.category.parent.id = :categoryId) AND " +
             "(:cityId IS NULL OR a.city.id = :cityId) AND " +
             "(:minPrice IS NULL OR a.price >= :minPrice) AND " +
             "(:maxPrice IS NULL OR a.price <= :maxPrice) " +
@@ -48,7 +53,7 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, Lo
             "  CASE WHEN :sortBy = 'date' AND :order = 'desc' THEN a.id END DESC, " +
             "  CASE WHEN :sortBy = 'rating' AND :order = 'asc' THEN COALESCE(AVG(r.score), 0.0) END ASC, " +
             "  CASE WHEN :sortBy = 'rating' AND :order = 'desc' THEN COALESCE(AVG(r.score), 0.0) END DESC, " +
-            "  a.id DESC") // مرتب‌سازی ثانویه پیش‌فرض
+            "  a.id DESC")
     List<Advertisement> filterAdvertisementsAdvanced(
             @Param("status") AdvertisementStatus status,
             @Param("query") String query,
@@ -59,5 +64,4 @@ public interface AdvertisementRepository extends JpaRepository<Advertisement, Lo
             @Param("sortBy") String sortBy,
             @Param("order") String order
     );
-
 }
