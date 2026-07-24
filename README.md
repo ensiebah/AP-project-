@@ -136,12 +136,6 @@ The following screenshots demonstrate the main components of the application.
 
 ---
 
-## Register
-
-![Register](images/register-page.png)
-
-
----
 
 ## Main Marketplace
 
@@ -189,7 +183,9 @@ The following screenshots demonstrate the main components of the application.
 
 
 ---
+##Add category or subcategory by admin 
 
+![Addcategory](images/Add-category.png)
 ```
 # Installation
 
