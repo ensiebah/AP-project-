@@ -156,10 +156,7 @@ The following screenshots demonstrate the main components of the application.
 
 ---
 
-## My Advertisements
 
-
-![MyAdvertisements](images/my-ads.png)
 
 ---
 
