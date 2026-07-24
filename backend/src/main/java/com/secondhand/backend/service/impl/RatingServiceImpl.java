@@ -49,8 +49,7 @@ public class RatingServiceImpl implements RatingService {
             throw new IllegalArgumentException("Score must be between 1 and 5.");
         }
 
-        // بند ۸: بررسی عدم وجود امتیاز تکراری برای این آگهی
-        // 👈 اصلاح خط خطا: به جای .isPresent() مستقیماً از متد exists استفاده کن
+
         if (ratingRepository.existsByBuyerAndAdvertisement(buyer, advertisement)) {
             throw new AlreadyRatedException("You have already rated the seller for this advertisement");
         }
